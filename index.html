@@ -170,7 +170,7 @@
         }
         .dialogue-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: url('images/dialogs/Dialog%20TEST.png') center/100% 100% no-repeat; 
+            background: url('images/dialogs/Dialog_TEST.png') center/100% 100% no-repeat; 
             pointer-events: auto; cursor: pointer;
         }
         #dialogueText {
@@ -338,7 +338,6 @@
 
         <!-- ТИТУЛЬНЫЙ ЭКРАН -->
         <div id="titleScreen" class="screen-overlay">
-            <!-- Фоновое видео для стартового экрана -->
             <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
             <div class="main-title">JARISSE GAME #2</div>
             <button class="start-btn" onclick="goToIntro()">ИГРАТЬ</button>
@@ -419,7 +418,7 @@
                 <div id="shieldBarBg"><div id="shieldBar"></div></div>
             </div>
 
-            <img id="arenaPlayer" src="images/Julia.png" alt="Player">
+            <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
             <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
             
             <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
@@ -682,8 +681,8 @@
         
         // --- ЗАГРУЗКА РЕСУРСОВ ---
         loadImage('block', 'images/textures/block.png'); 
-        loadImage('player', 'images/Julia.png');
-        loadImage('playerHappy', 'images/model/Julia/Julia%20-%20Happy.png'); 
+        loadImage('player', 'images/model/Julia/Julia.png');
+        loadImage('playerHappy', 'images/model/Julia/Julia_Happy.png'); 
         loadImage('crown', 'images/Crown.png'); 
         loadImage('rock', 'images/textures/winterspringfrostsaberrock.png');
 
@@ -858,7 +857,7 @@
             shieldOnCooldown = true;
             
             const playerImg = document.getElementById('arenaPlayer');
-            playerImg.src = 'images/Julia - Shield.png';
+            playerImg.src = 'images/model/Julia/Julia_Shield.png';
             
             const btn = document.getElementById('shieldBtn');
             const barBg = document.getElementById('shieldBarBg');
@@ -872,7 +871,7 @@
             
             setTimeout(() => {
                 isShieldActive = false;
-                if (playerHp > 0) playerImg.src = 'images/Julia.png';
+                if (playerHp > 0) playerImg.src = 'images/model/Julia/Julia.png';
                 barBg.style.display = 'none'; btn.innerText = "⏳";
                 
                 setTimeout(() => {
@@ -947,7 +946,8 @@
             document.getElementById('pauseBtn').innerText = "⏸️";
             
             let pImg = document.getElementById('arenaPlayer');
-            pImg.src = 'images/Julia.png'; pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
+            pImg.src = 'images/model/Julia/Julia.png';
+            pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
             pImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))';
             
             let btn = document.getElementById('shieldBtn'); btn.disabled = false; btn.innerText = "🛡️";
@@ -975,10 +975,10 @@
             canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
 
             const playerImg = document.getElementById('arenaPlayer');
-            playerImg.src = 'images/model/Julia/Julia%20-%20Hit.png';
+            playerImg.src = 'images/model/Julia/Julia_Hit.png';
             setTimeout(() => {
                 if (playerHp > 0 && !isShieldActive) {
-                    playerImg.src = 'images/Julia.png'; 
+                    playerImg.src = 'images/model/Julia/Julia.png'; 
                 }
             }, 500);
 

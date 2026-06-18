@@ -2,58 +2,75 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА НА МОБИЛЬНЫХ -->
+    <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Логические переменные для гарантии пропорций */
+            --lvmin: min(100vw, 100vh);
+            --lvmax: max(100vw, 100vh);
+        }
+
         body { 
             font-family: 'Montserrat', sans-serif; 
-            background-color: #1a1a1a; 
+            background-color: #111; 
             margin: 0; 
             min-height: 100vh;
             color: white; 
             overflow: hidden; 
             
-            /* Блокируем жесты браузера (свайп для обновления, двойной тап для зума, выделение текста) */
             touch-action: none; 
             user-select: none; 
             -webkit-user-select: none;
             overscroll-behavior: none;
         }
 
-        /* --- ЧИСТЫЙ АДАПТИВНЫЙ ЭКРАН (БЕЗ РАМОК IPHONE) --- */
+        /* --- ГЛАВНЫЙ КОНТЕЙНЕР (УПРАВЛЯЕТ ПОВОРОТОМ) --- */
+        #game-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: var(--lvmax);
+            height: var(--lvmin);
+            background-color: #2c3e50; /* Сливается с фоном игры для устранения резких отступов */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ЕСЛИ ТЕЛЕФОН ДЕРЖАТ ВЕРТИКАЛЬНО - ПОВОРАЧИВАЕМ ВСЁ НА 90 ГРАДУСОВ */
+        @media screen and (orientation: portrait) {
+            #game-container {
+                width: var(--lvmax);
+                height: var(--lvmin);
+                transform: translate(-50%, -50%) rotate(90deg);
+            }
+        }
+
+        /* --- АДАПТИВНЫЙ ИГРОВОЙ ЭКРАН --- */
         #mobile-wrapper {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* Поддерживаем точные пропорции 852x393, максимизируя под размер экрана */
-            width: 100vw;
-            height: calc(100vw * (393 / 852));
-            max-height: 100vh;
-            max-width: calc(100vh * (852 / 393));
+            width: 100%;
+            height: 100%;
+            /* Идеально держит пропорции 852x393 */
+            max-width: calc(100% * (852 / 393)); 
+            max-height: calc(100% * (393 / 852));
+            aspect-ratio: 852 / 393;
             background-color: #2c3e50;
-            border: 4px solid #111;
-            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
-
-        /* ПРИНУДИТЕЛЬНЫЙ ПОВОРОТ В ПОРТРЕТНОМ РЕЖИМЕ НА МОБИЛЬНЫХ */
-        @media screen and (orientation: portrait) {
-            #mobile-wrapper {
-                transform: translate(-50%, -50%) rotate(90deg);
-                width: 100vh;
-                height: calc(100vh * (393 / 852));
-                max-width: 100vh;
-                max-height: 100vw;
-            }
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
         /* --- DEBUG ПАНЕЛЬ --- */
         #debugMenu {
-            position: fixed; top: 0; left: 0; width: 100%; height: auto; min-height: 50px;
+            position: absolute; top: 0; left: 0; width: 100%; height: auto; min-height: 50px;
             background: rgba(0, 0, 0, 0.85); border-bottom: 3px solid #f1c40f;
             display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;
             z-index: 9999; backdrop-filter: blur(5px);
@@ -67,31 +84,9 @@
         }
         .debug-btn:hover { background: #f1c40f; color: #1a252f; border-color: #f1c40f; }
 
-        /* --- КНОПКА СВЕРНУТЬ (ПОЛНЫЙ ЭКРАН) --- */
-        #exitFullscreenBtn {
-            display: none; 
-            position: fixed; 
-            top: 15px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 10005; 
-            background: rgba(0, 0, 0, 0.7); 
-            border: 2px solid #f1c40f; 
-            color: #f1c40f; 
-            border-radius: 10px; 
-            padding: 8px 20px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            transition: 0.2s;
-            backdrop-filter: blur(5px);
-        }
-        #exitFullscreenBtn:hover { background: #f1c40f; color: #111; }
-
         /* --- АУДИО КОНТРОЛЛЕР --- */
         #audioControls {
-            position: fixed; top: 60px; right: 20px; background: rgba(0, 0, 0, 0.7);
+            position: absolute; top: 60px; right: 20px; background: rgba(0, 0, 0, 0.7);
             padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
             gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
         }
@@ -128,7 +123,7 @@
             transform: translateY(6px); box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
         }
 
-        /* --- СТАРТОВЫЙ ЭКРАН (ОБНОВЛЕННЫЙ) --- */
+        /* --- СТАРТОВЫЙ ЭКРАН --- */
         #startScreen {
             display: none; 
             background: linear-gradient(135deg, #1a252f, #2c3e50);
@@ -182,7 +177,6 @@
         }
         .d-btn:active { transform: scale(0.9); border-color: #f1c40f; }
         
-        /* Иконки стрелок и их повороты */
         .arrow-icon { width: 100%; height: 100%; object-fit: cover; pointer-events: none; border-radius: 13px; }
         .arrow-up { transform: rotate(0deg); }
         .arrow-right { transform: rotate(90deg); }
@@ -324,7 +318,6 @@
             position: absolute; bottom: 20px; left: 20px; 
             display: flex; flex-direction: column; align-items: center; z-index: 205;
         }
-        /* Обновленная кнопка щита */
         #shieldBtn {
             width: 56px; height: 56px; border-radius: 12px;
             background: url('images/Divine_Shield.jpg') center/cover no-repeat;
@@ -381,8 +374,6 @@
     </style>
 </head>
 <body>
-    
-    <button id="exitFullscreenBtn">Свернуть</button>
 
     <audio id="bgMusic" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
@@ -394,143 +385,152 @@
         <source src="images/type.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="audioControls">
-        <button id="muteBtn">🔊</button>
-        <button id="volDownBtn" class="vol-btn">-</button>
-        <span id="volDisplay">10%</span>
-        <button id="volUpBtn" class="vol-btn">+</button>
-    </div>
-
-    <div id="debugMenu">
-        <span class="debug-label">Debug:</span>
-        <button class="debug-btn" onclick="location.reload()">Сброс</button>
-        <button class="debug-btn" onclick="debugGoTo('start')">Старт</button>
-        <button class="debug-btn" onclick="debugGoTo('field')">Поле</button>
-        <button class="debug-btn" onclick="debugRuneGame()">Игра 1</button>
-        <button class="debug-btn" onclick="debugPassRuneGame()">Пройти Игра 1</button>
-        <button class="debug-btn" onclick="debugTarotGame()">Игра 2</button>
-        <button class="debug-btn" onclick="debugPassField()">Пройти поле</button>
-        <button class="debug-btn" onclick="debugGoTo('boss')">Босс</button>
-        <button class="debug-btn" onclick="debugPassBoss()">Пройти босса</button>
-        <button class="debug-btn" onclick="debugLoseBoss()">Проиграл боссу</button>
-    </div>
-
-    <!-- МОБИЛЬНАЯ РАМКА -->
-    <div id="mobile-wrapper">
-
-        <!-- ЭКРАН ПОБЕДЫ -->
-        <div id="victoryOverlay" class="screen-overlay">
-            <div class="victory-title">ПОБЕДА!</div>
-            <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
-            <button class="action-btn" onclick="location.reload()">Вернуться в начало</button>
-        </div>
-
-        <!-- ТИТУЛЬНЫЙ ЭКРАН -->
-        <div id="titleScreen" class="screen-overlay">
-            <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
-            <div class="main-title">CALLIOPE GAME 2</div>
-            <button class="start-btn" onclick="goToIntro()">ИГРАТЬ</button>
-        </div>
-
-        <!-- СТАРТОВЫЙ ЭКРАН -->
-        <div id="startScreen" class="screen-overlay">
-            <div class="start-items-row">
-                <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
-                <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
-                <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
-                <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
-            </div>
-            <div class="start-text">
-                Собери все предметы уровня
-            </div>
-            <div class="start-btn-wrap">
-                <button id="playButton" class="start-btn" style="font-size: 24px; padding: 10px 40px;">ИГРАТЬ</button>
-            </div>
-        </div>
-
-        <!-- ИГРОВОЕ ПОЛЕ -->
-        <div id="gameUI" class="screen-overlay">
-            <div id="tracker">
-                <div>Собрано: <span id="score">0 / 4</span></div>
-                <div style="color: #f1c40f; font-size: 14px; margin-top: 5px;">Пасхалка: <span id="easterScore">0 / 1</span></div>
-            </div>
+    <!-- СУПЕР-КОНТЕЙНЕР (ОБЕСПЕЧИВАЕТ ПОВОРОТ НА МОБИЛЬНЫХ) -->
+    <div id="game-container">
+        
+        <!-- Панель Debug (Внутри контейнера, чтобы поворачивалась вместе с игрой) -->
+        <div id="debugMenu">
+            <span class="debug-label">Debug:</span>
+            <button class="debug-btn" onclick="location.reload()">Сброс</button>
+            <button class="debug-btn" onclick="debugGoTo('start')">Старт</button>
+            <button class="debug-btn" onclick="debugGoTo('field')">Поле</button>
+            <button class="debug-btn" onclick="debugRuneGame()">Игра 1</button>
+            <button class="debug-btn" onclick="debugPassRuneGame()">Пройти Игра 1</button>
+            <button class="debug-btn" onclick="debugTarotGame()">Игра 2</button>
+            <button class="debug-btn" onclick="debugPassField()">Пройти поле</button>
+            <button class="debug-btn" onclick="debugGoTo('boss')">Босс</button>
+            <button class="debug-btn" onclick="debugPassBoss()">Пройти босса</button>
+            <button class="debug-btn" onclick="debugLoseBoss()">Проиграл боссу</button>
             
-            <canvas id="gameCanvas" width="852" height="393"></canvas>
-            
-            <div id="controls">
-                <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
-                <div class="d-btn btn-left" id="btnLeft"><img src="images/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
-                <div class="d-btn btn-right" id="btnRight"><img src="images/Arrow.jpg" class="arrow-icon arrow-right" alt="Right"></div>
-                <div class="d-btn btn-down" id="btnDown"><img src="images/Arrow.jpg" class="arrow-icon arrow-down" alt="Down"></div>
-            </div>
+            <!-- Интегрированная кнопка свернуть -->
+            <button id="exitFullscreenBtn" class="debug-btn" style="display: none; color: #f1c40f; border-color: #f1c40f;">Свернуть</button>
         </div>
 
-        <!-- РУННАЯ МИНИ-ИГРА -->
-        <div id="runeGameOverlay" class="screen-overlay">
-            <div id="runeDisplayArea"></div>
-            <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
+        <!-- Аудио Контроллер -->
+        <div id="audioControls">
+            <button id="muteBtn">🔊</button>
+            <button id="volDownBtn" class="vol-btn">-</button>
+            <span id="volDisplay">10%</span>
+            <button id="volUpBtn" class="vol-btn">+</button>
         </div>
 
-        <!-- ТАРО МИНИ-ИГРА -->
-        <div id="tarotGameOverlay" class="screen-overlay">
-            <div style="flex: 1;"></div>
-            <div class="tarot-container">
-                <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard0" alt="Таро 1">
-                <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard1" alt="Таро 2">
-                <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard2" alt="Таро 3">
-            </div>
-            <div style="flex: 1; display: flex; align-items: flex-end;">
-                <p class="tarot-text" id="tarotText" style="display: none;">Нажми, чтобы продолжить...</p>
-            </div>
-        </div>
+        <!-- ИГРОВОЙ ЭКРАН -->
+        <div id="mobile-wrapper">
 
-        <!-- НОВАЯ СИСТЕМА ДИАЛОГОВ -->
-        <div id="dialogueOverlay" class="screen-overlay">
-            <div class="dialogue-container" onclick="nextDialogue(event)">
-                <div id="dialogueText"></div>
-                <div class="dialogue-hint">Нажми, чтобы продолжить ▼</div>
-                <button id="dialogueActionBtn" class="action-btn"></button>
+            <!-- ЭКРАН ПОБЕДЫ -->
+            <div id="victoryOverlay" class="screen-overlay">
+                <div class="victory-title">ПОБЕДА!</div>
+                <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
+                <button class="action-btn" onclick="location.reload()">Вернуться в начало</button>
             </div>
-        </div>
 
-        <!-- АРЕНА ДЛЯ БОССА -->
-        <div id="bossOverlay" class="screen-overlay">
-            <div id="bossSkullsContainer"></div>
-            <div class="arena-ground"></div>
-            
-            <div id="playerHpContainer">
-                <button id="pauseBtn" onclick="togglePause()">⏸️</button>
-                <div id="heartsBox">
-                    <span class="heart">❤️</span>
-                    <span class="heart">❤️</span>
-                    <span class="heart">❤️</span>
+            <!-- ТИТУЛЬНЫЙ ЭКРАН -->
+            <div id="titleScreen" class="screen-overlay">
+                <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
+                <div class="main-title">CALLIOPE GAME 2</div>
+                <button class="start-btn" onclick="goToIntro()">ИГРАТЬ</button>
+            </div>
+
+            <!-- СТАРТОВЫЙ ЭКРАН -->
+            <div id="startScreen" class="screen-overlay">
+                <div class="start-items-row">
+                    <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
+                    <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
+                    <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
+                    <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
+                </div>
+                <div class="start-text">
+                    Собери все предметы уровня
+                </div>
+                <div class="start-btn-wrap">
+                    <button id="playButton" class="start-btn" style="font-size: 24px; padding: 10px 40px;">ИГРАТЬ</button>
                 </div>
             </div>
 
-            <!-- Текст "ПАУЗА" -->
-            <div id="pauseIndicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 10px #000; z-index: 5000; letter-spacing: 5px;">ПАУЗА</div>
-
-            <div id="shieldContainer">
-                <button id="shieldBtn" onclick="activateShield()"></button>
-                <div id="shieldBarBg"><div id="shieldBar"></div></div>
+            <!-- ИГРОВОЕ ПОЛЕ -->
+            <div id="gameUI" class="screen-overlay">
+                <div id="tracker">
+                    <div>Собрано: <span id="score">0 / 4</span></div>
+                    <div style="color: #f1c40f; font-size: 14px; margin-top: 5px;">Пасхалка: <span id="easterScore">0 / 1</span></div>
+                </div>
+                
+                <canvas id="gameCanvas" width="852" height="393"></canvas>
+                
+                <div id="controls">
+                    <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
+                    <div class="d-btn btn-left" id="btnLeft"><img src="images/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
+                    <div class="d-btn btn-right" id="btnRight"><img src="images/Arrow.jpg" class="arrow-icon arrow-right" alt="Right"></div>
+                    <div class="d-btn btn-down" id="btnDown"><img src="images/Arrow.jpg" class="arrow-icon arrow-down" alt="Down"></div>
+                </div>
             </div>
 
-            <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
-            <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
-            
-            <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
-        </div>
+            <!-- РУННАЯ МИНИ-ИГРА -->
+            <div id="runeGameOverlay" class="screen-overlay">
+                <div id="runeDisplayArea"></div>
+                <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
+            </div>
 
-        <!-- ОКНА ДОБИВАНИЯ И ВИДЕО -->
-        <div id="finishHimOverlay" class="screen-overlay">
-            <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
-        </div>
+            <!-- ТАРО МИНИ-ИГРА -->
+            <div id="tarotGameOverlay" class="screen-overlay">
+                <div style="flex: 1;"></div>
+                <div class="tarot-container">
+                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard0" alt="Таро 1">
+                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard1" alt="Таро 2">
+                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard2" alt="Таро 3">
+                </div>
+                <div style="flex: 1; display: flex; align-items: flex-end;">
+                    <p class="tarot-text" id="tarotText" style="display: none;">Нажми, чтобы продолжить...</p>
+                </div>
+            </div>
 
-        <div id="videoOverlay" class="screen-overlay">
-            <video id="ultimateVideo" src="images/ultimate.mp4" playsinline></video>
-        </div>
+            <!-- НОВАЯ СИСТЕМА ДИАЛОГОВ -->
+            <div id="dialogueOverlay" class="screen-overlay">
+                <div class="dialogue-container" onclick="nextDialogue(event)">
+                    <div id="dialogueText"></div>
+                    <div class="dialogue-hint">Нажми, чтобы продолжить ▼</div>
+                    <button id="dialogueActionBtn" class="action-btn"></button>
+                </div>
+            </div>
 
-    </div>
+            <!-- АРЕНА ДЛЯ БОССА -->
+            <div id="bossOverlay" class="screen-overlay">
+                <div id="bossSkullsContainer"></div>
+                <div class="arena-ground"></div>
+                
+                <div id="playerHpContainer">
+                    <button id="pauseBtn" onclick="togglePause()">⏸️</button>
+                    <div id="heartsBox">
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                    </div>
+                </div>
+
+                <!-- Текст "ПАУЗА" -->
+                <div id="pauseIndicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 10px #000; z-index: 5000; letter-spacing: 5px;">ПАУЗА</div>
+
+                <div id="shieldContainer">
+                    <button id="shieldBtn" onclick="activateShield()"></button>
+                    <div id="shieldBarBg"><div id="shieldBar"></div></div>
+                </div>
+
+                <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
+                <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
+                
+                <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
+            </div>
+
+            <!-- ОКНА ДОБИВАНИЯ И ВИДЕО -->
+            <div id="finishHimOverlay" class="screen-overlay">
+                <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
+            </div>
+
+            <div id="videoOverlay" class="screen-overlay">
+                <video id="ultimateVideo" src="images/ultimate.mp4" playsinline></video>
+            </div>
+
+        </div>
+    </div> <!-- КОНЕЦ СУПЕР-КОНТЕЙНЕРА -->
 
     <script>
         // --- ФОНОВАЯ ЗАГРУЗКА ВСЕХ ФАЙЛОВ ДЛЯ ПЛАВНОСТИ ---
@@ -622,7 +622,7 @@
 
         function exitFullscreen() {
             if (document.exitFullscreen) {
-                document.exitFullscreen();
+                document.exitFullscreen().catch(e => {});
             } else if (document.mozCancelFullScreen) {
                 document.mozCancelFullScreen();
             } else if (document.webkitExitFullscreen) {
@@ -632,29 +632,17 @@
             }
         }
 
-        // Ручное управление панелями (гарантирует скрытие/показ даже если браузер не поддерживает native API)
-        function enterGameMode() {
-            enterFullscreen();
-            document.getElementById('debugMenu').style.display = 'none';
-            document.getElementById('exitFullscreenBtn').style.display = 'block';
-        }
-
-        function exitGameMode() {
-            exitFullscreen();
-            document.getElementById('debugMenu').style.display = 'flex';
-            document.getElementById('exitFullscreenBtn').style.display = 'none';
-        }
-
-        document.getElementById('exitFullscreenBtn').addEventListener('click', exitGameMode);
-
-        // Отслеживаем системные изменения (например, кнопка Esc)
+        // Обновленная логика показа кнопок полного экрана
         function handleFullscreenChange() {
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            if (!isFullscreen) {
+            if (isFullscreen) {
+                document.getElementById('exitFullscreenBtn').style.display = 'block';
+            } else {
                 document.getElementById('exitFullscreenBtn').style.display = 'none';
-                document.getElementById('debugMenu').style.display = 'flex';
             }
         }
+
+        document.getElementById('exitFullscreenBtn').addEventListener('click', exitFullscreen);
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -663,7 +651,7 @@
 
         // --- НАВИГАЦИЯ ---
         function goToIntro() {
-            enterGameMode();
+            enterFullscreen();
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'flex';
@@ -930,7 +918,7 @@
         }
 
         document.getElementById('playButton').addEventListener('click', () => {
-            enterGameMode(); // Переход в полный экран и скрытие Debug меню
+            enterFullscreen();
             document.getElementById('startScreen').style.display = 'none'; document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'block';
             gameStarted = true; if(!isMuted) bgMusic.play().catch(e=>{});
@@ -1033,18 +1021,19 @@
             const wrapper = document.getElementById('mobile-wrapper');
             const rect = wrapper.getBoundingClientRect();
             const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+            
             let x, y;
             if (isPortrait) {
-                // Если экран повернут через CSS, пересчитываем координаты клика
-                const scaleX = 852 / rect.height;
-                const scaleY = 393 / rect.width;
-                x = (clientY - rect.top) * scaleX;
-                y = (rect.right - clientX) * scaleY;
+                // В портретном режиме контейнер повернут на 90 градусов.
+                // rect.width - это визуальная ширина на экране (которая логически равна высоте 393)
+                // rect.height - это визуальная высота на экране (которая логически равна ширине 852)
+                const scale = rect.height / 852;
+                x = (clientY - rect.top) / scale;
+                y = (rect.right - clientX) / scale; 
             } else {
-                const scaleX = 852 / rect.width;
-                const scaleY = 393 / rect.height;
-                x = (clientX - rect.left) * scaleX;
-                y = (clientY - rect.top) * scaleY;
+                const scale = rect.width / 852;
+                x = (clientX - rect.left) / scale;
+                y = (clientY - rect.top) / scale;
             }
             return { x, y };
         }
@@ -1067,20 +1056,21 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
-        // МАРШРУТ ПАСХАЛКИ ОТ КОРОНЫ [0, 4] В ИЗОМЕТРИИ
-        // 3 шага "Вверх" (Y уменьшается: 3, 2, 1)
-        // 3 шага "Влево" (X уменьшается: -1, -2, -3)
-        // 3 шага "Вниз" (Y увеличивается: 2, 3, 4) -> Финальный куб на X: -3, Y: 4
+        // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
+        // 2 шага "Вверх" : [0, 3], [0, 2]
+        // 2 шага "Влево" : [-1, 2], [-2, 2]
+        // 2 шага "Вниз" : [-2, 3], [-2, 4] -> Финальный куб на X: -2, Y: 4
         const secretPath = [
-            {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
-            {x: -1, y: 1}, {x: -2, y: 1}, {x: -3, y: 1},
-            {x: -3, y: 2}, {x: -3, y: 3}, {x: -3, y: 4}
+            {x: 0, y: 3}, {x: 0, y: 2},
+            {x: -1, y: 2}, {x: -2, y: 2},
+            {x: -2, y: 3}, {x: -2, y: 4}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            if (easterEggFound && y === 4 && (x === -2 || x === -1)) return true;
+            // Разрешаем ходить по шорткату из одного блока [-1, 4], если пасхалка уже найдена
+            if (easterEggFound && y === 4 && x === -1) return true;
             return false; 
         }
 
@@ -1174,7 +1164,7 @@
                 }, { bgImage: 'images/dialogs/Father.png' });
             }
 
-            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
+            if (easterEggRevealed && !easterEggFound && player.x === -2 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1217,7 +1207,8 @@
                     let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
-                    let isSecretCube = (easterEggRevealed && x === -3 && y === 4) || (easterEggFound && y === 4 && (x === -2 || x === -1));
+                    // Куб пасхалки или куб шортката (он 1)
+                    let isSecretCube = (easterEggRevealed && x === -2 && y === 4) || (easterEggFound && y === 4 && x === -1);
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
@@ -1381,9 +1372,6 @@
             let projectile = document.createElement('div');
             projectile.className = 'boss-projectile';
             
-            const bossImg = document.getElementById('arenaBoss');
-            const playerImg = document.getElementById('arenaPlayer');
-            
             // Задаем строгие координаты старта и конца в пространстве 852x393
             const startX = 722; 
             const startY = 258; 
@@ -1409,6 +1397,7 @@
                     document.getElementById('bossOverlay').appendChild(blockText);
                     setTimeout(() => blockText.remove(), 600);
                 } else {
+                    const playerImg = document.getElementById('arenaPlayer');
                     playerHp -= 1; // Урон Юле!
                     updateHearts();
                     playerImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 20px red)';
@@ -1494,7 +1483,7 @@
                 projectile.remove();
                 if (bossHp <= 0) return;
                 
-                // Проверяем дистанцию до центра босса
+                // Проверяем дистанцию до центра босса (722, 258)
                 const dist = Math.hypot(endX - 722, endY - 258);
                 const isHit = dist < 120; // 120px радиус попадания
 
@@ -1528,7 +1517,7 @@
             }, 2000); 
         }
 
-        // --- УПРАВЛЕНИЕ НА КАРТЕ С УЧЕТОМ ПОВОРОТА ЭКРАНА ---
+        // --- УПРАВЛЕНИЕ НА КАРТЕ ---
         canvas.addEventListener('pointerdown', (e) => {
             if (!gameStarted || isPaused) return;
             const localCoords = getLocalCoords(e.clientX, e.clientY);

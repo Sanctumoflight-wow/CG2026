@@ -9,10 +9,6 @@
     <style>
         body { 
             font-family: 'Montserrat', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center;
-            align-items: center; 
             background-color: #1a1a1a; 
             margin: 0; 
             min-height: 100vh;
@@ -28,17 +24,31 @@
 
         /* --- ЧИСТЫЙ АДАПТИВНЫЙ ЭКРАН (БЕЗ РАМОК IPHONE) --- */
         #mobile-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             /* Поддерживаем точные пропорции 852x393, максимизируя под размер экрана */
             width: 100vw;
             height: calc(100vw * (393 / 852));
             max-height: 100vh;
             max-width: calc(100vh * (852 / 393));
             background-color: #2c3e50;
-            border: 4px solid #111; /* Тонкая строгая рамка вместо толстого телефона */
+            border: 4px solid #111;
             border-radius: 12px;
-            position: relative;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        /* ПРИНУДИТЕЛЬНЫЙ ПОВОРОТ В ПОРТРЕТНОМ РЕЖИМЕ НА МОБИЛЬНЫХ */
+        @media screen and (orientation: portrait) {
+            #mobile-wrapper {
+                transform: translate(-50%, -50%) rotate(90deg);
+                width: 100vh;
+                height: calc(100vh * (393 / 852));
+                max-width: 100vh;
+                max-height: 100vw;
+            }
         }
 
         /* --- DEBUG ПАНЕЛЬ --- */
@@ -622,20 +632,27 @@
             }
         }
 
-        document.getElementById('exitFullscreenBtn').addEventListener('click', exitFullscreen);
+        // Ручное управление панелями (гарантирует скрытие/показ даже если браузер не поддерживает native API)
+        function enterGameMode() {
+            enterFullscreen();
+            document.getElementById('debugMenu').style.display = 'none';
+            document.getElementById('exitFullscreenBtn').style.display = 'block';
+        }
 
-        // Отслеживаем изменения полноэкранного режима
+        function exitGameMode() {
+            exitFullscreen();
+            document.getElementById('debugMenu').style.display = 'flex';
+            document.getElementById('exitFullscreenBtn').style.display = 'none';
+        }
+
+        document.getElementById('exitFullscreenBtn').addEventListener('click', exitGameMode);
+
+        // Отслеживаем системные изменения (например, кнопка Esc)
         function handleFullscreenChange() {
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            const exitBtn = document.getElementById('exitFullscreenBtn');
-            const debugMenu = document.getElementById('debugMenu');
-            
-            if (isFullscreen) {
-                exitBtn.style.display = 'block'; // Показываем кнопку свернуть
-                debugMenu.style.display = 'none'; // Скрываем Debug панель
-            } else {
-                exitBtn.style.display = 'none'; // Убираем кнопку свернуть
-                debugMenu.style.display = 'flex'; // Возвращаем Debug панель
+            if (!isFullscreen) {
+                document.getElementById('exitFullscreenBtn').style.display = 'none';
+                document.getElementById('debugMenu').style.display = 'flex';
             }
         }
 
@@ -646,7 +663,7 @@
 
         // --- НАВИГАЦИЯ ---
         function goToIntro() {
-            enterFullscreen();
+            enterGameMode();
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'flex';
@@ -913,7 +930,7 @@
         }
 
         document.getElementById('playButton').addEventListener('click', () => {
-            enterFullscreen(); // Переход в полный экран при старте
+            enterGameMode(); // Переход в полный экран и скрытие Debug меню
             document.getElementById('startScreen').style.display = 'none'; document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'block';
             gameStarted = true; if(!isMuted) bgMusic.play().catch(e=>{});
@@ -1011,6 +1028,27 @@
             }
         }
 
+        // --- УТИЛИТА КООРДИНАТ ДЛЯ ПОРТРЕТНОГО РЕЖИМА ---
+        function getLocalCoords(clientX, clientY) {
+            const wrapper = document.getElementById('mobile-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+            let x, y;
+            if (isPortrait) {
+                // Если экран повернут через CSS, пересчитываем координаты клика
+                const scaleX = 852 / rect.height;
+                const scaleY = 393 / rect.width;
+                x = (clientY - rect.top) * scaleX;
+                y = (rect.right - clientX) * scaleY;
+            } else {
+                const scaleX = 852 / rect.width;
+                const scaleY = 393 / rect.height;
+                x = (clientX - rect.left) * scaleX;
+                y = (clientY - rect.top) * scaleY;
+            }
+            return { x, y };
+        }
+
         // --- ИГРОВОЕ ПОЛЕ ---
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
@@ -1029,6 +1067,10 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
+        // МАРШРУТ ПАСХАЛКИ ОТ КОРОНЫ [0, 4] В ИЗОМЕТРИИ
+        // 3 шага "Вверх" (Y уменьшается: 3, 2, 1)
+        // 3 шага "Влево" (X уменьшается: -1, -2, -3)
+        // 3 шага "Вниз" (Y увеличивается: 2, 3, 4) -> Финальный куб на X: -3, Y: 4
         const secretPath = [
             {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
             {x: -1, y: 1}, {x: -2, y: 1}, {x: -3, y: 1},
@@ -1341,16 +1383,12 @@
             
             const bossImg = document.getElementById('arenaBoss');
             const playerImg = document.getElementById('arenaPlayer');
-            const wrapper = document.getElementById('mobile-wrapper');
             
-            const bRect = bossImg.getBoundingClientRect();
-            const pRect = playerImg.getBoundingClientRect();
-            const wRect = wrapper.getBoundingClientRect();
-            
-            const startX = bRect.left - wRect.left + bRect.width * 0.1; 
-            const startY = bRect.top - wRect.top + bRect.height * 0.4;
-            const endX = pRect.left - wRect.left + pRect.width / 2 - 15; 
-            const endY = pRect.top - wRect.top + pRect.height / 2 - 15;
+            // Задаем строгие координаты старта и конца в пространстве 852x393
+            const startX = 722; 
+            const startY = 258; 
+            const endX = 118; 
+            const endY = 193; 
 
             projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';
             document.getElementById('bossOverlay').appendChild(projectile);
@@ -1440,14 +1478,12 @@
             let projectile = document.createElement('img');
             projectile.src = 'images/alch.png'; projectile.className = 'player-projectile';
             
-            const wrapper = document.getElementById('mobile-wrapper');
-            const pRect = playerImg.getBoundingClientRect();
-            const wRect = wrapper.getBoundingClientRect();
+            const localClick = getLocalCoords(e.clientX, e.clientY);
+            const endX = localClick.x - 12; 
+            const endY = localClick.y - 12;
             
-            const startX = pRect.right - wRect.left - 20; 
-            const startY = pRect.top - wRect.top + (pRect.height / 3);
-            const endX = e.clientX - wRect.left - 12; 
-            const endY = e.clientY - wRect.top - 12;
+            const startX = 118; 
+            const startY = 193; 
 
             projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';
             document.getElementById('bossOverlay').appendChild(projectile);
@@ -1455,27 +1491,18 @@
             projectile.style.left = endX + 'px'; projectile.style.top = endY + 'px';
 
             setTimeout(() => {
-                const projRect = projectile.getBoundingClientRect();
-                const bossChar = document.getElementById('arenaBoss');
-                const bossRect = bossChar.getBoundingClientRect();
-                
-                const currentWRect = document.getElementById('mobile-wrapper').getBoundingClientRect();
-                
                 projectile.remove();
                 if (bossHp <= 0) return;
                 
-                const margin = 20;
-                const isHit = !(
-                    projRect.right < bossRect.left + margin ||
-                    projRect.left > bossRect.right - margin ||
-                    projRect.bottom < bossRect.top + margin ||
-                    projRect.top > bossRect.bottom - margin
-                );
+                // Проверяем дистанцию до центра босса
+                const dist = Math.hypot(endX - 722, endY - 258);
+                const isHit = dist < 120; // 120px радиус попадания
 
                 if (isHit) {
                     bossHp -= 1; 
                     updateBossSkulls();
                     
+                    const bossChar = document.getElementById('arenaBoss');
                     bossChar.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
                     bossChar.style.filter = 'brightness(2) drop-shadow(0 0 20px #fff)'; 
                     setTimeout(() => { bossChar.style.transform = 'scale(1) rotate(0deg)'; bossChar.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.8))'; }, 100);
@@ -1489,8 +1516,8 @@
                     let missText = document.createElement('div');
                     missText.innerText = "УВОРОТ!";
                     missText.style.position = 'absolute';
-                    missText.style.left = (projRect.left - currentWRect.left) + 'px';
-                    missText.style.top = (projRect.top - currentWRect.top - 30) + 'px';
+                    missText.style.left = endX + 'px';
+                    missText.style.top = (endY - 30) + 'px';
                     missText.style.color = '#bdc3c7';
                     missText.style.fontWeight = '900';
                     missText.style.fontSize = '24px';
@@ -1501,17 +1528,18 @@
             }, 2000); 
         }
 
-        // --- УПРАВЛЕНИЕ С ОГРАНИЧЕНИЕМ ШАГА В 1 ПЛИТКУ ---
+        // --- УПРАВЛЕНИЕ НА КАРТЕ С УЧЕТОМ ПОВОРОТА ЭКРАНА ---
         canvas.addEventListener('pointerdown', (e) => {
             if (!gameStarted || isPaused) return;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height;
-            const mouseX = (e.clientX - rect.left) * scaleX; const mouseY = (e.clientY - rect.top) * scaleY;
+            const localCoords = getLocalCoords(e.clientX, e.clientY);
             const cameraPos = toScreen(player.x, player.y);
-            let cx = (mouseX - canvas.width / 2) / zoom; let cy = (mouseY - canvas.height / 2) / zoom;
+            
+            let cx = (localCoords.x - canvas.width / 2) / zoom; 
+            let cy = (localCoords.y - canvas.height / 2) / zoom;
             const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
             const tw = tileW / 2; const th = tileH / 2;
-            const gridX = Math.round((sx / tw + sy / th) / 2); const gridY = Math.round((sy / th - sx / tw) / 2);
+            const gridX = Math.round((sx / tw + sy / th) / 2); 
+            const gridY = Math.round((sy / th - sx / tw) / 2);
             
             const moveDistance = Math.abs(gridX - player.x) + Math.abs(gridY - player.y);
             if (isValidTile(gridX, gridY) && moveDistance === 1) {

@@ -325,10 +325,17 @@
             color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000;
             cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
-            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 24px;
+            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px;
         }
         #shieldBtn:active { transform: scale(0.95); }
-        #shieldBtn:disabled { filter: grayscale(100%) brightness(0.5); cursor: not-allowed; box-shadow: none; }
+        #shieldBtn:disabled { filter: grayscale(100%) brightness(0.6); cursor: not-allowed; box-shadow: none; }
+        
+        #shieldBtn.shield-active {
+            filter: grayscale(0%) brightness(1.2) !important;
+            border-color: #f1c40f !important;
+            box-shadow: 0 0 20px #f1c40f, 0 0 40px #f39c12 !important;
+            animation: shieldPulse 0.5s infinite alternate;
+        }
         
         #shieldBarBg {
             width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px; margin-top: 5px;
@@ -371,6 +378,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes pulseRed { 0% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } 50% { transform: scale(1.1); box-shadow: 0 0 50px #e74c3c; } 100% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } }
         @keyframes pulseRune { 0% { transform: scale(1); filter: drop-shadow(0 0 5px #fff); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 20px #f1c40f); } }
+        @keyframes shieldPulse { 0% { box-shadow: 0 0 10px #f1c40f; transform: scale(1); } 100% { box-shadow: 0 0 25px #f1c40f; transform: scale(1.05); } }
         h2 { display: none; }
     </style>
 </head>
@@ -1285,6 +1293,7 @@
             const bar = document.getElementById('shieldBar');
             
             btn.disabled = true;
+            btn.classList.add('shield-active');
             barBg.style.display = 'block';
             
             bar.style.transition = 'none'; bar.style.width = '100%';
@@ -1294,6 +1303,7 @@
                 isShieldActive = false;
                 if (playerHp > 0) playerImg.src = images['player'].src;
                 barBg.style.display = 'none'; 
+                btn.classList.remove('shield-active');
                 btn.innerText = "⏳"; 
                 
                 setTimeout(() => {
@@ -1373,6 +1383,7 @@
             let btn = document.getElementById('shieldBtn'); 
             btn.disabled = false; 
             btn.innerText = ""; 
+            btn.classList.remove('shield-active');
             document.getElementById('shieldBarBg').style.display = 'none';
 
             let bossChar = document.getElementById('arenaBoss');

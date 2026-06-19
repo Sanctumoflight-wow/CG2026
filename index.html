@@ -1032,19 +1032,19 @@
 
         // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
         // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
-        // 1 шаг "Влево" : [-1, 1]
-        // 1 шаг "Вниз" : [-1, 2] -> Финальный куб на X: -1, Y: 2
+        // 3 шага "Влево" : [-1, 1], [-2, 1], [-3, 1]
+        // 3 шага "Вниз" : [-3, 2], [-3, 3], [-3, 4] -> Финальный куб на X: -3, Y: 4
         const secretPath = [
             {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
-            {x: -1, y: 1}, 
-            {x: -1, y: 2}
+            {x: -1, y: 1}, {x: -2, y: 1}, {x: -3, y: 1},
+            {x: -3, y: 2}, {x: -3, y: 3}, {x: -3, y: 4}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Разрешаем ходить по шорткату из двух блоков [-1, 3] и [-1, 4], если пасхалка уже найдена
-            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
+            // Разрешаем ходить по шорткату из двух блоков [-2, 4] и [-1, 4], если пасхалка уже найдена
+            if (easterEggFound && y === 4 && (x === -2 || x === -1)) return true;
             return false; 
         }
 
@@ -1115,7 +1115,7 @@
             }
 
             // ПРОВЕРКА НА ПАСХАЛКУ
-            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
+            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1160,7 +1160,7 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
                     // Куб пасхалки или кубы шортката
-                    let isSecretCube = (easterEggRevealed && x === -1 && y === 2) || (easterEggFound && x === -1 && (y === 3 || y === 4));
+                    let isSecretCube = (easterEggRevealed && x === -3 && y === 4) || (easterEggFound && y === 4 && (x === -2 || x === -1));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {

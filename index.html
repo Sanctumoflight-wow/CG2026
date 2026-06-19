@@ -63,9 +63,8 @@
             transform-origin: center center;
         }
 
-        /* --- КНОПКА СВЕРНУТЬ (ПОЛНЫЙ ЭКРАН) --- */
-        #exitFullscreenBtn {
-            display: none; 
+        /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
+        #fullscreenToggleBtn {
             position: absolute; 
             top: 15px; 
             left: 50%; 
@@ -83,11 +82,11 @@
             transition: 0.2s;
             backdrop-filter: blur(5px);
         }
-        #exitFullscreenBtn:hover { background: #f1c40f; color: #111; }
+        #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
 
         /* --- АУДИО КОНТРОЛЛЕР --- */
         #audioControls {
-            position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.8);
+            position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7);
             padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
             gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
         }
@@ -325,11 +324,12 @@
             color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000;
             cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
-            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px;
+            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px; /* Огромные часики */
         }
         #shieldBtn:active { transform: scale(0.95); }
-        #shieldBtn:disabled { filter: grayscale(100%) brightness(0.6); cursor: not-allowed; box-shadow: none; }
+        #shieldBtn:disabled { filter: grayscale(100%) brightness(0.5); cursor: not-allowed; box-shadow: none; }
         
+        /* Свечение во время активности щита */
         #shieldBtn.shield-active {
             filter: grayscale(0%) brightness(1.2) !important;
             border-color: #f1c40f !important;
@@ -405,7 +405,7 @@
         <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
         <div id="mobile-wrapper">
             
-            <button id="exitFullscreenBtn">Свернуть</button>
+            <button id="fullscreenToggleBtn">На весь экран</button>
 
             <!-- Аудио Контроллер внутри экрана игры -->
             <div id="audioControls">
@@ -426,7 +426,7 @@
             <div id="titleScreen" class="screen-overlay">
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
                 <div class="main-title">CALLIOPE GAME 2</div>
-                <button class="start-btn" onclick="goToIntro()">ИГРАТЬ</button>
+                <button id="titlePlayBtn" class="start-btn" style="opacity: 0.5; pointer-events: none; padding: 10px 40px;">ЗАГРУЗКА ИГРЫ...</button>
             </div>
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
@@ -441,7 +441,7 @@
                     Собери все предметы уровня
                 </div>
                 <div class="start-btn-wrap">
-                    <button id="playButton" class="start-btn" style="font-size: 24px; padding: 10px 40px;">ЗАГРУЗКА...</button>
+                    <button id="startFieldBtn" class="start-btn" style="font-size: 24px; padding: 10px 40px;">ИГРАТЬ</button>
                 </div>
             </div>
 
@@ -466,6 +466,8 @@
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
+                <!-- Тихая кнопка отладки -->
+                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s;">Пройти игру (Debug)</button>
             </div>
 
             <!-- ТАРО МИНИ-ИГРА -->
@@ -534,9 +536,9 @@
         let gameStarted = false;
         let isPaused = false; 
 
-        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ (ПРЕДОТВРАЩАЕТ ЛАГИ) ---
+        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ (ИНДИКАТОР НА ТИТУЛЬНОМ ЭКРАНЕ) ---
         const images = {}; 
-        const preloadedImages = []; // Защита от удаления из памяти
+        const preloadedImages = []; 
 
         const allAssets = {
             'block': 'images/textures/block.png',
@@ -570,7 +572,7 @@
 
         const totalAssets = Object.keys(allAssets).length;
         let assetsLoadedCount = 0;
-        const playButton = document.getElementById('playButton');
+        const titlePlayBtn = document.getElementById('titlePlayBtn');
 
         for (const [key, src] of Object.entries(allAssets)) {
             const img = new Image();
@@ -580,16 +582,13 @@
 
             img.onload = img.onerror = () => {
                 assetsLoadedCount++;
-                let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
                 if (assetsLoadedCount < totalAssets) {
-                    playButton.innerText = `ЗАГРУЗКА (${percent}%)`;
-                    playButton.style.opacity = '0.5';
-                    playButton.style.pointerEvents = 'none';
+                    let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
+                    titlePlayBtn.innerText = `ЗАГРУЗКА ИГРЫ... (${percent}%)`;
                 } else {
-                    playButton.innerText = 'ИГРАТЬ';
-                    playButton.style.opacity = '1';
-                    playButton.style.pointerEvents = 'auto';
-                    if (gameStarted) requestAnimationFrame(gameLoop);
+                    titlePlayBtn.innerText = 'ИГРАТЬ';
+                    titlePlayBtn.style.opacity = '1';
+                    titlePlayBtn.style.pointerEvents = 'auto';
                 }
             };
         }
@@ -650,7 +649,6 @@
             volDisplay.innerText = Math.round(currentVolume * 100) + '%';
         }
 
-        // ИСПОЛЬЗУЕМ POINTERDOWN, ЧТОБЫ КЛИКИ ТОЧНО СРАБАТЫВАЛИ НА ТЕЛЕФОНЕ
         muteBtn.addEventListener('pointerdown', (e) => {
             e.preventDefault(); e.stopPropagation();
             isMuted = !isMuted;
@@ -700,20 +698,26 @@
             }
         }
 
+        const fsBtn = document.getElementById('fullscreenToggleBtn');
+        fsBtn.addEventListener('click', () => {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            if (isFullscreen) {
+                exitFullscreen();
+            } else {
+                enterFullscreen();
+            }
+        });
+
         function handleFullscreenChange() {
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            const exitBtn = document.getElementById('exitFullscreenBtn');
-            
             if (isFullscreen) {
-                exitBtn.style.display = 'block';
+                fsBtn.innerText = 'Свернуть';
             } else {
-                exitBtn.style.display = 'none';
+                fsBtn.innerText = 'На весь экран';
             }
             setTimeout(resizeGame, 50); 
             setTimeout(resizeGame, 500);
         }
-
-        document.getElementById('exitFullscreenBtn').addEventListener('click', exitFullscreen);
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -721,21 +725,20 @@
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
         // --- НАВИГАЦИЯ ---
-        function goToIntro() {
+        titlePlayBtn.addEventListener('click', () => {
             enterFullscreen();
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'flex';
-            if(!isMuted) bgMusic.play().catch(e=>{}); // Старт музыки
-        }
+            if(!isMuted && currentVolume > 0) bgMusic.play().catch(e=>{});
+        });
 
-        document.getElementById('playButton').addEventListener('click', () => {
+        document.getElementById('startFieldBtn').addEventListener('click', () => {
             enterFullscreen();
             document.getElementById('startScreen').style.display = 'none'; 
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'block';
             gameStarted = true; 
-            if(!isMuted) bgMusic.play().catch(e=>{});
             if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
         });
@@ -770,6 +773,21 @@
         let expectedSequence = [];
         let playerSequence = [];
         let isRuneAnimating = false;
+
+        function debugPassRuneGame() {
+            if (!shieldCollected) {
+                document.getElementById('runeGameOverlay').style.display = 'none';
+                isRuneAnimating = false; 
+                showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
+                    shieldCollected = true; 
+                    score++; scoreElement.innerText = score + " / " + maxScore; 
+                    playCollectSound(); 
+                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
+                    
+                    isPaused = false; checkWin();
+                }, { bgImage: images['dialogAlina'].src });
+            }
+        }
 
         async function startRuneGame() {
             document.getElementById('runeGameOverlay').style.display = 'flex';
@@ -838,7 +856,15 @@
                         currentRuneRound = 2; 
                         playRuneRound();
                     } else {
-                        winRuneGame(); 
+                        document.getElementById('runeGameOverlay').style.display = 'none';
+                        showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
+                            shieldCollected = true; 
+                            score++; scoreElement.innerText = score + " / " + maxScore; 
+                            playCollectSound(); 
+                            spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
+                            
+                            isPaused = false; checkWin();
+                        }, { bgImage: images['dialogAlina'].src });
                     }
                 }
             } else {
@@ -856,19 +882,6 @@
                     playRuneRound(); 
                 }, 1500);
             }
-        }
-
-        function winRuneGame() {
-            document.getElementById('runeGameOverlay').style.display = 'none';
-            
-            showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
-                shieldCollected = true; 
-                score++; scoreElement.innerText = score + " / " + maxScore; 
-                playCollectSound(); 
-                spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
-                
-                isPaused = false; checkWin();
-            }, { bgImage: images['dialogAlina'].src });
         }
 
         // --- ИГРА 2: КАРТЫ ТАРО ---
@@ -903,21 +916,17 @@
             document.getElementById('tarotGameOverlay').onclick = () => {
                 document.getElementById('tarotGameOverlay').style.display = 'none';
                 document.getElementById('tarotGameOverlay').onclick = null; 
-                winTarotGame();
-            };
-        }
-
-        function winTarotGame() {
-            easterEggRevealed = true;
-
-            showDialogue("Ты нашла корону!\nОна излучает древнюю магию.", () => {
-                crownCollected = true; 
-                score++; scoreElement.innerText = score + " / " + maxScore; 
-                playCollectSound(); 
-                spawnParticles(crown.x, crown.y, '#f1c40f'); 
                 
-                isPaused = false; checkWin();
-            }, { bgImage: images['dialogLera'].src });
+                easterEggRevealed = true;
+                showDialogue("Ты нашла корону!\nОна излучает древнюю магию.", () => {
+                    crownCollected = true; 
+                    score++; scoreElement.innerText = score + " / " + maxScore; 
+                    playCollectSound(); 
+                    spawnParticles(crown.x, crown.y, '#f1c40f'); 
+                    
+                    isPaused = false; checkWin();
+                }, { bgImage: images['dialogLera'].src });
+            };
         }
 
         // --- СИСТЕМА ДИАЛОГОВ ---
@@ -1034,7 +1043,7 @@
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Шорткат из двух блоков [-1, 3] и [-1, 4] открывается после нахождения пасхалки
+            // Разрешаем ходить по шорткату из двух блоков [-1, 3] и [-1, 4], если пасхалка уже найдена
             if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
             return false; 
         }
@@ -1294,6 +1303,7 @@
             
             btn.disabled = true;
             btn.classList.add('shield-active');
+            btn.innerText = ""; 
             barBg.style.display = 'block';
             
             bar.style.transition = 'none'; bar.style.width = '100%';
@@ -1305,6 +1315,7 @@
                 barBg.style.display = 'none'; 
                 btn.classList.remove('shield-active');
                 btn.innerText = "⏳"; 
+                btn.style.fontSize = "38px"; 
                 
                 setTimeout(() => {
                     shieldOnCooldown = false;
@@ -1434,6 +1445,7 @@
                 projectile.remove();
                 if (bossHp <= 0) return;
                 
+                // Проверяем дистанцию до центра босса
                 const dist = Math.hypot(endX - 722, endY - 258);
                 const isHit = dist < 120; // 120px радиус попадания
 

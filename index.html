@@ -129,14 +129,17 @@
             z-index: 1;
         }
         .start-btn:active {
-            transform: translate(-50%, 6px) !important; 
+            transform: translateY(6px); /* Исправлено: теперь кнопка просто едет вниз */
             box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
         }
         #titlePlayBtn {
             position: absolute;
-            bottom: 15%; /* Опускаем на грудь персонажа */
+            bottom: 15%; 
             left: 50%;
             transform: translateX(-50%);
+        }
+        #titlePlayBtn:active {
+            transform: translate(-50%, 6px) !important; /* Удержание центра для абсолютной кнопки */
         }
 
         /* --- СТАРТОВЫЙ ЭКРАН --- */
@@ -717,7 +720,8 @@
             else if (document.msExitFullscreen) document.msExitFullscreen();
         }
 
-        fsBtn.addEventListener('click', () => {
+        fsBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
             if (isFullscreen) {
                 exitFullscreen();
@@ -743,7 +747,9 @@
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
         // --- НАВИГАЦИЯ ---
-        playButton.addEventListener('click', () => {
+        playButton.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (assetsLoadedCount < totalAssets) return;
             enterFullscreen();
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
@@ -751,7 +757,8 @@
             if(!isMuted) bgMusic.play().catch(e=>{});
         });
 
-        document.getElementById('startFieldBtn').addEventListener('click', () => {
+        document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
+            e.preventDefault();
             enterFullscreen();
             document.getElementById('startScreen').style.display = 'none'; 
             document.getElementById('gameUI').style.display = 'block';

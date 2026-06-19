@@ -1256,15 +1256,15 @@
                             // --- НОВАЯ СТРОГАЯ ЛОГИКА ЦВЕТОВ ---
                             let blockImg = images['block'];
                             if (x === 4 && y === 4) {
-                                blockImg = images['block']; // ТОЛЬКО ЦЕНТР
+                                blockImg = images['block']; // ТОЛЬКО ЦЕНТР (1 куб)
+                            } else if (x >= 3 && x <= 5 && y < 4) {
+                                blockImg = images['block_3']; // Вся верхняя ветка (Молот)
+                            } else if (x >= 3 && x <= 5 && y > 4) {
+                                blockImg = images['block_4']; // Вся нижняя ветка (Плечи)
                             } else if (x < 4) {
-                                blockImg = images['block_1']; // Левая ветка (и пасхалка)
+                                blockImg = images['block_1']; // Вся левая ветка и пасхалка
                             } else if (x > 4) {
-                                blockImg = images['block_2']; // Правая ветка
-                            } else if (y < 4) {
-                                blockImg = images['block_3']; // Верхняя ветка
-                            } else if (y > 4) {
-                                blockImg = images['block_4']; // Нижняя ветка
+                                blockImg = images['block_2']; // Вся правая ветка
                             }
 
                             if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {

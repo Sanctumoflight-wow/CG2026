@@ -89,22 +89,34 @@
         #audioControls {
             position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7);
             padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
-            z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
+            gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
         }
-        #muteBtn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; line-height: 1;}
-
+        #muteBtn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; }
+        
         .screen-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         }
 
         /* --- ТИТУЛЬНЫЙ ЭКРАН --- */
         #titleScreen {
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 150;
+            z-index: 150;
             color: #fff;
         }
         .main-title {
-            font-size: 50px; font-weight: 900; letter-spacing: -1px; margin-bottom: 50px; text-transform: uppercase;
-            font-family: 'Montserrat', sans-serif; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 1;
+            position: absolute;
+            top: 50%;
+            left: 60px;
+            transform: translateY(-50%);
+            font-size: 55px; 
+            font-weight: 900; 
+            letter-spacing: -1px; 
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif; 
+            text-shadow: 0 4px 10px rgba(0,0,0,0.9); 
+            z-index: 1;
+            text-align: left;
+            line-height: 1.1;
+            margin: 0;
         }
         .start-btn {
             background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
@@ -114,7 +126,14 @@
             z-index: 1;
         }
         .start-btn:active {
-            transform: translateY(6px); box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
+            transform: translate(-50%, 6px) !important; 
+            box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
+        }
+        #titlePlayBtn {
+            position: absolute;
+            bottom: 15%; /* Опускаем на грудь персонажа */
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         /* --- СТАРТОВЫЙ ЭКРАН --- */
@@ -135,11 +154,6 @@
         }
         .start-items-row .img-block img { 
             max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); 
-        }
-        .secret-item {
-            display: flex; justify-content: center; align-items: center;
-            font-size: 50px; color: #f1c40f; font-weight: 900; 
-            text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);
         }
         .start-text {
             flex: 0 0 15%; display: flex; align-items: center; justify-content: center;
@@ -421,8 +435,8 @@
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
-                <div class="main-title">CALLIOPE GAME 2</div>
-                <button id="playButton" class="start-btn" style="opacity: 0.5; pointer-events: none; padding: 10px 40px;">ЗАГРУЗКА ИГРЫ...</button>
+                <div class="main-title">CALLIOPE<br>GAME 2</div>
+                <button id="titlePlayBtn" class="start-btn" style="opacity: 0.5; pointer-events: none; padding: 10px 40px;">ЗАГРУЗКА ИГРЫ...</button>
             </div>
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
@@ -465,8 +479,7 @@
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
-                <!-- Тихая кнопка отладки -->
-                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s;">Пройти игру (Debug)</button>
+                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 5000;">Пройти игру (Debug)</button>
             </div>
 
             <!-- ТАРО МИНИ-ИГРА -->
@@ -571,7 +584,7 @@
 
         const totalAssets = Object.keys(allAssets).length;
         let assetsLoadedCount = 0;
-        const playButton = document.getElementById('playButton');
+        const playButton = document.getElementById('titlePlayBtn');
 
         for (const [key, src] of Object.entries(allAssets)) {
             const img = new Image();
@@ -669,7 +682,6 @@
             }
         }
 
-        // ИСПОЛЬЗУЕМ POINTERDOWN, ЧТОБЫ КЛИКИ ТОЧНО СРАБАТЫВАЛИ НА ТЕЛЕФОНЕ
         muteBtn.addEventListener('pointerdown', (e) => {
             e.preventDefault(); e.stopPropagation();
             isMuted = !isMuted;
@@ -1024,10 +1036,7 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
-        // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
-        // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
-        // 3 шага "Влево" : [-1, 1], [-2, 1], [-3, 1]
-        // 3 шага "Вниз" : [-3, 2], [-3, 3], [-3, 4] -> Финальный куб на X: -3, Y: 4
+        // МАРШРУТ ПАСХАЛКИ (БУКВОЙ П) ДО [-3, 4]
         const secretPath = [
             {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
             {x: -1, y: 1}, {x: -2, y: 1}, {x: -3, y: 1},
@@ -1496,8 +1505,8 @@
             const mouseY = e.offsetY / zoom;
             
             const cameraPos = toScreen(player.x, player.y);
-            let cx = mouseX - canvas.offsetWidth / 2; 
-            let cy = mouseY - canvas.offsetHeight / 2;
+            let cx = mouseX - canvas.width / 2; 
+            let cy = mouseY - canvas.height / 2;
             const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
             const tw = tileW / 2; const th = tileH / 2;
             const gridX = Math.round((sx / tw + sy / th) / 2); 

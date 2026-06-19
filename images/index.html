@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Calliope Game 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: #111; 
+            margin: 0; 
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            color: white; 
+            overflow: hidden; 
+            
+            /* Блокируем жесты браузера */
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            overscroll-behavior: none;
+        }
+
+        /* --- ЭКРАН С ПРОСЬБОЙ ПОВЕРНУТЬ ТЕЛЕФОН --- */
+        #rotate-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #111;
+            z-index: 99999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+
+        /* ПОКАЗЫВАЕМ ПРОСЬБУ ПОВЕРНУТЬ, ЕСЛИ ЭКРАН ВЕРТИКАЛЬНЫЙ */
+        @media screen and (orientation: portrait) {
+            #game-container { display: none !important; }
+            #rotate-overlay { display: flex !important; }
+        }
+
+        /* --- СУПЕР-КОНТЕЙНЕР --- */
+        #game-container {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ И ИДЕАЛЬНОЕ ЦЕНТРИРОВАНИЕ) --- */
+        #mobile-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 852px; 
+            height: 393px;
+            background-color: #2c3e50;
+            overflow: hidden;
+            transform-origin: center center;
+        }
+
+        /* --- КНОПКА СВЕРНУТЬ (ПОЛНЫЙ ЭКРАН) --- */
+        #exitFullscreenBtn {
+            display: none; 
+            position: absolute; 
+            top: 15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 10005; 
+            background: rgba(0, 0, 0, 0.8); 
+            border: 2px solid #f1c40f; 
+            color: #f1c40f; 
+            border-radius: 10px; 
+            padding: 8px 20px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        #exitFullscreenBtn:hover { background: #f1c40f; color: #111; }
+
+        /* --- АУДИО КОНТРОЛЛЕР --- */
+        #audioControls {
+            position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.8);
+            padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
+            gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
+        }
+        #muteBtn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; }
+        .vol-btn {
+            background: #2c3e50; color: white; border: 2px solid #7f8c8d; border-radius: 8px;
+            width: 30px; height: 30px; font-size: 20px; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; padding: 0; line-height: 1;
+        }
+        .vol-btn:active { background: #f1c40f; color: #1a252f; border-color: #f1c40f; }
+        #volDisplay { font-weight: 700; color: #f1c40f; width: 45px; text-align: center; font-size: 14px; user-select: none; }
+
+        .screen-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        /* --- ТИТУЛЬНЫЙ ЭКРАН --- */
+        #titleScreen {
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 150;
+            color: #fff;
+        }
+        .main-title {
+            font-size: 50px; font-weight: 900; letter-spacing: -1px; margin-bottom: 50px; text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 1;
+        }
+        .start-btn {
+            background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
+            padding: 10px 40px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
+            box-shadow: 0 6px 0 #a04000, 0 10px 15px rgba(0,0,0,0.6); text-transform: uppercase;
+            transition: all 0.1s ease; font-family: 'Montserrat', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            z-index: 1;
+        }
+        .start-btn:active {
+            transform: translateY(6px); box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
+        }
+
+        /* --- СТАРТОВЫЙ ЭКРАН --- */
+        #startScreen {
+            display: none; 
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+            padding: 20px; box-sizing: border-box;
+        }
+        .start-items-row {
+            flex: 0 0 60%; width: 90%; display: flex; gap: 15px; justify-content: center; align-items: center;
+        }
+        .start-items-row .img-block {
+            flex: 1; height: 80%; display: flex; justify-content: center; align-items: center;
+            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px); transition: 0.3s;
+        }
+        .start-items-row .img-block img { 
+            max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); 
+        }
+        .start-text {
+            flex: 0 0 15%; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px #000;
+            text-transform: uppercase; margin: 10px 0; letter-spacing: 1px;
+        }
+        .start-btn-wrap {
+            flex: 0 0 25%; display: flex; align-items: flex-start; justify-content: center;
+        }
+
+        /* --- ЭЛЕМЕНТЫ ИГРЫ --- */
+        #gameUI { display: none; z-index: 50; }
+        #tracker {
+            position: absolute; top: 15px; left: 40px; z-index: 10;
+            background: rgba(0, 0, 0, 0.5); padding: 8px 15px; border-radius: 15px;
+            font-size: 16px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+            transition: opacity 0.3s;
+        }
+        #score { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 18px; }
+        #easterScore { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 16px; }
+        
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+
+        /* КНОПКИ УПРАВЛЕНИЯ */
+        #controls { 
+            position: absolute; bottom: 15px; left: 40px; z-index: 10;
+            display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
+            transform-origin: bottom left;
+        }
+        .d-btn { 
+            background: rgba(44, 62, 80, 0.8); border: 2px solid rgba(255,255,255,0.3); border-radius: 15px; 
+            display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; 
+            backdrop-filter: blur(5px); padding: 0; overflow: hidden;
+        }
+        .d-btn:active { transform: scale(0.9); border-color: #f1c40f; }
+        
+        .arrow-icon { width: 100%; height: 100%; object-fit: cover; pointer-events: none; border-radius: 13px; }
+        .arrow-up { transform: rotate(0deg); }
+        .arrow-right { transform: rotate(90deg); }
+        .arrow-down { transform: rotate(180deg); }
+        .arrow-left { transform: rotate(-90deg); }
+
+        .btn-up { grid-column: 2; grid-row: 1; } .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; } .btn-down { grid-column: 2; grid-row: 3; }
+
+        /* --- ОКНА ВНУТРИ ИГРЫ --- */
+        #victoryOverlay { display: none; background: rgba(0, 0, 0, 0.85); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px); }
+        .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; }
+        .victory-text { font-size: 18px; margin-bottom: 20px; }
+
+        #dialogueOverlay {
+            display: none; z-index: 4000; background: rgba(0, 0, 0, 0.2); 
+        }
+        .dialogue-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: url('images/dialogs/Dialog_TEST.png') center/100% 100% no-repeat; 
+            pointer-events: auto; cursor: pointer;
+            transition: background-image 0.3s ease;
+        }
+        #dialogueText {
+            position: absolute; 
+            top: 55%; bottom: 15%; 
+            left: 35%; right: 5%;  
+            font-size: 26px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px #000; 
+            font-family: 'Playfair Display', serif; line-height: 1.4;
+            text-align: left; padding: 10px; overflow: hidden;
+            display: block; white-space: pre-wrap; 
+        }
+        .dialogue-hint {
+            position: absolute; 
+            top: 35%; right: 8%;
+            font-size: 16px; color: #f1c40f; font-family: 'Montserrat', sans-serif;
+            opacity: 0.8; animation: blink 1.5s infinite; text-shadow: 0 2px 4px #000;
+        }
+        #dialogueActionBtn {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 4010;
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* РУННАЯ МИНИ-ИГРА */
+        #runeGameOverlay {
+            display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        #runeDisplayArea {
+            display: flex; gap: 15px; height: 150px; justify-content: center; align-items: center;
+            transition: transform 0.1s;
+        }
+        .rune-pulse { animation: pulseRune 0.8s infinite alternate; }
+
+        /* ТАРО МИНИ-ИГРА */
+        #tarotGameOverlay {
+            display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
+            flex-direction: column; justify-content: space-between; align-items: center; text-align: center;
+            backdrop-filter: blur(10px); cursor: pointer; padding: 30px 0; box-sizing: border-box;
+        }
+        .tarot-container { 
+            display: flex; gap: 30px; justify-content: center; align-items: center; flex: 1; 
+        }
+        .tarot-card {
+            width: 200px; 
+            height: auto; border-radius: 12px; border: 2px solid #f1c40f;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); 
+            transition: transform 0.3s ease-in-out;
+        }
+        .tarot-text {
+            color: white; 
+            font-size: 22px; 
+            font-weight: 700; 
+            text-shadow: 0 2px 5px #000; 
+            animation: blink 1.5s infinite;
+            margin-bottom: 20px;
+        }
+
+        /* --- АРЕНА ДЛЯ БОССА --- */
+        #bossOverlay {
+            display: none; background: url('images/boss_bg.png?v=2') center/cover no-repeat;
+            z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
+        }
+        
+        .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
+        
+        #bossSkullsContainer {
+            position: absolute; top: 15px; right: 40px;
+            display: flex; justify-content: center; align-items: center; z-index: 203;
+        }
+
+        #bossHintText {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #arenaPlayer {
+            position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; 
+            z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
+
+        #arenaBoss {
+            position: absolute; bottom: 12%; right: 5%; max-height: 45%; width: auto; 
+            z-index: 202; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+            transition: bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s; cursor: crosshair;
+        }
+
+        .player-projectile {
+            position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201;
+            transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f);
+            animation: spin 1s linear infinite;
+        }
+
+        /* --- СТИЛИ ЩИТА И ЗДОРОВЬЯ --- */
+        #playerHpContainer {
+            position: absolute; top: 20px; left: 20px;
+            display: flex; align-items: center; gap: 15px; z-index: 203;
+        }
+        #pauseBtn {
+            background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 10px;
+            color: white; font-size: 20px; width: 45px; height: 45px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: 0.2s; padding: 0;
+        }
+        #pauseBtn:hover { background: #f1c40f; border-color: #f1c40f; }
+        #heartsBox { display: flex; gap: 5px; }
+
+        .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
+        
+        #shieldContainer {
+            position: absolute; bottom: 20px; left: 20px; 
+            display: flex; flex-direction: column; align-items: center; z-index: 205;
+        }
+        #shieldBtn {
+            width: 56px; height: 56px; border-radius: 12px;
+            background: url('images/Divine_Shield.jpg') center/cover no-repeat;
+            color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000;
+            cursor: pointer; transition: 0.2s; 
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
+            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 24px;
+        }
+        #shieldBtn:active { transform: scale(0.95); }
+        #shieldBtn:disabled { filter: grayscale(100%) brightness(0.5); cursor: not-allowed; box-shadow: none; }
+        
+        #shieldBarBg {
+            width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px; margin-top: 5px;
+            overflow: hidden; display: none; border: 1px solid #fff;
+        }
+        #shieldBar { width: 100%; height: 100%; background: #f1c40f; }
+
+        .boss-projectile {
+            position: absolute; width: 35px; height: 35px; border-radius: 50%;
+            background: radial-gradient(circle, #f1c40f, #e74c3c, #000);
+            box-shadow: 0 0 15px #e74c3c, 0 0 25px #f1c40f;
+            z-index: 201; pointer-events: none;
+            transition: left 2s linear, top 2s linear;
+            animation: spin 1s linear infinite;
+        }
+
+        /* --- КНОПКА ДОБИТЬ И ВИДЕО УЛЬТИМЕЙТА --- */
+        #finishHimOverlay {
+            display: none; justify-content: center; align-items: center; z-index: 5005; background: rgba(0,0,0,0.5);
+        }
+        #finishHimBtn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; font-size: 40px; padding: 20px 60px; 
+            border: 3px solid #fff; box-shadow: 0 0 30px #e74c3c; animation: pulseRed 1s infinite;
+        }
+        #videoOverlay {
+            display: none; z-index: 6000; background: #000;
+        }
+        #ultimateVideo {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .action-btn {
+            padding: 10px 40px; font-size: 20px; font-weight: 700; cursor: pointer;
+            border: none; border-radius: 30px; background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #2c3e50; transition: 0.2s; text-transform: uppercase;
+        }
+        .action-btn:hover { transform: scale(1.05); }
+
+        @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseRed { 0% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } 50% { transform: scale(1.1); box-shadow: 0 0 50px #e74c3c; } 100% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } }
+        @keyframes pulseRune { 0% { transform: scale(1); filter: drop-shadow(0 0 5px #fff); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 20px #f1c40f); } }
+        h2 { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
+    <div id="rotate-overlay">
+        <div style="font-size: 80px; margin-bottom: 20px; animation: spin 3s infinite linear;">📱</div>
+        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px;">Поверните устройство</h2>
+        <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
+        <source src="images/music.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
+    <audio id="typeSound">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=ui-click-43196.mp3" type="audio/mpeg">
+        <source src="images/type.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="game-container">
+        <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
+        <div id="mobile-wrapper">
+            
+            <button id="exitFullscreenBtn">Свернуть</button>
+
+            <!-- Аудио Контроллер внутри экрана игры -->
+            <div id="audioControls">
+                <button id="muteBtn">🔊</button>
+                <button id="volDownBtn" class="vol-btn">-</button>
+                <span id="volDisplay">10%</span>
+                <button id="volUpBtn" class="vol-btn">+</button>
+            </div>
+
+            <!-- ЭКРАН ПОБЕДЫ -->
+            <div id="victoryOverlay" class="screen-overlay">
+                <div class="victory-title">ПОБЕДА!</div>
+                <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
+                <button class="action-btn" onclick="location.reload()">Вернуться в начало</button>
+            </div>
+
+            <!-- ТИТУЛЬНЫЙ ЭКРАН -->
+            <div id="titleScreen" class="screen-overlay">
+                <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
+                <div class="main-title">CALLIOPE GAME 2</div>
+                <button class="start-btn" onclick="goToIntro()">ИГРАТЬ</button>
+            </div>
+
+            <!-- СТАРТОВЫЙ ЭКРАН -->
+            <div id="startScreen" class="screen-overlay">
+                <div class="start-items-row">
+                    <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
+                    <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
+                    <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
+                    <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
+                </div>
+                <div class="start-text">
+                    Собери все предметы уровня
+                </div>
+                <div class="start-btn-wrap">
+                    <button id="playButton" class="start-btn" style="font-size: 24px; padding: 10px 40px;">ЗАГРУЗКА...</button>
+                </div>
+            </div>
+
+            <!-- ИГРОВОЕ ПОЛЕ -->
+            <div id="gameUI" class="screen-overlay">
+                <div id="tracker">
+                    <div>Собрано: <span id="score">0 / 4</span></div>
+                    <div style="color: #f1c40f; font-size: 14px; margin-top: 5px;">Пасхалка: <span id="easterScore">0 / 1</span></div>
+                </div>
+                
+                <canvas id="gameCanvas" width="852" height="393"></canvas>
+                
+                <div id="controls">
+                    <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
+                    <div class="d-btn btn-left" id="btnLeft"><img src="images/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
+                    <div class="d-btn btn-right" id="btnRight"><img src="images/Arrow.jpg" class="arrow-icon arrow-right" alt="Right"></div>
+                    <div class="d-btn btn-down" id="btnDown"><img src="images/Arrow.jpg" class="arrow-icon arrow-down" alt="Down"></div>
+                </div>
+            </div>
+
+            <!-- РУННАЯ МИНИ-ИГРА -->
+            <div id="runeGameOverlay" class="screen-overlay">
+                <div id="runeDisplayArea"></div>
+                <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
+            </div>
+
+            <!-- ТАРО МИНИ-ИГРА -->
+            <div id="tarotGameOverlay" class="screen-overlay">
+                <div style="flex: 1;"></div>
+                <div class="tarot-container">
+                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard0" alt="Таро 1">
+                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard1" alt="Таро 2">
+                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard2" alt="Таро 3">
+                </div>
+                <div style="flex: 1; display: flex; align-items: flex-end;">
+                    <p class="tarot-text" id="tarotText" style="display: none;">Нажми, чтобы продолжить...</p>
+                </div>
+            </div>
+
+            <!-- НОВАЯ СИСТЕМА ДИАЛОГОВ -->
+            <div id="dialogueOverlay" class="screen-overlay">
+                <div class="dialogue-container" onclick="nextDialogue(event)">
+                    <div id="dialogueText"></div>
+                    <div class="dialogue-hint">Нажми, чтобы продолжить ▼</div>
+                    <button id="dialogueActionBtn" class="action-btn"></button>
+                </div>
+            </div>
+
+            <!-- АРЕНА ДЛЯ БОССА -->
+            <div id="bossOverlay" class="screen-overlay">
+                <div id="bossSkullsContainer"></div>
+                <div class="arena-ground"></div>
+                
+                <div id="playerHpContainer">
+                    <button id="pauseBtn" onclick="togglePause()">⏸️</button>
+                    <div id="heartsBox">
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                    </div>
+                </div>
+
+                <!-- Текст "ПАУЗА" -->
+                <div id="pauseIndicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 10px #000; z-index: 5000; letter-spacing: 5px;">ПАУЗА</div>
+
+                <div id="shieldContainer">
+                    <button id="shieldBtn" onclick="activateShield()"></button>
+                    <div id="shieldBarBg"><div id="shieldBar"></div></div>
+                </div>
+
+                <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
+                <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
+                
+                <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
+            </div>
+
+            <!-- ОКНА ДОБИВАНИЯ И ВИДЕО -->
+            <div id="finishHimOverlay" class="screen-overlay">
+                <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
+            </div>
+
+            <div id="videoOverlay" class="screen-overlay">
+                <video id="ultimateVideo" src="images/ultimate.mp4" playsinline></video>
+            </div>
+
+        </div>
+    </div> 
+
+    <script>
+        let gameStarted = false;
+        let isPaused = false; 
+
+        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ (ПРЕДОТВРАЩАЕТ ЛАГИ) ---
+        const images = {}; 
+        const preloadedImages = []; // Защита от удаления из памяти
+
+        const allAssets = {
+            'block': 'images/textures/block.png',
+            'player': 'images/model/Julia/Julia.png',
+            'playerHappy': 'images/model/Julia/Julia_Happy.png',
+            'crown': 'images/Crown.png',
+            'shoulders': 'images/Shoulders.png',
+            'hammer': 'images/Hammer.png',
+            'rock': 'images/textures/winterspringfrostsaberrock.png',
+            'tarotCover': 'images/Tarot_Cover.png',
+            'tarot1': 'images/Tarot_1.png',
+            'shield': 'images/Shield.png',
+            'rune1': 'images/Rune_1.png',
+            'rune2': 'images/Rune_2.png',
+            'rune3': 'images/Rune_3.png',
+            'rune4': 'images/Rune_4.png',
+            'rune5': 'images/Rune_5.png',
+            'dialogTest': 'images/dialogs/Dialog_TEST.png',
+            'dialogAlina': 'images/dialogs/Alina.png',
+            'dialogLera': 'images/dialogs/Lera.png',
+            'dialogFather': 'images/dialogs/Father.png',
+            'dialogJulia': 'images/dialogs/Julia.png',
+            'boss': 'images/boss.png?v=3',
+            'bossBg': 'images/boss_bg.png?v=2',
+            'juliaShield': 'images/model/Julia/Julia_Shield.png',
+            'juliaHit': 'images/model/Julia/Julia_Hit.png',
+            'alch': 'images/alch.png',
+            'divineShield': 'images/Divine_Shield.jpg',
+            'arrow': 'images/Arrow.jpg'
+        };
+
+        const totalAssets = Object.keys(allAssets).length;
+        let assetsLoadedCount = 0;
+        const playButton = document.getElementById('playButton');
+
+        for (const [key, src] of Object.entries(allAssets)) {
+            const img = new Image();
+            img.src = src;
+            preloadedImages.push(img);
+            images[key] = img;
+
+            img.onload = img.onerror = () => {
+                assetsLoadedCount++;
+                let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
+                if (assetsLoadedCount < totalAssets) {
+                    playButton.innerText = `ЗАГРУЗКА (${percent}%)`;
+                    playButton.style.opacity = '0.5';
+                    playButton.style.pointerEvents = 'none';
+                } else {
+                    playButton.innerText = 'ИГРАТЬ';
+                    playButton.style.opacity = '1';
+                    playButton.style.pointerEvents = 'auto';
+                    if (gameStarted) requestAnimationFrame(gameLoop);
+                }
+            };
+        }
+
+        const vidObj = document.createElement('video');
+        vidObj.src = 'images/ultimate.mp4';
+        vidObj.preload = 'auto';
+
+        // --- ИДЕАЛЬНОЕ МАСШТАБИРОВАНИЕ (РАСТЯЖКА ПО КРАЯМ) ---
+        function resizeGame() {
+            const wrapper = document.getElementById('mobile-wrapper');
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            
+            const baseW = 852;
+            const baseH = 393;
+            
+            const scale = Math.min(winW / baseW, winH / baseH);
+            wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+        window.addEventListener('resize', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
+        window.addEventListener('orientationchange', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
+        
+        // --- ТОЧНЫЕ КООРДИНАТЫ КЛИКА ПОСЛЕ CSS SCALE ---
+        function getLocalCoords(clientX, clientY) {
+            const wrapper = document.getElementById('mobile-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            const scale = rect.width / 852;
+            let x = (clientX - rect.left) / scale;
+            let y = (clientY - rect.top) / scale;
+            return { x, y };
+        }
+
+        // --- АУДИО ---
+        const bgMusic = document.getElementById('bgMusic');
+        const collectSound = document.getElementById('collectSound');
+        const typeSound = document.getElementById('typeSound');
+        const muteBtn = document.getElementById('muteBtn');
+        const volUpBtn = document.getElementById('volUpBtn');
+        const volDownBtn = document.getElementById('volDownBtn');
+        const volDisplay = document.getElementById('volDisplay');
+        
+        let currentVolume = 0.10;
+        let isMuted = false;
+
+        function applyVolume() {
+            if (isMuted) {
+                bgMusic.volume = 0;
+                collectSound.volume = 0;
+                typeSound.volume = 0;
+                muteBtn.innerText = '🔇';
+            } else {
+                bgMusic.volume = currentVolume;
+                collectSound.volume = Math.min(1.0, currentVolume * 2 + 0.2); 
+                typeSound.volume = Math.min(0.5, currentVolume);
+                muteBtn.innerText = '🔊';
+            }
+            volDisplay.innerText = Math.round(currentVolume * 100) + '%';
+        }
+
+        // ИСПОЛЬЗУЕМ POINTERDOWN, ЧТОБЫ КЛИКИ ТОЧНО СРАБАТЫВАЛИ НА ТЕЛЕФОНЕ
+        muteBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            isMuted = !isMuted;
+            applyVolume();
+        });
+
+        volUpBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            currentVolume = Math.round(Math.min(1.0, currentVolume + 0.05) * 100) / 100;
+            if (isMuted && currentVolume > 0) isMuted = false;
+            applyVolume();
+        });
+
+        volDownBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            currentVolume = Math.round(Math.max(0.05, currentVolume - 0.05) * 100) / 100; 
+            if (isMuted && currentVolume > 0) isMuted = false;
+            applyVolume();
+        });
+
+        applyVolume();
+        function playCollectSound() { collectSound.currentTime = 0; collectSound.play().catch(e=>{}); }
+
+        // --- ПОЛНОЭКРАННЫЙ РЕЖИМ ---
+        function enterFullscreen() {
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) {
+                doc.requestFullscreen().catch(err => console.warn("Fullscreen error:", err));
+            } else if (doc.mozRequestFullScreen) { /* Firefox */
+                doc.mozRequestFullScreen().catch(err => console.warn(err));
+            } else if (doc.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                doc.webkitRequestFullscreen().catch(err => console.warn(err));
+            } else if (doc.msRequestFullscreen) { /* IE/Edge */
+                doc.msRequestFullscreen().catch(err => console.warn(err));
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(e => {});
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        function handleFullscreenChange() {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            const exitBtn = document.getElementById('exitFullscreenBtn');
+            
+            if (isFullscreen) {
+                exitBtn.style.display = 'block';
+            } else {
+                exitBtn.style.display = 'none';
+            }
+            setTimeout(resizeGame, 50); 
+            setTimeout(resizeGame, 500);
+        }
+
+        document.getElementById('exitFullscreenBtn').addEventListener('click', exitFullscreen);
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        // --- НАВИГАЦИЯ ---
+        function goToIntro() {
+            enterFullscreen();
+            document.getElementById('menuVideo').pause();
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+            if(!isMuted) bgMusic.play().catch(e=>{}); // Старт музыки
+        }
+
+        document.getElementById('playButton').addEventListener('click', () => {
+            enterFullscreen();
+            document.getElementById('startScreen').style.display = 'none'; 
+            document.getElementById('gameUI').style.display = 'block';
+            document.getElementById('tracker').style.display = 'block';
+            gameStarted = true; 
+            if(!isMuted) bgMusic.play().catch(e=>{});
+            if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
+            setTimeout(resizeGame, 50); 
+        });
+
+        function toggleBossUI(show) {
+            const displayValue = show ? '' : 'none';
+            document.getElementById('playerHpContainer').style.display = displayValue;
+            document.getElementById('bossSkullsContainer').style.display = displayValue;
+            document.getElementById('shieldContainer').style.display = displayValue;
+            document.getElementById('bossHintText').style.display = displayValue;
+        }
+
+        function goToBoss() {
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('bossOverlay').style.display = 'flex';
+            toggleBossUI(true);
+            
+            if(bossInterval) clearInterval(bossInterval); 
+            if(bossMovementInterval) clearInterval(bossMovementInterval);
+
+            bossHp = 10; updateBossSkulls();
+            
+            let bossChar = document.getElementById('arenaBoss');
+            bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
+            bossChar.style.bottom = '12%';
+            
+            startBossFight();
+        }
+
+        // --- РУННАЯ МИНИ ИГРА ---
+        let currentRuneRound = 1;
+        let expectedSequence = [];
+        let playerSequence = [];
+        let isRuneAnimating = false;
+
+        async function startRuneGame() {
+            document.getElementById('runeGameOverlay').style.display = 'flex';
+            currentRuneRound = 1;
+            await playRuneRound();
+        }
+
+        async function playRuneRound() {
+            expectedSequence = currentRuneRound === 1 ? [1, 2, 3] : [1, 2, 3, 4, 5];
+            playerSequence = [];
+            isRuneAnimating = true;
+            const displayArea = document.getElementById('runeDisplayArea');
+            const hint = document.getElementById('runeHint');
+            
+            hint.innerText = "Запомни последовательность...";
+            displayArea.innerHTML = '';
+
+            for (let i = 0; i < expectedSequence.length; i++) {
+                const runeId = expectedSequence[i];
+                displayArea.innerHTML = `<img src="${images[`rune${runeId}`].src}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`;
+                await new Promise(r => setTimeout(r, 800));
+                displayArea.innerHTML = '';
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            hint.innerText = "Нажми на руны в правильном порядке!";
+            let displayRunes = [...expectedSequence];
+            if (currentRuneRound === 1) displayRunes = [2, 1, 3];
+            if (currentRuneRound === 2) displayRunes = [4, 2, 5, 1, 3];
+
+            for (let i = 0; i < displayRunes.length; i++) {
+                const runeId = displayRunes[i];
+                let img = document.createElement('img');
+                img.src = images[`rune${runeId}`].src;
+                img.style.width = "80px";
+                img.style.height = "80px";
+                img.style.objectFit = "contain";
+                img.style.cursor = "pointer";
+                img.style.transition = "0.2s";
+                img.style.filter = "drop-shadow(0 0 5px rgba(255,255,255,0.3))";
+                img.onclick = () => handleRuneClick(runeId, img);
+                displayArea.appendChild(img);
+            }
+            isRuneAnimating = false;
+        }
+
+        async function handleRuneClick(id, imgElement) {
+            if (isRuneAnimating || imgElement.style.opacity === "0.5") return;
+            
+            const expectedId = expectedSequence[playerSequence.length];
+            if (id === expectedId) {
+                playerSequence.push(id);
+                imgElement.style.transform = "scale(1.2)";
+                imgElement.style.filter = "drop-shadow(0 0 15px #2ecc71)"; 
+                setTimeout(() => {
+                    imgElement.style.transform = "scale(1)";
+                    imgElement.style.opacity = "0.5";
+                }, 300);
+
+                if (playerSequence.length === expectedSequence.length) {
+                    isRuneAnimating = true;
+                    document.getElementById('runeHint').innerText = "Верно!";
+                    await new Promise(r => setTimeout(r, 1000));
+                    
+                    if (currentRuneRound === 1) {
+                        currentRuneRound = 2; 
+                        playRuneRound();
+                    } else {
+                        winRuneGame(); 
+                    }
+                }
+            } else {
+                isRuneAnimating = true;
+                document.getElementById('runeHint').innerText = "Ошибка! Смотри внимательнее.";
+                imgElement.style.filter = "drop-shadow(0 0 15px #e74c3c)"; 
+                
+                const displayArea = document.getElementById('runeDisplayArea');
+                displayArea.style.transform = "translateX(10px)";
+                setTimeout(() => displayArea.style.transform = "translateX(-10px)", 50);
+                setTimeout(() => displayArea.style.transform = "translateX(10px)", 100);
+                setTimeout(() => displayArea.style.transform = "translateX(0)", 150);
+                
+                setTimeout(() => {
+                    playRuneRound(); 
+                }, 1500);
+            }
+        }
+
+        function winRuneGame() {
+            document.getElementById('runeGameOverlay').style.display = 'none';
+            
+            showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
+                shieldCollected = true; 
+                score++; scoreElement.innerText = score + " / " + maxScore; 
+                playCollectSound(); 
+                spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
+                
+                isPaused = false; checkWin();
+            }, { bgImage: images['dialogAlina'].src });
+        }
+
+        // --- ИГРА 2: КАРТЫ ТАРО ---
+        function startTarotGame() {
+            document.getElementById('tarotGameOverlay').style.display = 'flex';
+            animateTarot();
+        }
+
+        async function animateTarot() {
+            const cards = [document.getElementById('tarotCard0'), document.getElementById('tarotCard1'), document.getElementById('tarotCard2')];
+            const textEl = document.getElementById('tarotText');
+            
+            for(let card of cards) { 
+                card.src = images['tarotCover'].src; 
+                card.style.transform = 'scale(1) rotateY(0deg)'; 
+            }
+            textEl.style.display = 'none';
+
+            await new Promise(r => setTimeout(r, 600));
+
+            for(let i=0; i<3; i++) {
+                cards[i].style.transform = 'scale(1.1) rotateY(90deg)';
+                await new Promise(r => setTimeout(r, 250)); 
+                cards[i].src = images['tarot1'].src;
+                cards[i].style.transform = 'scale(1) rotateY(0deg)';
+                await new Promise(r => setTimeout(r, 400)); 
+            }
+
+            await new Promise(r => setTimeout(r, 300));
+            textEl.style.display = 'block'; 
+            
+            document.getElementById('tarotGameOverlay').onclick = () => {
+                document.getElementById('tarotGameOverlay').style.display = 'none';
+                document.getElementById('tarotGameOverlay').onclick = null; 
+                winTarotGame();
+            };
+        }
+
+        function winTarotGame() {
+            easterEggRevealed = true;
+
+            showDialogue("Ты нашла корону!\nОна излучает древнюю магию.", () => {
+                crownCollected = true; 
+                score++; scoreElement.innerText = score + " / " + maxScore; 
+                playCollectSound(); 
+                spawnParticles(crown.x, crown.y, '#f1c40f'); 
+                
+                isPaused = false; checkWin();
+            }, { bgImage: images['dialogLera'].src });
+        }
+
+        // --- СИСТЕМА ДИАЛОГОВ ---
+        let dialogueFullText = "";
+        let dialogueCurrentIndex = 0;
+        let dialogueTypingInterval;
+        let isDialogueTyping = false;
+        let onDialogueComplete = null;
+
+        function showDialogue(text, callback, options = {}) {
+            document.getElementById('dialogueOverlay').style.display = 'flex';
+            document.getElementById('dialogueText').innerText = "";
+            
+            const container = document.querySelector('.dialogue-container');
+            if (options.bgImage) {
+                container.style.backgroundImage = `url('${options.bgImage}')`;
+            } else {
+                container.style.backgroundImage = `url('${images['dialogTest'].src}')`;
+            }
+            
+            document.getElementById('tracker').style.display = 'none';
+            
+            if (options.hideBossUI) {
+                toggleBossUI(false);
+            }
+
+            const hint = document.querySelector('.dialogue-hint');
+            const actionBtn = document.getElementById('dialogueActionBtn');
+
+            if (options.buttonText) {
+                hint.style.display = 'none';
+                actionBtn.style.display = 'block';
+                actionBtn.innerText = options.buttonText;
+            } else {
+                hint.style.display = 'block';
+                actionBtn.style.display = 'none';
+            }
+            
+            dialogueFullText = text;
+            dialogueCurrentIndex = 0;
+            isDialogueTyping = true;
+            
+            onDialogueComplete = () => {
+                if (options.hideBossUI) {
+                    toggleBossUI(true);
+                }
+                document.getElementById('tracker').style.display = 'block'; 
+                if (callback) callback();
+            };
+
+            if (!isMuted && currentVolume > 0) {
+                typeSound.currentTime = 0;
+                typeSound.loop = true;
+                typeSound.play().catch(e => {});
+            }
+
+            dialogueTypingInterval = setInterval(() => {
+                document.getElementById('dialogueText').innerText += dialogueFullText.charAt(dialogueCurrentIndex);
+                dialogueCurrentIndex++;
+                if (dialogueCurrentIndex >= dialogueFullText.length) {
+                    clearInterval(dialogueTypingInterval);
+                    isDialogueTyping = false;
+                    typeSound.pause(); 
+                }
+            }, 30);
+        }
+
+        function nextDialogue(e) {
+            const actionBtn = document.getElementById('dialogueActionBtn');
+            const isButtonMode = actionBtn.style.display === 'block';
+
+            if (isDialogueTyping) {
+                clearInterval(dialogueTypingInterval);
+                document.getElementById('dialogueText').innerText = dialogueFullText;
+                isDialogueTyping = false;
+                typeSound.pause(); 
+            } else {
+                if (isButtonMode && e && e.target.id !== 'dialogueActionBtn') {
+                    return; 
+                }
+                document.getElementById('dialogueOverlay').style.display = 'none';
+                if (onDialogueComplete) onDialogueComplete();
+            }
+        }
+
+        // --- ИГРОВОЕ ПОЛЕ ---
+        const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const tileW = 128; const tileH = 64; const mapSize = 9; 
+        const zoom = 1.0; 
+
+        const mapLayout = [
+            [0,0,0, 1,1,1, 0,0,0], 
+            [0,0,0, 1,1,1, 0,0,0], 
+            [0,0,0, 0,1,0, 0,0,0], 
+            [1,1,0, 1,1,1, 0,1,1], 
+            [1,1,1, 1,1,1, 1,1,1], 
+            [1,1,0, 1,1,1, 0,1,1], 
+            [0,0,0, 0,1,0, 0,0,0], 
+            [0,0,0, 1,1,1, 0,0,0], 
+            [0,0,0, 1,1,1, 0,0,0]  
+        ];
+
+        // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
+        // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
+        // 1 шаг "Влево" : [-1, 1]
+        // 1 шаг "Вниз" : [-1, 2] -> Финальный куб на X: -1, Y: 2
+        const secretPath = [
+            {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
+            {x: -1, y: 1}, 
+            {x: -1, y: 2}
+        ];
+
+        function isValidTile(x, y) { 
+            if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
+            if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
+            // Шорткат из двух блоков [-1, 3] и [-1, 4] открывается после нахождения пасхалки
+            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
+            return false; 
+        }
+
+        let player = { x: 4, y: 4 }; let prevPlayerPos = { x: 4, y: 4 }; 
+        let score = 0; const maxScore = 4; 
+        let crown = { x: 0, y: 4 }; let crownCollected = false; 
+        let shieldObj = { x: 8, y: 4, alpha: 1 }; let shieldCollected = false;
+        let shoulders = { x: 4, y: 7 }; let shouldersCollected = false;
+        let hammer = { x: 4, y: 0 }; let hammerCollected = false;
+        
+        let easterEggRevealed = false; 
+        let easterEggFound = false;
+
+        let obstacles = [{x: 3, y: 3}, {x: 5, y: 3}, {x: 3, y: 5}, {x: 5, y: 5}, {x: 4, y: 8}];
+        let particles = []; let targetMovePos = null; let moveTimer = 0;
+        let isPlayerHappy = false;
+
+        function toScreen(x, y) { return { x: (x - y) * (tileW / 2), y: (x + y) * (tileH / 2) }; }
+        function spawnParticles(gridX, gridY, color) {
+            const p = toScreen(gridX, gridY);
+            for(let i = 0; i < 60; i++) particles.push({ x: p.x, y: p.y - 40, vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 1) * 12, life: 1.0, decay: Math.random() * 0.002 + 0.003, color: color, size: Math.random() * 6 + 4 });
+        }
+
+        function movePlayer(dx, dy) {
+            if (!gameStarted || isPaused) return;
+            let nextX = player.x + dx; let nextY = player.y + dy;
+            if (!isValidTile(nextX, nextY) || obstacles.find(o => o.x === nextX && o.y === nextY)) { targetMovePos = null; return; }
+            prevPlayerPos = { x: player.x, y: player.y }; player.x = nextX; player.y = nextY;
+            checkInteractions();
+        }
+
+        function checkWin() { 
+            if (score >= maxScore) { 
+                isPaused = true; 
+                isPlayerHappy = true;
+                setTimeout(() => { 
+                    showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
+                        goToBoss();
+                    }, { bgImage: images['dialogTest'].src });
+                }, 1000); 
+            } 
+        }
+
+        function checkInteractions() {
+            if (player.x === hammer.x && player.y === hammer.y && !hammerCollected) { 
+                isPaused = true; targetMovePos = null;
+                showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
+                    hammerCollected = true; score++; scoreElement.innerText = score + " / " + maxScore; 
+                    playCollectSound(); spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
+                    isPaused = false; checkWin();
+                }, { bgImage: images['dialogTest'].src });
+            }
+            if (player.x === crown.x && player.y === crown.y && !crownCollected) { 
+                isPaused = true; targetMovePos = null;
+                startTarotGame(); 
+            }
+            if (player.x === shieldObj.x && player.y === shieldObj.y && !shieldCollected) { 
+                isPaused = true; targetMovePos = null;
+                startRuneGame(); 
+            }
+            if (player.x === shoulders.x && player.y === shoulders.y && !shouldersCollected) { 
+                isPaused = true; targetMovePos = null;
+                showDialogue("Мощные наплечники!\nОни надежно защитят в бою.", () => {
+                    shouldersCollected = true; score++; scoreElement.innerText = score + " / " + maxScore; 
+                    playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
+                    isPaused = false; checkWin();
+                }, { bgImage: images['dialogFather'].src });
+            }
+
+            // ПРОВЕРКА НА ПАСХАЛКУ
+            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
+                isPaused = true; targetMovePos = null;
+                showDialogue("Ха-ха, а ты гений!", () => {
+                    easterEggFound = true; 
+                    document.getElementById('easterScore').innerText = "1 / 1";
+                    playCollectSound(); 
+                    spawnParticles(player.x, player.y, '#f1c40f');
+                    isPaused = false; checkWin();
+                }, { bgImage: images['dialogJulia'].src }); 
+            }
+        }
+
+        function update() {
+            if (shieldCollected && shieldObj.alpha > 0) { shieldObj.alpha -= 0.03; if (shieldObj.alpha <= 0) { shieldObj.alpha = 0; } }
+            if (targetMovePos && !isPaused) {
+                moveTimer++;
+                if (moveTimer > 8) { 
+                    moveTimer = 0;
+                    let tryX = player.x < targetMovePos.x ? 1 : (player.x > targetMovePos.x ? -1 : 0); let tryY = player.y < targetMovePos.y ? 1 : (player.y > targetMovePos.y ? -1 : 0);
+                    if (tryX !== 0 && isValidTile(player.x + tryX, player.y) && !obstacles.find(o => o.x === player.x + tryX && o.y === player.y)) movePlayer(tryX, 0);
+                    else if (tryY !== 0 && isValidTile(player.x, player.y + tryY) && !obstacles.find(o => o.x === player.x && o.y === player.y + tryY)) movePlayer(0, tryY);
+                    else targetMovePos = null; 
+                }
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i]; p.x += p.vx; p.y += p.vy; p.vx *= 0.95; p.vy *= 0.95; p.vy += 0.15; p.life -= p.decay; 
+                if (p.life <= 0) particles.splice(i, 1); 
+            }
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cameraPos = toScreen(player.x, player.y);
+            ctx.save(); ctx.translate(canvas.width / 2, canvas.height / 2); ctx.scale(zoom, zoom); ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
+
+            // Отрисовываем более широкую зону, чтобы охватить все пасхалки
+            for (let y = -2; y < mapSize + 2; y++) {
+                for (let x = -4; x < mapSize + 2; x++) {
+                    if (!isValidTile(x, y)) continue;
+                    const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
+                    if (dist > 3) continue; 
+                    let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
+                    ctx.globalAlpha = alpha; const p = toScreen(x, y);
+                    
+                    // Куб пасхалки или кубы шортката
+                    let isSecretCube = (easterEggRevealed && x === -1 && y === 2) || (easterEggFound && x === -1 && (y === 3 || y === 4));
+                    let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
+
+                    if (!obstacles.find(o => o.x === x && o.y === y)) {
+                        if (isRegularBlock || isSecretCube) {
+                            if(images['block'] && images['block'].complete && images['block'].naturalWidth !== 0) {
+                                ctx.drawImage(images['block'], p.x - 49.5, p.y, 99, 85); 
+                            } else {
+                                ctx.fillStyle = '#444';
+                                ctx.fillRect(p.x - 49.5, p.y, 99, 85);
+                            }
+                        }
+                    }
+                    ctx.globalAlpha = 1.0;
+                }
+            }
+            
+            for (let y = -2; y < mapSize + 2; y++) {
+                for (let x = -4; x < mapSize + 2; x++) {
+                    if (!isValidTile(x, y)) continue;
+                    const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
+                    if (dist > 3) continue; 
+                    let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
+                    ctx.globalAlpha = alpha; const p = toScreen(x, y);
+
+                    if (obstacles.find(o => o.x === x && o.y === y)) {
+                        if(images['rock'] && images['rock'].complete && images['rock'].naturalWidth !== 0) {
+                            ctx.drawImage(images['rock'], p.x - 96, p.y - 100, 192, 192);
+                        }
+                    }
+                    
+                    if (x === hammer.x && y === hammer.y && !hammerCollected) { 
+                        if(images['hammer'] && images['hammer'].complete && images['hammer'].naturalWidth !== 0) {
+                            ctx.drawImage(images['hammer'], p.x - 32, p.y - 60, 64, 64);
+                        }
+                    }
+                    if (x === crown.x && y === crown.y && !crownCollected) {
+                        if (images['crown']) ctx.drawImage(images['crown'], p.x - 32, p.y - 60, 64, 64);
+                    }
+                    
+                    if (x === shieldObj.x && y === shieldObj.y && shieldObj.alpha > 0) { 
+                        ctx.save(); 
+                        ctx.globalAlpha = shieldObj.alpha * alpha; 
+                        if(images['shield'] && images['shield'].complete && images['shield'].naturalWidth !== 0) {
+                            ctx.drawImage(images['shield'], p.x - 32, p.y - 60, 64, 64);
+                        } else {
+                            ctx.fillStyle = "#3498db"; ctx.beginPath(); ctx.arc(p.x, p.y + 20, 15, 0, Math.PI * 2); ctx.fill(); 
+                        }
+                        ctx.restore(); 
+                    }
+                    
+                    if (x === shoulders.x && y === shoulders.y && !shouldersCollected) {
+                        if(images['shoulders'] && images['shoulders'].complete && images['shoulders'].naturalWidth !== 0) {
+                            ctx.drawImage(images['shoulders'], p.x - 32, p.y - 60, 64, 64);
+                        }
+                    }
+                    
+                    if (x === player.x && y === player.y) {
+                        ctx.save();
+                        ctx.strokeStyle = "rgba(241, 196, 15, 0.4)";
+                        ctx.lineWidth = 3;
+                        ctx.shadowColor = "rgba(241, 196, 15, 0.8)";
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.ellipse(p.x, p.y + 35, 40, 20, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = "rgba(241, 196, 15, 0.15)";
+                        ctx.fill();
+                        ctx.restore();
+
+                        let currentSprite = images['player'];
+                        if (isPlayerHappy && images['playerHappy'] && images['playerHappy'].complete && images['playerHappy'].naturalWidth !== 0) {
+                            currentSprite = images['playerHappy'];
+                        } else if (!images['player'] || !images['player'].complete || images['player'].naturalWidth === 0) {
+                            currentSprite = null; 
+                        }
+
+                        if (currentSprite) {
+                            ctx.drawImage(currentSprite, p.x - 64, p.y - 188, 128, 220); 
+                        } else {
+                            ctx.fillStyle = '#e74c3c';
+                            ctx.fillRect(p.x - 20, p.y - 100, 40, 100);
+                        }
+                    }
+                    ctx.globalAlpha = 1.0;
+                }
+            }
+            particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
+            ctx.globalAlpha = 1.0; ctx.restore(); 
+        }
+
+        // Запуск первой инициализации масштаба при загрузке скрипта
+        resizeGame();
+
+        function gameLoop() { if (!gameStarted) return; update(); drawGame(); requestAnimationFrame(gameLoop); }
+
+        // --- ЛОГИКА 2D БОССА ---
+        let bossHp = 10; 
+        let bossInterval; 
+        let bossMovementInterval;
+        let canShoot = true; 
+        
+        let playerHp = 3;
+        let isShieldActive = false;
+        let shieldOnCooldown = false;
+
+        function togglePause() {
+            if (document.getElementById('bossOverlay').style.display === 'flex') {
+                isPaused = !isPaused;
+                document.getElementById('pauseBtn').innerText = isPaused ? "▶️" : "⏸️";
+                document.getElementById('pauseIndicator').style.display = isPaused ? "block" : "none";
+            }
+        }
+
+        function updateBossSkulls() {
+            const container = document.getElementById('bossSkullsContainer');
+            container.innerHTML = '<span style="font-size: 30px; filter: drop-shadow(0 0 5px red);">💀</span>' +
+                                  '<span style="font-size: 24px; font-weight: 900; color: #fff; margin-left: 10px;"> × ' + bossHp + '</span>';
+        }
+
+        function updateHearts() {
+            const hearts = document.querySelectorAll('.heart');
+            hearts.forEach((h, i) => {
+                h.style.opacity = i < playerHp ? '1' : '0.2';
+                h.style.transform = i < playerHp ? 'scale(1)' : 'scale(0.8)';
+            });
+        }
+
+        function activateShield() {
+            if (isPaused || isShieldActive || shieldOnCooldown || playerHp <= 0 || bossHp <= 0) return;
+            
+            isShieldActive = true;
+            shieldOnCooldown = true;
+            
+            const playerImg = document.getElementById('arenaPlayer');
+            playerImg.src = images['juliaShield'].src;
+            
+            const btn = document.getElementById('shieldBtn');
+            const barBg = document.getElementById('shieldBarBg');
+            const bar = document.getElementById('shieldBar');
+            
+            btn.disabled = true;
+            barBg.style.display = 'block';
+            
+            bar.style.transition = 'none'; bar.style.width = '100%';
+            setTimeout(() => { bar.style.transition = 'width 1s linear'; bar.style.width = '0%'; }, 50);
+            
+            setTimeout(() => {
+                isShieldActive = false;
+                if (playerHp > 0) playerImg.src = images['player'].src;
+                barBg.style.display = 'none'; 
+                btn.innerText = "⏳"; 
+                
+                setTimeout(() => {
+                    shieldOnCooldown = false;
+                    if (playerHp > 0 && bossHp > 0) { 
+                        btn.disabled = false; 
+                        btn.innerText = ""; 
+                    }
+                }, 500); 
+            }, 1000); 
+        }
+
+        function shootBossProjectile() {
+            if (bossHp <= 0 || playerHp <= 0) return;
+            
+            let projectile = document.createElement('div');
+            projectile.className = 'boss-projectile';
+            
+            // Задаем строгие координаты старта и конца в пространстве 852x393
+            const startX = 722; 
+            const startY = 258; 
+            const endX = 118; 
+            const endY = 193; 
+
+            projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';
+            document.getElementById('bossOverlay').appendChild(projectile);
+            projectile.offsetWidth; 
+            
+            projectile.style.left = endX + 'px'; projectile.style.top = endY + 'px';
+            
+            setTimeout(() => {
+                projectile.remove();
+                if (bossHp <= 0 || playerHp <= 0) return;
+                
+                if (isShieldActive) {
+                    let blockText = document.createElement('div');
+                    blockText.innerText = "БЛОК!";
+                    blockText.style.position = 'absolute'; blockText.style.left = endX + 'px'; blockText.style.top = (endY - 40) + 'px';
+                    blockText.style.color = '#3498db'; blockText.style.fontWeight = '900'; blockText.style.fontSize = '30px';
+                    blockText.style.textShadow = '0 0 10px #fff'; blockText.style.zIndex = '205';
+                    document.getElementById('bossOverlay').appendChild(blockText);
+                    setTimeout(() => blockText.remove(), 600);
+                } else {
+                    const playerImg = document.getElementById('arenaPlayer');
+                    playerHp -= 1; // Урон Юле!
+                    updateHearts();
+                    playerImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 20px red)';
+                    
+                    if (playerHp <= 0) {
+                        clearInterval(bossInterval); 
+                        clearInterval(bossMovementInterval);
+                        setTimeout(() => {
+                            showDialogue("Ничего страшного! Попробуй еще раз!\nАктивируй щит, чтобы избежать урона!", () => {
+                                startBossFight();
+                            }, { hideBossUI: true, buttonText: "Попробовать еще раз!" });
+                        }, 1000);
+                    } else {
+                        setTimeout(() => { if (playerHp > 0) playerImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))'; }, 300);
+                    }
+                }
+            }, 2000); 
+        }
+
+        function startBossFight() {
+            toggleBossUI(true); 
+            document.getElementById('pauseIndicator').style.display = 'none'; 
+            playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
+            bossHp = 10; updateBossSkulls();
+            isPaused = false;
+            document.getElementById('pauseBtn').innerText = "⏸️";
+            
+            let pImg = document.getElementById('arenaPlayer');
+            pImg.src = images['player'].src;
+            pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
+            pImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))';
+            
+            let btn = document.getElementById('shieldBtn'); 
+            btn.disabled = false; 
+            btn.innerText = ""; 
+            document.getElementById('shieldBarBg').style.display = 'none';
+
+            let bossChar = document.getElementById('arenaBoss');
+            bossChar.style.bottom = '12%';
+
+            bossInterval = setInterval(() => { 
+                if (!isPaused) shootBossProjectile(); 
+            }, 3000);
+            
+            bossMovementInterval = setInterval(() => {
+                if (bossHp <= 0 || isPaused) return;
+                if (bossChar.style.bottom === '12%') {
+                    bossChar.style.bottom = '40%'; 
+                } else {
+                    bossChar.style.bottom = '12%'; 
+                }
+            }, 3000);
+        }
+
+        function damageBoss(e) {
+            if (isPaused || bossHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
+            canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
+
+            const playerImg = document.getElementById('arenaPlayer');
+            playerImg.src = images['juliaHit'].src;
+            setTimeout(() => {
+                if (playerHp > 0 && !isShieldActive) {
+                    playerImg.src = images['player'].src; 
+                }
+            }, 500);
+
+            let projectile = document.createElement('img');
+            projectile.src = images['alch'].src; projectile.className = 'player-projectile';
+            
+            const localClick = getLocalCoords(e.clientX, e.clientY);
+            const endX = localClick.x - 12; 
+            const endY = localClick.y - 12;
+            
+            const startX = 118; 
+            const startY = 193; 
+
+            projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';
+            document.getElementById('bossOverlay').appendChild(projectile);
+            projectile.offsetWidth; 
+            projectile.style.left = endX + 'px'; projectile.style.top = endY + 'px';
+
+            setTimeout(() => {
+                projectile.remove();
+                if (bossHp <= 0) return;
+                
+                const dist = Math.hypot(endX - 722, endY - 258);
+                const isHit = dist < 120; // 120px радиус попадания
+
+                if (isHit) {
+                    bossHp -= 1; 
+                    updateBossSkulls();
+                    
+                    const bossChar = document.getElementById('arenaBoss');
+                    bossChar.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
+                    bossChar.style.filter = 'brightness(2) drop-shadow(0 0 20px #fff)'; 
+                    setTimeout(() => { bossChar.style.transform = 'scale(1) rotate(0deg)'; bossChar.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.8))'; }, 100);
+
+                    if (bossHp <= 0) {
+                        clearInterval(bossInterval); 
+                        clearInterval(bossMovementInterval); 
+                        document.getElementById('finishHimOverlay').style.display = 'flex';
+                    }
+                } else {
+                    let missText = document.createElement('div');
+                    missText.innerText = "УВОРОТ!";
+                    missText.style.position = 'absolute';
+                    missText.style.left = endX + 'px';
+                    missText.style.top = (endY - 30) + 'px';
+                    missText.style.color = '#bdc3c7';
+                    missText.style.fontWeight = '900';
+                    missText.style.fontSize = '24px';
+                    missText.style.zIndex = '205';
+                    document.getElementById('bossOverlay').appendChild(missText);
+                    setTimeout(() => missText.remove(), 800);
+                }
+            }, 2000); 
+        }
+
+        // --- УПРАВЛЕНИЕ НА КАРТЕ ---
+        // Используем offset, так как они всегда верны относительно самого канваса!
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!gameStarted || isPaused) return;
+            
+            // Получаем точные пиксели внутри канваса, игнорируя повороты и масштабирование
+            const mouseX = e.offsetX / zoom;
+            const mouseY = e.offsetY / zoom;
+            
+            const cameraPos = toScreen(player.x, player.y);
+            let cx = mouseX - canvas.width / 2; 
+            let cy = mouseY - canvas.height / 2;
+            const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
+            const tw = tileW / 2; const th = tileH / 2;
+            const gridX = Math.round((sx / tw + sy / th) / 2); 
+            const gridY = Math.round((sy / th - sx / tw) / 2);
+            
+            const moveDistance = Math.abs(gridX - player.x) + Math.abs(gridY - player.y);
+            if (isValidTile(gridX, gridY) && moveDistance === 1) {
+                targetMovePos = { x: gridX, y: gridY }; 
+            }
+        });
+
+        document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
+        document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });
+        document.getElementById('btnLeft').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(-1, 0); });
+        document.getElementById('btnRight').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(1, 0); });
+
+        window.addEventListener('keydown', (e) => {
+            if (!gameStarted || isPaused) return; 
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault(); targetMovePos = null; 
+                if (e.key === 'ArrowUp') movePlayer(0, -1); if (e.key === 'ArrowDown') movePlayer(0, 1);
+                if (e.key === 'ArrowLeft') movePlayer(-1, 0); if (e.key === 'ArrowRight') movePlayer(1, 0);
+            }
+        });
+
+        // --- ЛОГИКА ДОБИВАНИЯ И УЛЬТИМЕЙТА ---
+        const vid = document.getElementById('ultimateVideo');
+
+        vid.addEventListener('error', () => {
+            console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
+            document.getElementById('videoOverlay').style.display = 'none';
+            if(!isMuted && currentVolume > 0) bgMusic.play();
+            document.getElementById('victoryOverlay').style.display = 'flex';
+        });
+
+        document.getElementById('finishHimBtn').addEventListener('click', () => {
+            document.getElementById('finishHimOverlay').style.display = 'none';
+            
+            let bossChar = document.getElementById('arenaBoss');
+            bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
+
+            const vidOverlay = document.getElementById('videoOverlay');
+            vidOverlay.style.display = 'flex';
+            
+            bgMusic.pause();
+
+            vid.load(); 
+            let playPromise = vid.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Автоплей заблокирован: ", error);
+                    vidOverlay.style.display = 'none';
+                    if(!isMuted && currentVolume > 0) bgMusic.play();
+                    setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
+                });
+            }
+        });
+
+        document.getElementById('ultimateVideo').addEventListener('ended', () => {
+            document.getElementById('videoOverlay').style.display = 'none';
+            document.getElementById('victoryOverlay').style.display = 'flex';
+            if(!isMuted && currentVolume > 0) bgMusic.play(); 
+        });
+    </script>
+</body>
+</html>

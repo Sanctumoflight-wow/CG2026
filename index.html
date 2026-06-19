@@ -91,13 +91,6 @@
             gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
         }
         #muteBtn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; }
-        .vol-btn {
-            background: #2c3e50; color: white; border: 2px solid #7f8c8d; border-radius: 8px;
-            width: 30px; height: 30px; font-size: 20px; font-weight: bold; cursor: pointer;
-            display: flex; justify-content: center; align-items: center; padding: 0; line-height: 1;
-        }
-        .vol-btn:active { background: #f1c40f; color: #1a252f; border-color: #f1c40f; }
-        #volDisplay { font-weight: 700; color: #f1c40f; width: 45px; text-align: center; font-size: 14px; user-select: none; }
 
         .screen-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -410,9 +403,6 @@
             <!-- Аудио Контроллер внутри экрана игры -->
             <div id="audioControls">
                 <button id="muteBtn">🔊</button>
-                <button id="volDownBtn" class="vol-btn">-</button>
-                <span id="volDisplay">10%</span>
-                <button id="volUpBtn" class="vol-btn">+</button>
             </div>
 
             <!-- ЭКРАН ПОБЕДЫ -->
@@ -533,27 +523,73 @@
     </div> 
 
     <script>
-        // --- ФОНОВАЯ ЗАГРУЗКА ВСЕХ ФАЙЛОВ ДЛЯ ПЛАВНОСТИ ---
-        function preloadBackgroundAssets() {
-            const backgroundAssets = [
-                'images/Rune_1.png', 'images/Rune_2.png', 'images/Rune_3.png', 'images/Rune_4.png', 'images/Rune_5.png',
-                'images/dialogs/Dialog_TEST.png', 'images/dialogs/Alina.png', 'images/dialogs/Lera.png', 
-                'images/dialogs/Father.png', 'images/dialogs/Julia.png',
-                'images/boss.png?v=3', 'images/boss_bg.png?v=2', 
-                'images/model/Julia/Julia_Shield.png', 'images/model/Julia/Julia_Hit.png',
-                'images/alch.png', 'images/Divine_Shield.jpg', 'images/Arrow.jpg'
-            ];
-            
-            backgroundAssets.forEach(src => {
-                const img = new Image();
-                img.src = src;
-            });
+        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ ---
+        const images = {}; 
+        const preloadedImages = []; 
 
-            const vid = document.createElement('video');
-            vid.src = 'images/ultimate.mp4';
-            vid.preload = 'auto';
+        const allAssets = {
+            'block': 'images/textures/block.png',
+            'player': 'images/model/Julia/Julia.png',
+            'playerHappy': 'images/model/Julia/Julia_Happy.png',
+            'crown': 'images/Crown.png',
+            'shoulders': 'images/Shoulders.png',
+            'hammer': 'images/Hammer.png',
+            'rock': 'images/textures/winterspringfrostsaberrock.png',
+            'tarotCover': 'images/Tarot_Cover.png',
+            'tarot1': 'images/Tarot_1.png',
+            'shield': 'images/Shield.png',
+            'rune1': 'images/Rune_1.png',
+            'rune2': 'images/Rune_2.png',
+            'rune3': 'images/Rune_3.png',
+            'rune4': 'images/Rune_4.png',
+            'rune5': 'images/Rune_5.png',
+            'dialogTest': 'images/dialogs/Dialog_TEST.png',
+            'dialogAlina': 'images/dialogs/Alina.png',
+            'dialogLera': 'images/dialogs/Lera.png',
+            'dialogFather': 'images/dialogs/Father.png',
+            'dialogJulia': 'images/dialogs/Julia.png',
+            'boss': 'images/boss.png?v=3',
+            'bossBg': 'images/boss_bg.png?v=2',
+            'juliaShield': 'images/model/Julia/Julia_Shield.png',
+            'juliaHit': 'images/model/Julia/Julia_Hit.png',
+            'alch': 'images/alch.png',
+            'divineShield': 'images/Divine_Shield.jpg',
+            'arrow': 'images/Arrow.jpg'
+        };
+
+        const totalAssets = Object.keys(allAssets).length;
+        let assetsLoadedCount = 0;
+        const titlePlayBtn = document.getElementById('titlePlayBtn');
+        const startFieldBtn = document.getElementById('startFieldBtn');
+
+        for (const [key, src] of Object.entries(allAssets)) {
+            const img = new Image();
+            img.src = src;
+            preloadedImages.push(img);
+            images[key] = img;
+
+            img.onload = img.onerror = () => {
+                assetsLoadedCount++;
+                let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
+                if (assetsLoadedCount < totalAssets) {
+                    if (titlePlayBtn) {
+                        titlePlayBtn.innerText = `ЗАГРУЗКА ИГРЫ (${percent}%)`;
+                        titlePlayBtn.style.opacity = '0.5';
+                        titlePlayBtn.style.pointerEvents = 'none';
+                    }
+                } else {
+                    if (titlePlayBtn) {
+                        titlePlayBtn.innerText = 'ИГРАТЬ';
+                        titlePlayBtn.style.opacity = '1';
+                        titlePlayBtn.style.pointerEvents = 'auto';
+                    }
+                }
+            };
         }
-        preloadBackgroundAssets(); 
+
+        const vidObj = document.createElement('video');
+        vidObj.src = 'images/ultimate.mp4';
+        vidObj.preload = 'auto';
 
         let gameStarted = false;
         let isPaused = false; 
@@ -588,11 +624,7 @@
         const collectSound = document.getElementById('collectSound');
         const typeSound = document.getElementById('typeSound');
         const muteBtn = document.getElementById('muteBtn');
-        const volUpBtn = document.getElementById('volUpBtn');
-        const volDownBtn = document.getElementById('volDownBtn');
-        const volDisplay = document.getElementById('volDisplay');
         
-        let currentVolume = 0.10;
         let isMuted = false;
 
         function applyVolume() {
@@ -602,33 +634,20 @@
                 typeSound.volume = 0;
                 muteBtn.innerText = '🔇';
             } else {
-                bgMusic.volume = currentVolume;
-                collectSound.volume = Math.min(1.0, currentVolume * 2 + 0.2); 
-                typeSound.volume = Math.min(0.5, currentVolume);
+                bgMusic.volume = 0.3; // Музыку делаем чуть тише эффектов
+                collectSound.volume = 1.0; 
+                typeSound.volume = 1.0;
                 muteBtn.innerText = '🔊';
             }
-            volDisplay.innerText = Math.round(currentVolume * 100) + '%';
         }
 
-        muteBtn.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            isMuted = !isMuted;
-            applyVolume();
-        });
-
-        volUpBtn.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            currentVolume = Math.round(Math.min(1.0, currentVolume + 0.05) * 100) / 100;
-            if (isMuted && currentVolume > 0) isMuted = false;
-            applyVolume();
-        });
-
-        volDownBtn.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            currentVolume = Math.round(Math.max(0.05, currentVolume - 0.05) * 100) / 100; 
-            if (isMuted && currentVolume > 0) isMuted = false;
-            applyVolume();
-        });
+        if (muteBtn) {
+            muteBtn.addEventListener('pointerdown', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                isMuted = !isMuted;
+                applyVolume();
+            });
+        }
 
         applyVolume();
         function playCollectSound() { collectSound.currentTime = 0; collectSound.play().catch(e=>{}); }
@@ -660,21 +679,25 @@
         }
 
         const fsBtn = document.getElementById('fullscreenToggleBtn');
-        fsBtn.addEventListener('click', () => {
-            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            if (isFullscreen) {
-                exitFullscreen();
-            } else {
-                enterFullscreen();
-            }
-        });
+        if (fsBtn) {
+            fsBtn.addEventListener('click', () => {
+                const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                if (isFullscreen) {
+                    exitFullscreen();
+                } else {
+                    enterFullscreen();
+                }
+            });
+        }
 
         function handleFullscreenChange() {
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            if (isFullscreen) {
-                fsBtn.innerText = 'Свернуть';
-            } else {
-                fsBtn.innerText = 'На весь экран';
+            if (fsBtn) {
+                if (isFullscreen) {
+                    fsBtn.innerText = 'Свернуть';
+                } else {
+                    fsBtn.innerText = 'На весь экран';
+                }
             }
             setTimeout(resizeGame, 50); 
             setTimeout(resizeGame, 500);
@@ -686,23 +709,27 @@
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
         // --- НАВИГАЦИЯ ---
-        titlePlayBtn.addEventListener('click', () => {
-            enterFullscreen();
-            document.getElementById('menuVideo').pause();
-            document.getElementById('titleScreen').style.display = 'none';
-            document.getElementById('startScreen').style.display = 'flex';
-            if(!isMuted && currentVolume > 0) bgMusic.play().catch(e=>{});
-        });
+        if (titlePlayBtn) {
+            titlePlayBtn.addEventListener('click', () => {
+                enterFullscreen();
+                document.getElementById('menuVideo').pause();
+                document.getElementById('titleScreen').style.display = 'none';
+                document.getElementById('startScreen').style.display = 'flex';
+                if(!isMuted) bgMusic.play().catch(e=>{});
+            });
+        }
 
-        document.getElementById('startFieldBtn').addEventListener('click', () => {
-            enterFullscreen();
-            document.getElementById('startScreen').style.display = 'none'; 
-            document.getElementById('gameUI').style.display = 'block';
-            document.getElementById('tracker').style.display = 'block';
-            gameStarted = true; 
-            if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
-            setTimeout(resizeGame, 50); 
-        });
+        if (startFieldBtn) {
+            startFieldBtn.addEventListener('click', () => {
+                enterFullscreen();
+                document.getElementById('startScreen').style.display = 'none'; 
+                document.getElementById('gameUI').style.display = 'block';
+                document.getElementById('tracker').style.display = 'block';
+                gameStarted = true; 
+                if (assetsLoadedCount >= totalAssets) requestAnimationFrame(gameLoop);
+                setTimeout(resizeGame, 50); 
+            });
+        }
 
         function toggleBossUI(show) {
             const displayValue = show ? '' : 'none';
@@ -938,7 +965,7 @@
                 if (callback) callback();
             };
 
-            if (!isMuted && currentVolume > 0) {
+            if (!isMuted) {
                 typeSound.currentTime = 0;
                 typeSound.loop = true;
                 typeSound.play().catch(e => {});
@@ -1313,9 +1340,14 @@
                 if (isShieldActive) {
                     let blockText = document.createElement('div');
                     blockText.innerText = "БЛОК!";
-                    blockText.style.position = 'absolute'; blockText.style.left = endX + 'px'; blockText.style.top = (endY - 40) + 'px';
-                    blockText.style.color = '#3498db'; blockText.style.fontWeight = '900'; blockText.style.fontSize = '30px';
-                    blockText.style.textShadow = '0 0 10px #fff'; blockText.style.zIndex = '205';
+                    blockText.style.position = 'absolute';
+                    blockText.style.left = endX + 'px';
+                    blockText.style.top = (endY - 40) + 'px';
+                    blockText.style.color = '#3498db';
+                    blockText.style.fontWeight = '900';
+                    blockText.style.fontSize = '30px';
+                    blockText.style.textShadow = '0 0 10px #fff';
+                    blockText.style.zIndex = '205';
                     document.getElementById('bossOverlay').appendChild(blockText);
                     setTimeout(() => blockText.remove(), 600);
                 } else {
@@ -1440,11 +1472,10 @@
         }
 
         // --- УПРАВЛЕНИЕ НА КАРТЕ ---
-        // Используем offset, так как они всегда верны относительно самого канваса!
         canvas.addEventListener('pointerdown', (e) => {
             if (!gameStarted || isPaused) return;
             
-            // Получаем точные пиксели внутри канваса, игнорируя повороты и масштабирование
+            // Получаем точные пиксели внутри канваса, игнорируя масштабирование
             const mouseX = e.offsetX / zoom;
             const mouseY = e.offsetY / zoom;
             
@@ -1482,7 +1513,7 @@
         vid.addEventListener('error', () => {
             console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
             document.getElementById('videoOverlay').style.display = 'none';
-            if(!isMuted && currentVolume > 0) bgMusic.play();
+            if(!isMuted) bgMusic.play();
             document.getElementById('victoryOverlay').style.display = 'flex';
         });
 
@@ -1504,7 +1535,7 @@
                 playPromise.catch(error => {
                     console.warn("Автоплей заблокирован: ", error);
                     vidOverlay.style.display = 'none';
-                    if(!isMuted && currentVolume > 0) bgMusic.play();
+                    if(!isMuted) bgMusic.play();
                     setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
                 });
             }
@@ -1513,7 +1544,7 @@
         document.getElementById('ultimateVideo').addEventListener('ended', () => {
             document.getElementById('videoOverlay').style.display = 'none';
             document.getElementById('victoryOverlay').style.display = 'flex';
-            if(!isMuted && currentVolume > 0) bgMusic.play(); 
+            if(!isMuted) bgMusic.play(); 
         });
     </script>
 </body>

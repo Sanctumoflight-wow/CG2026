@@ -354,7 +354,7 @@
         }
         .dnd-book-bg {
             width: 100%; height: 100%; 
-            background-size: 100% 100%; /* Идеально растягиваем на две страницы */
+            background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
             display: flex; 
@@ -362,7 +362,6 @@
         }
         .dnd-left-page { 
             flex: 1; 
-            /* Левая часть пустая, тут виден сам арт из книги */
         }
         .dnd-right-page { 
             flex: 1; 
@@ -372,7 +371,7 @@
             position: relative; 
         }
         .dnd-content-box {
-            background: rgba(10, 15, 20, 0.85); /* Темный стильный фон для текста на правой странице */
+            background: rgba(10, 15, 20, 0.85); 
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px; 
             padding: 25px 20px; 
@@ -609,7 +608,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ (Отображается внутри экрана) -->
-            <div id="gameVersion">v1.04</div>
+            <div id="gameVersion">v1.05</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -794,6 +793,11 @@
 
         let gameStarted = false;
         let isPaused = false; 
+        
+        // НОВЫЕ ФЛАГИ ДЛЯ ОПТИМИЗАЦИИ (ОТ ЗАВИСАНИЙ И УТЕЧЕК)
+        let isWinTriggered = false; 
+        let isBossFight = false;
+        let winTimeout = null;
 
         // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ ---
         const images = {}; 
@@ -835,7 +839,7 @@
             'dnd_1': 'images/dnd_1.jpg',
             'dnd_2': 'images/dnd_2.jpg',
             'dnd_3': 'images/dnd_3.jpg',
-            'dnd_death': 'images/dnd_death.jpg' // Новый арт смерти
+            'dnd_death': 'images/dnd_death.jpg' 
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -972,6 +976,15 @@
         document.addEventListener('mozfullscreenchange', handleFullscreenChange);
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
+        // --- ЦЕНТРАЛИЗОВАННАЯ ОПТИМИЗАЦИЯ СЧЕТЧИКА ---
+        function addScore() {
+            score++;
+            scoreElement.innerText = score + " / " + maxScore;
+            if (score >= maxScore) {
+                scoreElement.style.color = '#f1c40f'; // Загорается золотым
+            }
+        }
+
         // --- НАВИГАЦИЯ И ПЕРЕЗАГРУЗКА ---
         function resetGame() {
             document.getElementById('victoryOverlay').style.display = 'none';
@@ -996,6 +1009,10 @@
             easterEggRevealed = false;
             easterEggFound = false;
             teleportPrompted = false;
+            
+            isWinTriggered = false; // Сброс триггера победы
+            isBossFight = false;    // Сброс режима босса
+            if (winTimeout) clearTimeout(winTimeout); // Сброс таймера перехода
             
             shieldObj.alpha = 1;
             shieldObj.x = 13; 
@@ -1079,7 +1096,7 @@
             currentDndFrame = frame;
             const textEl = document.getElementById('dndText');
             const choicesEl = document.getElementById('dndChoices');
-            const bgEl = document.getElementById('dndBookBg'); // Управляем фоном
+            const bgEl = document.getElementById('dndBookBg'); 
             choicesEl.innerHTML = ''; 
 
             if (frame === 1) {
@@ -1091,7 +1108,7 @@
             } else if (frame === 2) {
                 bgEl.style.backgroundImage = `url('${images['dnd_2'].src}')`;
                 textEl.innerText = "Ты подходишь не торопясь к кустам и видишь лагерь гоблинов. На горе золота красуется твой молот. Что ты будешь делать?";
-                addDndChoice("1. Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death')); // Путь смерти!
+                addDndChoice("1. Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death'));
                 addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
                 addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
             } else if (frame === 3) {
@@ -1103,7 +1120,7 @@
                 textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Ты погибла...";
                 addDndChoice("Начать игру заново", () => {
                     document.getElementById('dndGameOverlay').style.display = 'none';
-                    resetGame(); // Полный сброс всей игры
+                    resetGame(); 
                 });
             }
         }
@@ -1114,6 +1131,7 @@
             btn.innerText = text;
             btn.onclick = (e) => {
                 e.stopPropagation(); 
+                btn.disabled = true; // Защита от двойного случайного клика
                 callback();
             };
             document.getElementById('dndChoices').appendChild(btn);
@@ -1137,9 +1155,7 @@
             document.getElementById('dndGameOverlay').style.display = 'none';
             showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
                 hammerCollected = true; 
-                score++; 
-                scoreElement.innerText = score + " / " + maxScore; 
-                if (score >= maxScore) scoreElement.style.color = '#f1c40f'; 
+                addScore();
                 playCollectSound(); 
                 spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
                 isPaused = false; 
@@ -1163,8 +1179,7 @@
                 isRuneAnimating = false; 
                 showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                     shieldCollected = true; 
-                    score++; scoreElement.innerText = score + " / " + maxScore; 
-                    if (score >= maxScore) scoreElement.style.color = '#f1c40f'; 
+                    addScore();
                     playCollectSound(); 
                     spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
                     
@@ -1243,8 +1258,7 @@
                         document.getElementById('runeGameOverlay').style.display = 'none';
                         showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                             shieldCollected = true; 
-                            score++; scoreElement.innerText = score + " / " + maxScore; 
-                            if (score >= maxScore) scoreElement.style.color = '#f1c40f'; 
+                            addScore();
                             playCollectSound(); 
                             spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
                             
@@ -1305,8 +1319,7 @@
                 easterEggRevealed = true; // Открывает невидимый путь!
                 showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
                     crownCollected = true; 
-                    score++; scoreElement.innerText = score + " / " + maxScore; 
-                    if (score >= maxScore) scoreElement.style.color = '#f1c40f'; 
+                    addScore();
                     playCollectSound(); 
                     spawnParticles(crown.x, crown.y, '#f1c40f'); 
                     
@@ -1457,18 +1470,21 @@
         }
 
         function movePlayer(dx, dy) {
-            if (!gameStarted || isPaused) return;
+            if (!gameStarted || isPaused || isBossFight) return; // Блокировка движения во время битвы с боссом
             let nextX = player.x + dx; let nextY = player.y + dy;
             if (!isValidTile(nextX, nextY) || obstacles.find(o => o.x === nextX && o.y === nextY)) { targetMovePos = null; return; }
             prevPlayerPos = { x: player.x, y: player.y }; player.x = nextX; player.y = nextY;
             checkInteractions();
         }
 
+        // --- ИДЕАЛЬНАЯ ЗАЩИТА ОТ ДВОЙНЫХ СРАБАТЫВАНИЙ И ЗАВИСАНИЙ ---
         function checkWin() { 
-            if (score >= maxScore) { 
+            if (score >= maxScore && !isWinTriggered) { 
+                isWinTriggered = true; // Блокируем повторный вызов
                 isPaused = true; 
                 isPlayerHappy = true;
-                setTimeout(() => { 
+                
+                winTimeout = setTimeout(() => { 
                     showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
                         goToBoss();
                     }, { bgImage: images['dialogTest'].src });
@@ -1492,8 +1508,8 @@
             if (player.x === shoulders.x && player.y === shoulders.y && !shouldersCollected) { 
                 isPaused = true; targetMovePos = null;
                 showDialogue("Мощные наплечники!\nОни надежно защитят в бою.", () => {
-                    shouldersCollected = true; score++; scoreElement.innerText = score + " / " + maxScore; 
-                    if (score >= maxScore) scoreElement.style.color = '#f1c40f'; 
+                    shouldersCollected = true; 
+                    addScore();
                     playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
                     isPaused = false; checkWin();
                 }, { bgImage: images['dialogFather'].src });
@@ -1715,7 +1731,15 @@
 
         resizeGame();
 
-        function gameLoop() { if (!gameStarted) return; update(); drawGame(); requestAnimationFrame(gameLoop); }
+        // ОПТИМИЗАЦИЯ: Если активирована битва с Боссом, 2D карта больше не рендерится в холостую
+        function gameLoop() { 
+            if (!gameStarted) return; 
+            if (!isBossFight) {
+                update(); 
+                drawGame(); 
+            }
+            requestAnimationFrame(gameLoop); 
+        }
 
         // --- ЛОГИКА 2D БОССА ---
         let bossHp = 10; 
@@ -1788,6 +1812,28 @@
             }, 1000); 
         }
 
+        function goToBoss() {
+            isBossFight = true; // Замораживаем отрисовку 2D карты для экономии памяти
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('bossOverlay').style.display = 'flex';
+            
+            document.getElementById('playerHpContainer').style.display = '';
+            document.getElementById('bossSkullsContainer').style.display = '';
+            document.getElementById('shieldContainer').style.display = '';
+            document.getElementById('bossHintText').style.display = 'block';
+
+            if(bossInterval) clearInterval(bossInterval);
+            if(bossMovementInterval) clearInterval(bossMovementInterval);
+
+            bossHp = 10; updateBossSkulls();
+
+            let bossChar = document.getElementById('arenaBoss');
+            bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
+            bossChar.style.bottom = '12%';
+
+            startBossFight();
+        }
+
         function shootBossProjectile() {
             if (bossHp <= 0 || playerHp <= 0) return;
             
@@ -1839,7 +1885,6 @@
         }
 
         function startBossFight() {
-            toggleBossUI(true); 
             document.getElementById('pauseIndicator').style.display = 'none'; 
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
@@ -1944,7 +1989,7 @@
         document.getElementById('btnRight').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(1, 0); });
 
         window.addEventListener('keydown', (e) => {
-            if (!gameStarted || isPaused) return; 
+            if (!gameStarted || isPaused || isBossFight) return; 
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault(); targetMovePos = null; 
                 if (e.key === 'ArrowUp') movePlayer(0, -1); if (e.key === 'ArrowDown') movePlayer(0, 1);

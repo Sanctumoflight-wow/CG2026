@@ -36,6 +36,19 @@
             overscroll-behavior: none;
         }
 
+        /* --- ВЕРСИЯ ИГРЫ --- */
+        #gameVersion {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            font-family: 'Montserrat', sans-serif;
+            z-index: 10000;
+            pointer-events: none;
+            font-weight: 700;
+        }
+
         /* --- ЭКРАН С ПРОСЬБОЙ ПОВЕРНУТЬ ТЕЛЕФОН --- */
         #rotate-overlay {
             display: none;
@@ -55,6 +68,7 @@
             #game-container { display: none !important; }
             #rotate-overlay { display: flex !important; }
             #fullscreenToggleBtn { display: none !important; }
+            #gameVersion { display: none !important; }
         }
 
         /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
@@ -251,11 +265,11 @@
             transition: opacity 0.3s;
         }
         .tracker-item {
-            display: flex; align-items: center; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px #000;
+            display: flex; align-items: center; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px #000; color: white;
         }
         .tracker-item span { 
             margin-left: 15px; 
-            font-size: 24px; 
+            font-size: 26px; /* Одинаковый размер для обоих счетчиков */
             color: white; /* Базовый белый цвет */
             transition: color 0.3s;
         }
@@ -516,6 +530,9 @@
     </style>
 </head>
 <body>
+
+    <!-- ВЕРСИЯ ИГРЫ -->
+    <div id="gameVersion">v1.00</div>
 
     <!-- КНОПКА ПОЛНОГО ЭКРАНА (ПОВЕРХ ВСЕГО) -->
     <button id="fullscreenToggleBtn">На весь экран</button>
@@ -1330,20 +1347,24 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
-        // Сложный невидимый маршрут за Корону
+        // Сложный невидимый маршрут за Корону (Красный путь на схеме)
         const secretPath = [
-            {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1}, 
-            {x: -1, y: 1}, {x: -1, y: 2}
+            {x: 0, y: 3}, {x: -1, y: 3}, {x: -2, y: 3}, {x: -3, y: 3}, 
+            {x: -3, y: 4}, {x: -3, y: 5}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
+            
             // Скрытый длинный путь к пасхалке (открывается после взятия короны)
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Короткий путь обратно (появляется ТОЛЬКО ПОСЛЕ сбора самой пасхалки)
-            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
+            
+            // Короткий путь обратно (появляется ТОЛЬКО ПОСЛЕ сбора самой пасхалки - Фиолетовый путь на схеме)
+            if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
+            
             // Остров для Щита (Крест вокруг [13, 4])
             if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
+            
             return false; 
         }
 
@@ -1411,7 +1432,8 @@
                 }, { bgImage: images['dialogFather'].src });
             }
 
-            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
+            // ПРОВЕРКА НА ПАСХАЛКУ (Координаты из схемы: -3, 5)
+            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 5) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1490,7 +1512,7 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
                     let isSecretPath = (easterEggRevealed && secretPath.some(path => path.x === x && path.y === y));
-                    let isShortcut = (easterEggFound && x === -1 && (y === 3 || y === 4));
+                    let isShortcut = (easterEggFound && y === 4 && (x === -1 || x === -2));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
                     let isShieldPlatform = ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5));
 

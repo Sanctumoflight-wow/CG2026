@@ -245,15 +245,20 @@
         /* ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ */
         #tracker {
             position: absolute; top: 15px; left: 40px; z-index: 10;
-            background: rgba(0, 0, 0, 0.6); padding: 10px 15px; border-radius: 15px;
+            background: rgba(0, 0, 0, 0.6); padding: 10px 20px; border-radius: 15px;
             border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
-            display: flex; flex-direction: column; gap: 8px;
+            display: flex; flex-direction: column; gap: 10px;
             transition: opacity 0.3s;
         }
         .tracker-item {
-            display: flex; align-items: center; font-size: 22px; font-weight: 700; color: white; text-shadow: 0 2px 4px #000;
+            display: flex; align-items: center; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px #000;
         }
-        .tracker-item span { margin-left: 10px; font-size: 18px; }
+        .tracker-item span { 
+            margin-left: 15px; 
+            font-size: 24px; 
+            color: white; /* Базовый белый цвет */
+            transition: color 0.3s;
+        }
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
@@ -571,7 +576,7 @@
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
                 <div class="main-title">CALLIOPE<br>GAME 2</div>
                 
-                <!-- НОВЫЙ БЛОК ЗАГРУЗКИ -->
+                <!-- БЛОК ЗАГРУЗКИ -->
                 <div id="loadingContainer">
                     <div id="loadingText">Загрузка...</div>
                     <div id="loadingBarBg">
@@ -606,7 +611,7 @@
                 <!-- ОБНОВЛЕННЫЙ ТРЕКЕР -->
                 <div id="tracker">
                     <div class="tracker-item">📦 <span id="score">0 / 4</span></div>
-                    <div class="tracker-item" style="color: #f1c40f;">💰 <span id="easterScore">0 / 1</span></div>
+                    <div class="tracker-item">💰 <span id="easterScore">0 / 1</span></div>
                 </div>
                 
                 <canvas id="gameCanvas"></canvas>
@@ -902,7 +907,10 @@
             
             score = 0;
             scoreElement.innerText = score + " / " + maxScore;
+            scoreElement.style.color = "white"; // Сброс цвета
             document.getElementById('easterScore').innerText = "0 / 1";
+            document.getElementById('easterScore').style.color = "white"; // Сброс цвета
+            
             crownCollected = false;
             shieldCollected = false;
             shouldersCollected = false;
@@ -1046,6 +1054,7 @@
                 hammerCollected = true; 
                 score++; 
                 scoreElement.innerText = score + " / " + maxScore; 
+                if (score >= maxScore) scoreElement.style.color = '#f1c40f'; // Золотой цвет если максимум
                 playCollectSound(); 
                 spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
                 isPaused = false; 
@@ -1070,6 +1079,7 @@
                 showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                     shieldCollected = true; 
                     score++; scoreElement.innerText = score + " / " + maxScore; 
+                    if (score >= maxScore) scoreElement.style.color = '#f1c40f'; // Золотой цвет
                     playCollectSound(); 
                     spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
                     
@@ -1149,6 +1159,7 @@
                         showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                             shieldCollected = true; 
                             score++; scoreElement.innerText = score + " / " + maxScore; 
+                            if (score >= maxScore) scoreElement.style.color = '#f1c40f'; // Золотой цвет
                             playCollectSound(); 
                             spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
                             
@@ -1210,6 +1221,7 @@
                 showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
                     crownCollected = true; 
                     score++; scoreElement.innerText = score + " / " + maxScore; 
+                    if (score >= maxScore) scoreElement.style.color = '#f1c40f'; // Золотой цвет
                     playCollectSound(); 
                     spawnParticles(crown.x, crown.y, '#f1c40f'); 
                     
@@ -1298,7 +1310,6 @@
                     return; 
                 }
                 document.getElementById('dialogueOverlay').style.display = 'none';
-                // ФИКС БЛОКИРОВКИ: Защита от двойного вызова (предотвращает зависания)
                 if (onDialogueComplete) {
                     let cb = onDialogueComplete;
                     onDialogueComplete = null; 
@@ -1319,13 +1330,19 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
+        // Сложный невидимый маршрут за Корону
         const secretPath = [
-            {x: -1, y: 4}, {x: -2, y: 4}, {x: -3, y: 4}
+            {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1}, 
+            {x: -1, y: 1}, {x: -1, y: 2}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
-            if (easterEggRevealed && y === 4 && x >= -3 && x <= -1) return true;
+            // Скрытый длинный путь к пасхалке (открывается после взятия короны)
+            if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
+            // Короткий путь обратно (появляется ТОЛЬКО ПОСЛЕ сбора самой пасхалки)
+            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
+            // Остров для Щита (Крест вокруг [13, 4])
             if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
             return false; 
         }
@@ -1388,16 +1405,19 @@
                 isPaused = true; targetMovePos = null;
                 showDialogue("Мощные наплечники!\nОни надежно защитят в бою.", () => {
                     shouldersCollected = true; score++; scoreElement.innerText = score + " / " + maxScore; 
+                    if (score >= maxScore) scoreElement.style.color = '#f1c40f'; // Золотой цвет
                     playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
                     isPaused = false; checkWin();
                 }, { bgImage: images['dialogFather'].src });
             }
 
-            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
+            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
-                    document.getElementById('easterScore').innerText = "1 / 1";
+                    let es = document.getElementById('easterScore');
+                    es.innerText = "1 / 1";
+                    es.style.color = '#f1c40f'; // Золотой цвет
                     playCollectSound(); 
                     spawnParticles(player.x, player.y, '#f1c40f');
                     isPaused = false; checkWin();
@@ -1469,12 +1489,13 @@
                     if (dist === 5) alpha = 0.2;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
-                    let isSecretCube = (easterEggRevealed && y === 4 && x >= -3 && x <= -1);
+                    let isSecretPath = (easterEggRevealed && secretPath.some(path => path.x === x && path.y === y));
+                    let isShortcut = (easterEggFound && x === -1 && (y === 3 || y === 4));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
                     let isShieldPlatform = ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5));
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
-                        if (isRegularBlock || isSecretCube || isShieldPlatform) {
+                        if (isRegularBlock || isSecretPath || isShortcut || isShieldPlatform) {
                             
                             let blockImg = images['block'];
                             if (x === 4 && y === 4) {
@@ -1484,7 +1505,7 @@
                             } else if (x >= 3 && x <= 5 && y > 4) {
                                 blockImg = images['block_4']; 
                             } else if (x < 4) {
-                                blockImg = images['block_1']; 
+                                blockImg = images['block_1']; // Левая ветка + весь путь и шорткат пасхалки
                             } else if (x > 4) {
                                 blockImg = images['block_2']; 
                             }

@@ -347,36 +347,67 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* --- ДНД МИНИ-ИГРА (МОЛОТ) --- */
+        /* --- НОВЫЙ ДИЗАЙН ДНД МИНИ-ИГРЫ (МОЛОТ) --- */
         #dndGameOverlay {
-            display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            backdrop-filter: blur(10px); padding: 20px; box-sizing: border-box;
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 4500;
         }
-        .dnd-image-placeholder {
-            width: 90%; max-width: 600px; height: 200px; background: transparent; 
-            border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; 
-            color: rgba(255,255,255,0); font-style: italic; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
-            background-size: contain; background-repeat: no-repeat; background-position: center; font-family: 'Montserrat', sans-serif;
+        .dnd-book-bg {
+            width: 100%; height: 100%; 
+            background-size: 100% 100%; /* Идеально растягиваем на две страницы */
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex; 
             transition: background-image 0.3s ease;
         }
+        .dnd-left-page { 
+            flex: 1; 
+            /* Левая часть пустая, тут виден сам арт из книги */
+        }
+        .dnd-right-page { 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+        }
+        .dnd-content-box {
+            background: rgba(10, 15, 20, 0.85); /* Темный стильный фон для текста на правой странице */
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; 
+            padding: 25px 20px; 
+            width: 85%; 
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            text-align: center;
+            backdrop-filter: blur(3px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
         .dnd-text {
-            font-size: 20px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; 
-            text-shadow: 0 2px 4px #000; width: 90%; max-width: 500px; color: #fff;
+            font-size: 18px; 
+            font-family: 'Playfair Display', serif; 
+            margin-bottom: 25px; 
+            line-height: 1.4; 
+            color: #fff; 
+            text-shadow: 0 2px 4px #000;
         }
         .dnd-choices {
-            display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
+            display: flex; flex-direction: column; gap: 12px; 
         }
         .dnd-btn {
-            background: rgba(44, 62, 80, 0.8); border: 2px solid rgba(255,255,255,0.3); color: white; 
-            padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
-            font-family: 'Montserrat', sans-serif; text-shadow: 0 1px 2px #000;
+            background: #2c3e50; border: 1px solid #34495e; color: white; 
+            padding: 12px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 1px 2px #000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        .dnd-btn:hover, .dnd-btn:active { background: #f1c40f; color: #111; border-color: #f1c40f; transform: scale(0.98); text-shadow: none; }
+        .dnd-btn:hover, .dnd-btn:active { background: #34495e; border-color: #f1c40f; color: #f1c40f; }
         .dnd-skip {
-            position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); 
-            color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; 
-            font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 12px;
+            position: absolute; top: 15px; right: 15px; background: transparent; border: 1px solid rgba(255,255,255,0.3); 
+            color: rgba(255,255,255,0.5); padding: 5px 10px; border-radius: 5px; cursor: pointer; 
+            font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 10px;
         }
 
         /* РУННАЯ МИНИ-ИГРА */
@@ -578,7 +609,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ (Отображается внутри экрана) -->
-            <div id="gameVersion">v1.03</div>
+            <div id="gameVersion">v1.04</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -651,12 +682,22 @@
                 </div>
             </div>
 
-            <!-- ДНД МИНИ-ИГРА (МОЛОТ) -->
+            <!-- ДНД МИНИ-ИГРА (МОЛОТ) В ВИДЕ КНИГИ -->
             <div id="dndGameOverlay" class="screen-overlay">
-                <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить игру</button>
-                <div class="dnd-image-placeholder" id="dndImage"></div>
-                <div class="dnd-text" id="dndText"></div>
-                <div class="dnd-choices" id="dndChoices"></div>
+                <div class="dnd-book-bg" id="dndBookBg">
+                    <!-- Левая страница (иллюстрация из картинки) -->
+                    <div class="dnd-left-page"></div>
+                    
+                    <!-- Правая страница (текст и кнопки) -->
+                    <div class="dnd-right-page">
+                        <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить</button>
+                        
+                        <div class="dnd-content-box">
+                            <div class="dnd-text" id="dndText"></div>
+                            <div class="dnd-choices" id="dndChoices"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- РУННАЯ МИНИ-ИГРА -->
@@ -793,7 +834,8 @@
             'fieldBg': 'images/field_bg.jpg',
             'dnd_1': 'images/dnd_1.jpg',
             'dnd_2': 'images/dnd_2.jpg',
-            'dnd_3': 'images/dnd_3.jpg'
+            'dnd_3': 'images/dnd_3.jpg',
+            'dnd_death': 'images/dnd_death.jpg' // Новый арт смерти
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -1037,25 +1079,32 @@
             currentDndFrame = frame;
             const textEl = document.getElementById('dndText');
             const choicesEl = document.getElementById('dndChoices');
-            const imgEl = document.getElementById('dndImage');
+            const bgEl = document.getElementById('dndBookBg'); // Управляем фоном
             choicesEl.innerHTML = ''; 
 
             if (frame === 1) {
-                imgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`;
+                bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`;
                 textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
                 addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
-                addDndChoice("2. Подойти к кустам не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
+                addDndChoice("2. Подойти не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
                 addDndChoice("3. Развернуться и уйти", () => failDndGame("Ты решила не рисковать и отступила."));
             } else if (frame === 2) {
-                imgEl.style.backgroundImage = `url('${images['dnd_2'].src}')`;
+                bgEl.style.backgroundImage = `url('${images['dnd_2'].src}')`;
                 textEl.innerText = "Ты подходишь не торопясь к кустам и видишь лагерь гоблинов. На горе золота красуется твой молот. Что ты будешь делать?";
-                addDndChoice("1. Выпрыгнув начать кричать на гоблинов", () => failDndGame("Твой крик лишь разозлил их. Тебе пришлось спешно ретироваться!"));
+                addDndChoice("1. Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death')); // Путь смерти!
                 addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
                 addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
             } else if (frame === 3) {
-                imgEl.style.backgroundImage = `url('${images['dnd_3'].src}')`;
-                textEl.innerText = "Ты получаешь молот!";
-                addDndChoice("Нажми чтобы продолжить", () => winDndGame());
+                bgEl.style.backgroundImage = `url('${images['dnd_3'].src}')`;
+                textEl.innerText = "Гоблины крепко спят. Ты аккуратно забираешь свой молот!";
+                addDndChoice("Забрать молот", () => winDndGame());
+            } else if (frame === 'death') {
+                bgEl.style.backgroundImage = `url('${images['dnd_death'].src}')`;
+                textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Ты погибла...";
+                addDndChoice("Начать игру заново", () => {
+                    document.getElementById('dndGameOverlay').style.display = 'none';
+                    resetGame(); // Полный сброс всей игры
+                });
             }
         }
 

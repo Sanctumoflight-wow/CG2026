@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- ТЕГИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА PWA НА IOS (ПРИ ДОБАВЛЕНИИ НА ЭКРАН "ДОМОЙ") -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#111111">
+    
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
@@ -14,6 +20,7 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
+            height: 100dvh; /* Фикс для современных мобильных браузеров Safari/Chrome */
             color: white; 
             overflow: hidden; 
             
@@ -28,7 +35,7 @@
         #rotate-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             background: #111;
             z-index: 99999;
             flex-direction: column;
@@ -69,7 +76,7 @@
         /* --- СУПЕР-КОНТЕЙНЕР (ФЛЕКС-ЦЕНТРИРОВАНИЕ) --- */
         #game-container {
             position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -400,6 +407,7 @@
         @keyframes pulseRed { 0% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } 50% { transform: scale(1.1); box-shadow: 0 0 50px #e74c3c; } 100% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } }
         @keyframes pulseRune { 0% { transform: scale(1); filter: drop-shadow(0 0 5px #fff); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 20px #f1c40f); } }
         @keyframes shieldPulse { 0% { box-shadow: 0 0 10px #f1c40f; transform: scale(1); } 100% { box-shadow: 0 0 25px #f1c40f; transform: scale(1.05); } }
+        @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(15px); } }
         h2 { display: none; }
     </style>
 </head>
@@ -411,8 +419,16 @@
     <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
         <div style="font-size: 80px; margin-bottom: 20px; animation: spin 3s infinite linear;">📱</div>
-        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px;">Поверните устройство</h2>
+        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; display: block;">Поверните устройство</h2>
         <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
+    </div>
+
+    <!-- ОВЕРЛЕЙ УСТАНОВКИ НА IOS (PWA) -->
+    <div id="ios-pwa-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #111; z-index: 100000; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px; box-sizing: border-box;">
+        <div style="font-size: 60px; margin-bottom: 20px;">📲</div>
+        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 15px; font-size: 22px; color: #f1c40f; display: block;">Добавьте на экран</h2>
+        <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.5; max-width: 400px; margin-bottom: 30px;">Apple блокирует полный экран в браузере.<br><br>Нажмите иконку <b>«Поделиться»</b> внизу экрана (квадрат со стрелочкой) и выберите <b>«На экран Домой»</b>.<br><br>Затем запустите игру с рабочего стола для полного погружения!</p>
+        <div style="font-size: 40px; animation: bounceDown 1.5s infinite;">👇</div>
     </div>
 
     <audio id="bgMusic" loop>
@@ -566,6 +582,18 @@
     </div> 
 
     <script>
+        // --- ПРОВЕРКА ЗАПУСКА С ЭКРАНА ДОМОЙ ДЛЯ IOS ---
+        const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        // Если это iPhone, и игра открыта в Safari (не с экрана домой) -> Блокируем и требуем установки!
+        if (isIOS && !isStandalone) {
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('fullscreenToggleBtn').style.display = 'none';
+            document.getElementById('rotate-overlay').style.setProperty('display', 'none', 'important');
+            document.getElementById('ios-pwa-overlay').style.display = 'flex';
+        }
+
         let gameStarted = false;
         let isPaused = false; 
 
@@ -720,6 +748,11 @@
 
         // --- ПОЛНОЭКРАННЫЙ РЕЖИМ И КНОПКА СВЕРХУ ---
         const fsBtn = document.getElementById('fullscreenToggleBtn');
+
+        // Скрываем кнопку на устройствах, которые жестко блокируют Fullscreen API (iPhone)
+        if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
+            fsBtn.style.display = 'none';
+        }
 
         function enterFullscreen() {
             const doc = document.documentElement;
@@ -1659,7 +1692,7 @@
         vid.addEventListener('error', () => {
             console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
             document.getElementById('videoOverlay').style.display = 'none';
-            if(!isMuted) bgMusic.play();
+            if(!isMuted) bgMusic.play().catch(e=>{});
             document.getElementById('victoryOverlay').style.display = 'flex';
         });
 
@@ -1681,7 +1714,7 @@
                 playPromise.catch(error => {
                     console.warn("Автоплей заблокирован: ", error);
                     vidOverlay.style.display = 'none';
-                    if(!isMuted) bgMusic.play();
+                    if(!isMuted) bgMusic.play().catch(e=>{});
                     setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
                 });
             }
@@ -1690,7 +1723,7 @@
         document.getElementById('ultimateVideo').addEventListener('ended', () => {
             document.getElementById('videoOverlay').style.display = 'none';
             document.getElementById('victoryOverlay').style.display = 'flex';
-            if(!isMuted) bgMusic.play(); 
+            if(!isMuted) bgMusic.play().catch(e=>{}); 
         });
     </script>
 </body>

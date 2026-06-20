@@ -2,8 +2,10 @@
 <html lang="ru" style="background-color: #111111;">
 <head>
     <meta charset="UTF-8">
+    <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- ТЕГИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА PWA НА IOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#111111">
@@ -60,6 +62,7 @@
             #game-container { display: none !important; }
             #rotate-overlay { display: flex !important; }
             #fullscreenToggleBtn { display: none !important; }
+            #gameVersion { display: none !important; }
         }
 
         /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
@@ -176,7 +179,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px; /* Заменили margin-bottom на gap для надежности */
+            gap: 12px;
             width: 300px;
             z-index: 2;
         }
@@ -274,8 +277,8 @@
         }
         .tracker-item span { 
             margin-left: 15px; 
-            font-size: 26px; /* Одинаковый размер для обоих счетчиков */
-            color: white; /* Базовый белый цвет */
+            font-size: 26px; 
+            color: white; 
             transition: color 0.3s;
         }
         
@@ -351,10 +354,11 @@
             backdrop-filter: blur(10px); padding: 20px; box-sizing: border-box;
         }
         .dnd-image-placeholder {
-            width: 90%; max-width: 400px; height: 160px; background: #2c3e50; border: 2px solid #f1c40f; 
+            width: 90%; max-width: 600px; height: 200px; background: transparent; 
             border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; 
-            color: rgba(255,255,255,0.5); font-style: italic; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            background-size: cover; background-position: center; font-family: 'Montserrat', sans-serif;
+            color: rgba(255,255,255,0); font-style: italic; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+            background-size: contain; background-repeat: no-repeat; background-position: center; font-family: 'Montserrat', sans-serif;
+            transition: background-image 0.3s ease;
         }
         .dnd-text {
             font-size: 20px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; 
@@ -536,16 +540,20 @@
 </head>
 <body>
 
+    <!-- КНОПКА ПОЛНОГО ЭКРАНА (ПОВЕРХ ВСЕГО) -->
     <button id="fullscreenToggleBtn">На весь экран</button>
 
+    <!-- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА -->
     <button id="debugRestartBtn" onclick="resetGame()" title="Вернуться в начало">↻</button>
 
+    <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
         <div style="font-size: 80px; margin-bottom: 20px; animation: spin 3s infinite linear;">📱</div>
         <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; color: white;">Поверните устройство</h2>
         <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
     </div>
 
+    <!-- ОВЕРЛЕЙ УСТАНОВКИ НА IOS (PWA) -->
     <div id="ios-pwa-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100%; background: #111; z-index: 100000; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px; box-sizing: border-box;">
         <div style="font-size: 60px; margin-bottom: 20px;">📲</div>
         <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 15px; font-size: 22px; color: #f1c40f; display: block;">Добавьте на экран</h2>
@@ -553,6 +561,7 @@
         <div style="font-size: 40px; animation: bounceDown 1.5s infinite;">👇</div>
     </div>
 
+    <!-- АУДИО -->
     <audio id="bgMusic" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
         <source src="images/music.mp3" type="audio/mpeg">
@@ -565,10 +574,13 @@
 
     <div id="game-container">
         
+        <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
         <div id="mobile-wrapper">
 
-            <div id="gameVersion">v1.02</div>
+            <!-- ВЕРСИЯ ИГРЫ (Отображается внутри экрана) -->
+            <div id="gameVersion">v1.03</div>
 
+            <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
                 <div style="font-size: 40px; font-weight: 900; color: #e74c3c; margin-bottom: 20px; text-shadow: 0 4px 10px #000; letter-spacing: 2px;">ТЕЛЕПОРТ</div>
                 <div style="font-size: 20px; margin-bottom: 40px; color: white; font-weight: 700;">Переместиться в другую зону?</div>
@@ -578,16 +590,20 @@
                 </div>
             </div>
 
+            <!-- ЭКРАН ПОБЕДЫ -->
             <div id="victoryOverlay" class="screen-overlay">
                 <div class="victory-title">ПОБЕДА!</div>
                 <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
                 <button class="action-btn" onclick="resetGame()">Вернуться в начало</button>
             </div>
 
+            <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
+                <!-- ВИДЕО-ФОН (Заблокированы контролы плеера) -->
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">CALLIOPE<br>GAME 2</div>
                 
+                <!-- БЛОК ЗАГРУЗКИ -->
                 <div id="loadingContainer">
                     <div id="loadingText">Загрузка...</div>
                     <div id="loadingBarBg">
@@ -598,6 +614,7 @@
                 <button id="titlePlayBtn" class="start-btn">ИГРАТЬ</button>
             </div>
 
+            <!-- СТАРТОВЫЙ ЭКРАН -->
             <div id="startScreen" class="screen-overlay">
                 <div class="start-items-row">
                     <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
@@ -616,7 +633,9 @@
                 </div>
             </div>
 
+            <!-- ИГРОВОЕ ПОЛЕ -->
             <div id="gameUI" class="screen-overlay">
+                <!-- ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ -->
                 <div id="tracker">
                     <div class="tracker-item">📦 <span id="score">0 / 4</span></div>
                     <div class="tracker-item">💰 <span id="easterScore">0 / 1</span></div>
@@ -632,19 +651,22 @@
                 </div>
             </div>
 
+            <!-- ДНД МИНИ-ИГРА (МОЛОТ) -->
             <div id="dndGameOverlay" class="screen-overlay">
                 <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить игру</button>
-                <div class="dnd-image-placeholder" id="dndImage">Кадр 1 (Лес)</div>
+                <div class="dnd-image-placeholder" id="dndImage"></div>
                 <div class="dnd-text" id="dndText"></div>
                 <div class="dnd-choices" id="dndChoices"></div>
             </div>
 
+            <!-- РУННАЯ МИНИ-ИГРА -->
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
                 <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 5000;">Пройти игру (Debug)</button>
             </div>
 
+            <!-- ТАРО МИНИ-ИГРА -->
             <div id="tarotGameOverlay" class="screen-overlay">
                 <div style="flex: 1;"></div>
                 <div class="tarot-container">
@@ -657,6 +679,7 @@
                 </div>
             </div>
 
+            <!-- СИСТЕМА ДИАЛОГОВ -->
             <div id="dialogueOverlay" class="screen-overlay">
                 <div class="dialogue-container" onclick="nextDialogue(event)">
                     <div id="dialogueText"></div>
@@ -665,6 +688,7 @@
                 </div>
             </div>
 
+            <!-- АРЕНА ДЛЯ БОССА -->
             <div id="bossOverlay" class="screen-overlay">
                 <div id="bossSkullsContainer"></div>
                 <div class="arena-ground"></div>
@@ -691,6 +715,7 @@
                 <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
             </div>
 
+            <!-- ОКНА ДОБИВАНИЯ И ВИДЕО -->
             <div id="finishHimOverlay" class="screen-overlay">
                 <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
             </div>
@@ -765,7 +790,10 @@
             'alch': 'images/alch.png',
             'divineShield': 'images/Divine_Shield.jpg',
             'arrow': 'images/Arrow.jpg',
-            'fieldBg': 'images/field_bg.jpg'
+            'fieldBg': 'images/field_bg.jpg',
+            'dnd_1': 'images/dnd_1.jpg',
+            'dnd_2': 'images/dnd_2.jpg',
+            'dnd_3': 'images/dnd_3.jpg'
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -1013,19 +1041,19 @@
             choicesEl.innerHTML = ''; 
 
             if (frame === 1) {
-                imgEl.innerText = "Кадр 1 (Лес)";
+                imgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`;
                 textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
                 addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
                 addDndChoice("2. Подойти к кустам не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
                 addDndChoice("3. Развернуться и уйти", () => failDndGame("Ты решила не рисковать и отступила."));
             } else if (frame === 2) {
-                imgEl.innerText = "Кадр 2 (Лагерь гоблинов)";
+                imgEl.style.backgroundImage = `url('${images['dnd_2'].src}')`;
                 textEl.innerText = "Ты подходишь не торопясь к кустам и видишь лагерь гоблинов. На горе золота красуется твой молот. Что ты будешь делать?";
                 addDndChoice("1. Выпрыгнув начать кричать на гоблинов", () => failDndGame("Твой крик лишь разозлил их. Тебе пришлось спешно ретироваться!"));
                 addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
                 addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
             } else if (frame === 3) {
-                imgEl.innerText = "Кадр 3 (Молот твой!)";
+                imgEl.style.backgroundImage = `url('${images['dnd_3'].src}')`;
                 textEl.innerText = "Ты получаешь молот!";
                 addDndChoice("Нажми чтобы продолжить", () => winDndGame());
             }

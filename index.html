@@ -14,16 +14,20 @@
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Montserrat', sans-serif; 
+        /* ЖЕСТКИЙ ФИКС ДЛЯ IOS SAFARI (ЧТОБЫ ЭКРАН НЕ УЕЗЖАЛ ВВЕРХ) */
+        html, body {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            overflow: hidden;
             background-color: #111; 
             margin: 0; 
             padding: 0;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh; /* Фикс для современных мобильных браузеров Safari/Chrome */
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
             color: white; 
-            overflow: hidden; 
             
             /* Блокируем жесты браузера */
             touch-action: none; 
@@ -36,7 +40,7 @@
         #rotate-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: #111;
             z-index: 99999;
             flex-direction: column;
@@ -99,7 +103,8 @@
         /* --- СУПЕР-КОНТЕЙНЕР (ФЛЕКС-ЦЕНТРИРОВАНИЕ) --- */
         #game-container {
             position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -236,14 +241,19 @@
 
         /* --- ЭЛЕМЕНТЫ ИГРЫ --- */
         #gameUI { display: none; z-index: 50; }
+        
+        /* ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ */
         #tracker {
             position: absolute; top: 15px; left: 40px; z-index: 10;
-            background: rgba(0, 0, 0, 0.5); padding: 8px 15px; border-radius: 15px;
-            font-size: 16px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.6); padding: 10px 15px; border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; gap: 8px;
             transition: opacity 0.3s;
         }
-        #score { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 18px; }
-        #easterScore { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 16px; }
+        .tracker-item {
+            display: flex; align-items: center; font-size: 22px; font-weight: 700; color: white; text-shadow: 0 2px 4px #000;
+        }
+        .tracker-item span { margin-left: 10px; font-size: 18px; }
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
@@ -497,6 +507,7 @@
         @keyframes shieldPulse { 0% { box-shadow: 0 0 10px #f1c40f; transform: scale(1); } 100% { box-shadow: 0 0 25px #f1c40f; transform: scale(1.05); } }
         @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(15px); } }
         h2 { display: none; }
+        #rotate-overlay h2 { display: block; }
     </style>
 </head>
 <body>
@@ -510,19 +521,19 @@
     <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
         <div style="font-size: 80px; margin-bottom: 20px; animation: spin 3s infinite linear;">📱</div>
-        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; display: block;">Поверните устройство</h2>
+        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; color: white;">Поверните устройство</h2>
         <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
     </div>
 
     <!-- ОВЕРЛЕЙ УСТАНОВКИ НА IOS (PWA) -->
-    <div id="ios-pwa-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #111; z-index: 100000; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px; box-sizing: border-box;">
+    <div id="ios-pwa-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100%; background: #111; z-index: 100000; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px; box-sizing: border-box;">
         <div style="font-size: 60px; margin-bottom: 20px;">📲</div>
         <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 15px; font-size: 22px; color: #f1c40f; display: block;">Добавьте на экран</h2>
         <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.5; max-width: 400px; margin-bottom: 30px;">Apple блокирует полный экран в браузере.<br><br>Нажмите иконку <b>«Поделиться»</b> внизу экрана (квадрат со стрелочкой) и выберите <b>«На экран Домой»</b>.<br><br>Затем запустите игру с рабочего стола для полного погружения!</p>
         <div style="font-size: 40px; animation: bounceDown 1.5s infinite;">👇</div>
     </div>
 
-    <!-- АУДИО (БЕЗ ПАНЕЛИ УПРАВЛЕНИЯ) -->
+    <!-- АУДИО -->
     <audio id="bgMusic" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
         <source src="images/music.mp3" type="audio/mpeg">
@@ -592,9 +603,10 @@
 
             <!-- ИГРОВОЕ ПОЛЕ -->
             <div id="gameUI" class="screen-overlay">
+                <!-- ОБНОВЛЕННЫЙ ТРЕКЕР -->
                 <div id="tracker">
-                    <div>Собрано: <span id="score">0 / 4</span></div>
-                    <div style="color: #f1c40f; font-size: 14px; margin-top: 5px;">Пасхалка: <span id="easterScore">0 / 1</span></div>
+                    <div class="tracker-item">📦 <span id="score">0 / 4</span></div>
+                    <div class="tracker-item" style="color: #f1c40f;">💰 <span id="easterScore">0 / 1</span></div>
                 </div>
                 
                 <canvas id="gameCanvas"></canvas>
@@ -609,7 +621,7 @@
 
             <!-- ДНД МИНИ-ИГРА (МОЛОТ) -->
             <div id="dndGameOverlay" class="screen-overlay">
-                <button class="dnd-skip" onclick="skipDndGame()">Пропустить игру</button>
+                <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить игру</button>
                 <div class="dnd-image-placeholder" id="dndImage">Кадр 1 (Лес)</div>
                 <div class="dnd-text" id="dndText"></div>
                 <div class="dnd-choices" id="dndChoices"></div>
@@ -690,7 +702,6 @@
 
         // --- УМНАЯ КНОПКА ПОЛНОГО ЭКРАНА ---
         const fsBtn = document.getElementById('fullscreenToggleBtn');
-        // Если это iPhone (даже PWA) или устройство вообще не поддерживает Fullscreen API, удаляем кнопку
         if (isIOS || (!document.fullscreenEnabled && !document.webkitFullscreenEnabled)) {
             if (fsBtn) fsBtn.style.display = 'none';
         }
@@ -1008,7 +1019,10 @@
             const btn = document.createElement('button');
             btn.className = 'dnd-btn';
             btn.innerText = text;
-            btn.onclick = callback;
+            btn.onclick = (e) => {
+                e.stopPropagation(); // ФИКС БЛОКИРОВКИ ОТ ДВОЙНЫХ КЛИКОВ
+                callback();
+            };
             document.getElementById('dndChoices').appendChild(btn);
         }
 
@@ -1021,7 +1035,6 @@
                 document.getElementById('dndGameOverlay').style.display = 'none';
                 isPaused = false; 
                 targetMovePos = null;
-                // Возвращаем игрока на шаг назад, чтобы можно было заново наступить на платформу
                 player.x = prevPlayerPos.x;
                 player.y = prevPlayerPos.y;
             });
@@ -1194,7 +1207,6 @@
                 document.getElementById('tarotGameOverlay').onclick = null; 
                 
                 easterEggRevealed = true;
-                // НОВЫЙ ДИАЛОГ ТАРО
                 showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
                     crownCollected = true; 
                     score++; scoreElement.innerText = score + " / " + maxScore; 
@@ -1250,7 +1262,7 @@
                 if (options.hideBossUI) {
                     toggleBossUI(true);
                 }
-                document.getElementById('tracker').style.display = 'block'; 
+                document.getElementById('tracker').style.display = 'flex'; 
                 if (callback) callback();
             };
 
@@ -1286,7 +1298,12 @@
                     return; 
                 }
                 document.getElementById('dialogueOverlay').style.display = 'none';
-                if (onDialogueComplete) onDialogueComplete();
+                // ФИКС БЛОКИРОВКИ: Защита от двойного вызова (предотвращает зависания)
+                if (onDialogueComplete) {
+                    let cb = onDialogueComplete;
+                    onDialogueComplete = null; 
+                    cb();
+                }
             }
         }
 
@@ -1302,16 +1319,13 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
-        // Прямой маршрут влево от Короны [0, 4]
         const secretPath = [
             {x: -1, y: 4}, {x: -2, y: 4}, {x: -3, y: 4}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
-            // Скрытый путь к пасхалке (Прямая влево)
             if (easterEggRevealed && y === 4 && x >= -3 && x <= -1) return true;
-            // Остров для Щита (Крест вокруг [13, 4])
             if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
             return false; 
         }
@@ -1358,7 +1372,6 @@
         }
 
         function checkInteractions() {
-            // ИЗМЕНЕННАЯ ЛОГИКА ДЛЯ МОЛОТА -> D&D ИГРА
             if (player.x === hammer.x && player.y === hammer.y && !hammerCollected) { 
                 isPaused = true; targetMovePos = null;
                 startDndGame();
@@ -1380,7 +1393,6 @@
                 }, { bgImage: images['dialogFather'].src });
             }
 
-            // ПРОВЕРКА НА ПАСХАЛКУ
             if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
@@ -1392,7 +1404,6 @@
                 }, { bgImage: images['dialogJulia'].src }); 
             }
 
-            // ЛОГИКА ТЕЛЕПОРТОВ
             if (player.x === 8 && player.y === 4) {
                 if (!teleportPrompted) {
                     isPaused = true; targetMovePos = null;
@@ -1408,7 +1419,7 @@
                     document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
                 }
             } else {
-                teleportPrompted = false; // Сбрасываем флаг, если игрок ушел с кружка
+                teleportPrompted = false; 
             }
         }
 
@@ -1433,7 +1444,6 @@
         function drawGame() {
             ctx.clearRect(0, 0, 852, 393);
             
-            // Отрисовка фона арены (статика)
             if (images['fieldBg'] && images['fieldBg'].complete && images['fieldBg'].naturalWidth !== 0) {
                 ctx.drawImage(images['fieldBg'], 0, 0, 852, 393);
             } else {
@@ -1448,12 +1458,11 @@
             ctx.scale(zoom, zoom); 
             ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
 
-            // Отрисовываем более широкую зону, чтобы охватить все острова и дать обзор
             for (let y = -2; y <= 10; y++) {
                 for (let x = -4; x <= 16; x++) {
                     if (!isValidTile(x, y)) continue;
                     const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
-                    if (dist > 5) continue; // Увеличили обзор, чтобы было видно соседний остров
+                    if (dist > 5) continue; 
                     let alpha = 1.0; 
                     if (dist === 3) alpha = 0.8; 
                     if (dist === 4) alpha = 0.5; 
@@ -1467,18 +1476,17 @@
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
                         if (isRegularBlock || isSecretCube || isShieldPlatform) {
                             
-                            // --- НОВАЯ СТРОГАЯ ЛОГИКА ЦВЕТОВ ---
                             let blockImg = images['block'];
                             if (x === 4 && y === 4) {
-                                blockImg = images['block']; // ТОЛЬКО ЦЕНТР (1 куб)
+                                blockImg = images['block']; 
                             } else if (x >= 3 && x <= 5 && y < 4) {
-                                blockImg = images['block_3']; // Вся верхняя ветка (Молот)
+                                blockImg = images['block_3']; 
                             } else if (x >= 3 && x <= 5 && y > 4) {
-                                blockImg = images['block_4']; // Вся нижняя ветка (Плечи)
+                                blockImg = images['block_4']; 
                             } else if (x < 4) {
-                                blockImg = images['block_1']; // Вся левая ветка и пасхалка
+                                blockImg = images['block_1']; 
                             } else if (x > 4) {
-                                blockImg = images['block_2']; // Вся правая ветка и Остров Щита
+                                blockImg = images['block_2']; 
                             }
 
                             if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
@@ -1507,7 +1515,6 @@
                     if (dist === 5) alpha = 0.2;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
 
-                    // Отрисовка красных кругов телепорта
                     if ((x === 8 && y === 4) || (x === 12 && y === 4)) {
                         ctx.save();
                         ctx.strokeStyle = "rgba(231, 76, 60, 0.8)";
@@ -1595,7 +1602,6 @@
             ctx.globalAlpha = 1.0; ctx.restore(); 
         }
 
-        // Запуск первой инициализации масштаба при загрузке скрипта
         resizeGame();
 
         function gameLoop() { if (!gameStarted) return; update(); drawGame(); requestAnimationFrame(gameLoop); }
@@ -1821,8 +1827,6 @@
             }, 2000); 
         }
 
-        // Перемещение по клику мыши отключено
-        
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
         document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });
         document.getElementById('btnLeft').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(-1, 0); });

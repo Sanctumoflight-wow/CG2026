@@ -95,14 +95,6 @@
             transform-origin: center center;
         }
 
-        /* --- АУДИО КОНТРОЛЛЕР --- */
-        #audioControls {
-            position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7);
-            padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
-            gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
-        }
-        #muteBtn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; }
-
         .screen-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         }
@@ -128,6 +120,47 @@
             line-height: 1.1;
             margin: 0;
         }
+
+        /* --- ПОЛОСА ЗАГРУЗКИ --- */
+        #loadingContainer {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 300px;
+            z-index: 2;
+        }
+        #loadingText {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            animation: blink 1s infinite;
+        }
+        #loadingBarBg {
+            width: 100%;
+            height: 20px;
+            border: 3px solid #e67e22; /* Оранжевые края */
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+        }
+        #loadingBarFill {
+            height: 100%;
+            width: 0%;
+            background-color: #3498db; /* Светло-синяя полоска */
+            transition: width 0.2s linear;
+        }
+
+        /* --- КНОПКА ИГРАТЬ --- */
         .start-btn {
             background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
             padding: 10px 40px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
@@ -144,6 +177,7 @@
             bottom: 15%; 
             left: 50%;
             transform: translateX(-50%);
+            display: none; /* Скрыта до завершения загрузки */
         }
         #titlePlayBtn:active {
             transform: translate(-50%, 6px) !important;
@@ -446,11 +480,6 @@
         <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
         <div id="mobile-wrapper">
 
-            <!-- Аудио Контроллер внутри экрана игры -->
-            <div id="audioControls">
-                <button id="muteBtn">🔊</button>
-            </div>
-
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
                 <div style="font-size: 40px; font-weight: 900; color: #e74c3c; margin-bottom: 20px; text-shadow: 0 4px 10px #000; letter-spacing: 2px;">ТЕЛЕПОРТ</div>
@@ -472,7 +501,16 @@
             <div id="titleScreen" class="screen-overlay">
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
                 <div class="main-title">CALLIOPE<br>GAME 2</div>
-                <button id="titlePlayBtn" class="start-btn" style="opacity: 0.5; pointer-events: none; padding: 10px 40px;">ЗАГРУЗКА ИГРЫ...</button>
+                
+                <!-- НОВЫЙ БЛОК ЗАГРУЗКИ -->
+                <div id="loadingContainer">
+                    <div id="loadingText">Загрузка...</div>
+                    <div id="loadingBarBg">
+                        <div id="loadingBarFill"></div>
+                    </div>
+                </div>
+
+                <button id="titlePlayBtn" class="start-btn">ИГРАТЬ</button>
             </div>
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
@@ -490,7 +528,7 @@
                     Собери все предметы уровня
                 </div>
                 <div class="start-btn-wrap">
-                    <button id="startFieldBtn" class="start-btn" style="font-size: 24px; padding: 10px 40px;">ИГРАТЬ</button>
+                    <button id="startFieldBtn" class="start-btn" style="font-size: 24px; padding: 10px 40px;">СТАРТ</button>
                 </div>
             </div>
 
@@ -586,10 +624,16 @@
         const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
+        // --- УМНАЯ КНОПКА ПОЛНОГО ЭКРАНА ---
+        const fsBtn = document.getElementById('fullscreenToggleBtn');
+        // Если это iPhone (даже PWA) или устройство вообще не поддерживает Fullscreen API, удаляем кнопку
+        if (isIOS || (!document.fullscreenEnabled && !document.webkitFullscreenEnabled)) {
+            fsBtn.style.display = 'none';
+        }
+
         // Если это iPhone, и игра открыта в Safari (не с экрана домой) -> Блокируем и требуем установки!
         if (isIOS && !isStandalone) {
             document.getElementById('game-container').style.display = 'none';
-            document.getElementById('fullscreenToggleBtn').style.display = 'none';
             document.getElementById('rotate-overlay').style.setProperty('display', 'none', 'important');
             document.getElementById('ios-pwa-overlay').style.display = 'flex';
         }
@@ -639,6 +683,8 @@
         const totalAssets = Object.keys(allAssets).length;
         let assetsLoadedCount = 0;
         const playButton = document.getElementById('titlePlayBtn');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const loadingBarFill = document.getElementById('loadingBarFill');
 
         for (const [key, src] of Object.entries(allAssets)) {
             const img = new Image();
@@ -649,14 +695,13 @@
             img.onload = img.onerror = () => {
                 assetsLoadedCount++;
                 let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
+                
                 if (assetsLoadedCount < totalAssets) {
-                    playButton.innerText = `ЗАГРУЗКА ИГРЫ (${percent}%)`;
-                    playButton.style.opacity = '0.5';
-                    playButton.style.pointerEvents = 'none';
+                    loadingBarFill.style.width = percent + '%';
                 } else {
-                    playButton.innerText = 'ИГРАТЬ';
-                    playButton.style.opacity = '1';
-                    playButton.style.pointerEvents = 'auto';
+                    // Загрузка завершена
+                    loadingContainer.style.display = 'none';
+                    playButton.style.display = 'block';
                 }
             };
         }
@@ -719,39 +764,11 @@
         const bgMusic = document.getElementById('bgMusic');
         const collectSound = document.getElementById('collectSound');
         const typeSound = document.getElementById('typeSound');
-        const muteBtn = document.getElementById('muteBtn');
         
-        let isMuted = false;
-
-        function applyVolume() {
-            if (isMuted) {
-                bgMusic.volume = 0;
-                collectSound.volume = 0;
-                typeSound.volume = 0;
-                muteBtn.innerText = '🔇';
-            } else {
-                bgMusic.volume = 0.3; // Музыка на фоне
-                collectSound.volume = 1.0; 
-                typeSound.volume = 1.0;
-                muteBtn.innerText = '🔊';
-            }
-        }
-
-        muteBtn.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            isMuted = !isMuted;
-            applyVolume();
-        });
-
-        applyVolume();
-        function playCollectSound() { collectSound.currentTime = 0; collectSound.play().catch(e=>{}); }
-
-        // --- ПОЛНОЭКРАННЫЙ РЕЖИМ И КНОПКА СВЕРХУ ---
-        const fsBtn = document.getElementById('fullscreenToggleBtn');
-
-        // Скрываем кнопку на устройствах, которые жестко блокируют Fullscreen API (iPhone)
-        if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
-            fsBtn.style.display = 'none';
+        // Глушитель для проигрывания аудио
+        function playCollectSound() { 
+            collectSound.currentTime = 0; 
+            collectSound.play().catch(()=>{}); 
         }
 
         function enterFullscreen() {
@@ -769,17 +786,20 @@
             else if (document.msExitFullscreen) document.msExitFullscreen();
         }
 
-        fsBtn.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            if (isFullscreen) {
-                exitFullscreen();
-            } else {
-                enterFullscreen();
-            }
-        });
+        if (fsBtn) {
+            fsBtn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                if (isFullscreen) {
+                    exitFullscreen();
+                } else {
+                    enterFullscreen();
+                }
+            });
+        }
 
         function handleFullscreenChange() {
+            if (!fsBtn) return;
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
             if (isFullscreen) {
                 fsBtn.innerText = 'СВЕРНУТЬ';
@@ -842,23 +862,31 @@
             gameStarted = false;
             isPaused = false;
             
-            document.getElementById('menuVideo').play().catch(e=>{});
+            document.getElementById('menuVideo').play().catch(()=>{});
             ctx.clearRect(0, 0, 852, 393);
         }
 
+        // СТАРТ ИГРЫ: Здесь включаем звуки, так как это первое осознанное касание
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (assetsLoadedCount < totalAssets) return;
-            enterFullscreen();
+            
+            // Фиксируем громкость, убираем MUTE логику
+            bgMusic.volume = 0.3;
+            collectSound.volume = 1.0;
+            typeSound.volume = 1.0;
+
+            if (!isIOS) enterFullscreen();
+            
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'flex';
-            if(!isMuted) bgMusic.play().catch(e=>{});
+            bgMusic.play().catch(()=>{});
         });
 
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
             e.preventDefault();
-            enterFullscreen();
+            if (!isIOS) enterFullscreen();
             document.getElementById('startScreen').style.display = 'none'; 
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'block';
@@ -1101,11 +1129,9 @@
                 if (callback) callback();
             };
 
-            if (!isMuted) {
-                typeSound.currentTime = 0;
-                typeSound.loop = true;
-                typeSound.play().catch(e => {});
-            }
+            typeSound.currentTime = 0;
+            typeSound.loop = true;
+            typeSound.play().catch(()=>{});
 
             dialogueTypingInterval = setInterval(() => {
                 document.getElementById('dialogueText').innerText += dialogueFullText.charAt(dialogueCurrentIndex);
@@ -1692,7 +1718,7 @@
         vid.addEventListener('error', () => {
             console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
             document.getElementById('videoOverlay').style.display = 'none';
-            if(!isMuted) bgMusic.play().catch(e=>{});
+            bgMusic.play().catch(()=>{});
             document.getElementById('victoryOverlay').style.display = 'flex';
         });
 
@@ -1714,7 +1740,7 @@
                 playPromise.catch(error => {
                     console.warn("Автоплей заблокирован: ", error);
                     vidOverlay.style.display = 'none';
-                    if(!isMuted) bgMusic.play().catch(e=>{});
+                    bgMusic.play().catch(()=>{});
                     setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
                 });
             }
@@ -1723,7 +1749,7 @@
         document.getElementById('ultimateVideo').addEventListener('ended', () => {
             document.getElementById('videoOverlay').style.display = 'none';
             document.getElementById('victoryOverlay').style.display = 'flex';
-            if(!isMuted) bgMusic.play().catch(e=>{}); 
+            bgMusic.play().catch(()=>{}); 
         });
     </script>
 </body>

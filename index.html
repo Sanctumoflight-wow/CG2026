@@ -32,21 +32,6 @@
             overscroll-behavior: none;
         }
 
-        /* --- APPLE SPLASH SCREEN --- */
-        #apple-splash {
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100vw; height: 100dvh; 
-            background: #111111; 
-            z-index: 999999; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            color: white;
-            transition: opacity 0.5s ease-in-out;
-        }
-
         /* --- ЭКРАН С ПРОСЬБОЙ ПОВЕРНУТЬ ТЕЛЕФОН --- */
         #rotate-overlay {
             display: none;
@@ -89,6 +74,28 @@
         }
         #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
 
+        /* --- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА В ПРАВОМ НИЖНЕМ УГЛУ --- */
+        #debugRestartBtn {
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            width: 50px; 
+            height: 50px; 
+            background: rgba(0, 0, 0, 0.6); 
+            border: 2px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 50%;
+            color: white; 
+            font-size: 26px; 
+            cursor: pointer; 
+            display: none; /* Скрыта до начала игры */
+            justify-content: center; 
+            align-items: center;
+            z-index: 9999; 
+            backdrop-filter: blur(5px);
+            transition: 0.2s;
+        }
+        #debugRestartBtn:active { transform: scale(0.9); border-color: #e74c3c; color: #e74c3c; }
+
         /* --- СУПЕР-КОНТЕЙНЕР (ФЛЕКС-ЦЕНТРИРОВАНИЕ) --- */
         #game-container {
             position: absolute;
@@ -107,7 +114,7 @@
             height: 393px;
             background-color: #2c3e50;
             overflow: hidden;
-            flex-shrink: 0; /* Не даем флексбоксу сжать контейнер до применения масштаба */
+            flex-shrink: 0; 
             transform-origin: center center;
         }
 
@@ -122,8 +129,8 @@
         }
         .main-title {
             position: absolute;
-            top: 30%; /* Подняли выше */
-            left: 40px; /* Сдвинули левее */
+            top: 30%; 
+            left: 40px; 
             transform: translateY(-50%);
             font-size: 55px; 
             font-weight: 900; 
@@ -162,7 +169,7 @@
         #loadingBarBg {
             width: 100%;
             height: 20px;
-            border: 3px solid #e67e22; /* Оранжевые края */
+            border: 3px solid #e67e22; 
             border-radius: 10px;
             background: rgba(0, 0, 0, 0.5);
             overflow: hidden;
@@ -172,7 +179,7 @@
         #loadingBarFill {
             height: 100%;
             width: 0%;
-            background-color: #3498db; /* Светло-синяя полоска */
+            background-color: #3498db; 
             transition: width 0.2s linear;
         }
 
@@ -193,7 +200,7 @@
             bottom: 15%; 
             left: 50%;
             transform: translateX(-50%);
-            display: none; /* Скрыта до завершения загрузки */
+            display: none; 
         }
         #titlePlayBtn:active {
             transform: translate(-50%, 6px) !important;
@@ -245,7 +252,7 @@
             position: absolute; bottom: 45px; left: 45px; z-index: 10;
             display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
             transform-origin: center;
-            transform: rotate(45deg); /* Поворот под изометрию поля */
+            transform: rotate(45deg); 
         }
         .d-btn { 
             background: rgba(44, 62, 80, 0.8); border: 2px solid rgba(255,255,255,0.3); border-radius: 15px; 
@@ -301,6 +308,37 @@
             z-index: 4010;
             white-space: nowrap;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* --- ДНД МИНИ-ИГРА (МОЛОТ) --- */
+        #dndGameOverlay {
+            display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            backdrop-filter: blur(10px); padding: 20px; box-sizing: border-box;
+        }
+        .dnd-image-placeholder {
+            width: 90%; max-width: 400px; height: 160px; background: #2c3e50; border: 2px solid #f1c40f; 
+            border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; 
+            color: rgba(255,255,255,0.5); font-style: italic; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            background-size: cover; background-position: center; font-family: 'Montserrat', sans-serif;
+        }
+        .dnd-text {
+            font-size: 20px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; 
+            text-shadow: 0 2px 4px #000; width: 90%; max-width: 500px; color: #fff;
+        }
+        .dnd-choices {
+            display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
+        }
+        .dnd-btn {
+            background: rgba(44, 62, 80, 0.8); border: 2px solid rgba(255,255,255,0.3); color: white; 
+            padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            font-family: 'Montserrat', sans-serif; text-shadow: 0 1px 2px #000;
+        }
+        .dnd-btn:hover, .dnd-btn:active { background: #f1c40f; color: #111; border-color: #f1c40f; transform: scale(0.98); text-shadow: none; }
+        .dnd-skip {
+            position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); 
+            color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; 
+            font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 12px;
         }
 
         /* РУННАЯ МИНИ-ИГРА */
@@ -463,14 +501,11 @@
 </head>
 <body>
 
-    <!-- APPLE SPLASH SCREEN (Скрывается после загрузки) -->
-    <div id="apple-splash">
-        <div style="font-size: 50px; animation: spin 2s linear infinite; margin-bottom: 20px;">⚙️</div>
-        <div style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 2px; color: #f1c40f;">APPLE ЗАВОДИТ ШАРМАНКУ...</div>
-    </div>
-
     <!-- КНОПКА ПОЛНОГО ЭКРАНА (ПОВЕРХ ВСЕГО) -->
     <button id="fullscreenToggleBtn">На весь экран</button>
+
+    <!-- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА -->
+    <button id="debugRestartBtn" onclick="resetGame()" title="Вернуться в начало">↻</button>
 
     <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
@@ -572,11 +607,18 @@
                 </div>
             </div>
 
+            <!-- ДНД МИНИ-ИГРА (МОЛОТ) -->
+            <div id="dndGameOverlay" class="screen-overlay">
+                <button class="dnd-skip" onclick="skipDndGame()">Пропустить игру</button>
+                <div class="dnd-image-placeholder" id="dndImage">Кадр 1 (Лес)</div>
+                <div class="dnd-text" id="dndText"></div>
+                <div class="dnd-choices" id="dndChoices"></div>
+            </div>
+
             <!-- РУННАЯ МИНИ-ИГРА -->
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
-                <!-- Тихая кнопка отладки -->
                 <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 5000;">Пройти игру (Debug)</button>
             </div>
 
@@ -593,7 +635,7 @@
                 </div>
             </div>
 
-            <!-- НОВАЯ СИСТЕМА ДИАЛОГОВ -->
+            <!-- СИСТЕМА ДИАЛОГОВ -->
             <div id="dialogueOverlay" class="screen-overlay">
                 <div class="dialogue-container" onclick="nextDialogue(event)">
                     <div id="dialogueText"></div>
@@ -616,7 +658,6 @@
                     </div>
                 </div>
 
-                <!-- Текст "ПАУЗА" -->
                 <div id="pauseIndicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 10px #000; z-index: 5000; letter-spacing: 5px;">ПАУЗА</div>
 
                 <div id="shieldContainer">
@@ -643,17 +684,6 @@
     </div> 
 
     <script>
-        // --- УДАЛЕНИЕ SPLASH СЦЕНЫ ПОСЛЕ ЗАГРУЗКИ DOM ---
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('apple-splash');
-                if(splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(() => { splash.style.display = 'none'; }, 500);
-                }
-            }, 800); // Показываем заставку почти секунду, пока движок "прогревается"
-        });
-
         // --- ПРОВЕРКА ЗАПУСКА С ЭКРАНА ДОМОЙ ДЛЯ IOS ---
         const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -733,7 +763,6 @@
                 if (assetsLoadedCount < totalAssets) {
                     loadingBarFill.style.width = percent + '%';
                 } else {
-                    // Загрузка завершена
                     loadingContainer.style.display = 'none';
                     playButton.style.display = 'block';
                 }
@@ -760,7 +789,6 @@
         window.addEventListener('resize', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
         window.addEventListener('orientationchange', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
         
-        // --- ТОЧНЫЕ КООРДИНАТЫ КЛИКА ---
         function getLocalCoords(clientX, clientY) {
             const wrapper = document.getElementById('mobile-wrapper');
             const rect = wrapper.getBoundingClientRect();
@@ -777,7 +805,6 @@
         const tileW = 128; const tileH = 64; const mapSize = 9; 
         const zoom = 1.0; 
 
-        // Инициализация Canvas для поддержки Retina
         function initCanvas() {
             const dpr = window.devicePixelRatio || 1;
             const baseW = 852;
@@ -799,7 +826,6 @@
         const collectSound = document.getElementById('collectSound');
         const typeSound = document.getElementById('typeSound');
         
-        // Надежный глушитель для проигрывания аудио (предотвращает краш, если Safari заблокирует звук)
         function playCollectSound() { 
             collectSound.currentTime = 0; 
             let cpPromise = collectSound.play();
@@ -859,6 +885,8 @@
             document.getElementById('bossOverlay').style.display = 'none';
             document.getElementById('gameUI').style.display = 'none';
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('dndGameOverlay').style.display = 'none';
+            document.getElementById('debugRestartBtn').style.display = 'none'; // Прячем кнопку в меню
             document.getElementById('titleScreen').style.display = 'flex';
             
             score = 0;
@@ -870,10 +898,10 @@
             hammerCollected = false;
             easterEggRevealed = false;
             easterEggFound = false;
-            teleportPrompted = false; // Сброс телепорта
+            teleportPrompted = false;
             
             shieldObj.alpha = 1;
-            shieldObj.x = 13; // Сброс позиции щита на остров!
+            shieldObj.x = 13; 
             player = { x: 4, y: 4 };
             prevPlayerPos = { x: 4, y: 4 };
             targetMovePos = null;
@@ -905,17 +933,15 @@
             ctx.clearRect(0, 0, 852, 393);
         }
 
-        // СТАРТ ИГРЫ: Здесь включаем звуки, так как это первое осознанное касание. Снятие блокировки Safari!
+        // СТАРТ ИГРЫ: Включаем звуки, так как это первое осознанное касание
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (assetsLoadedCount < totalAssets) return;
             
-            // Фиксируем громкость жестко в коде
             bgMusic.volume = 0.3;
             collectSound.volume = 1.0;
             typeSound.volume = 1.0;
 
-            // Холостой запуск для снятия блокировки автоплея (Audio Context Unlock)
             let unlockType = typeSound.play();
             if (unlockType !== undefined) unlockType.then(() => typeSound.pause()).catch(()=>{});
             
@@ -938,34 +964,84 @@
             document.getElementById('startScreen').style.display = 'none'; 
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'block';
+            document.getElementById('debugRestartBtn').style.display = 'flex'; // Показываем кнопку в игре
             gameStarted = true; 
             if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
         });
 
-        function toggleBossUI(show) {
-            const displayValue = show ? '' : 'none';
-            document.getElementById('playerHpContainer').style.display = displayValue;
-            document.getElementById('bossSkullsContainer').style.display = displayValue;
-            document.getElementById('shieldContainer').style.display = displayValue;
-            document.getElementById('bossHintText').style.display = displayValue;
+        // --- D&D МИНИ-ИГРА ДЛЯ МОЛОТА ---
+        let currentDndFrame = 1;
+
+        function startDndGame() {
+            document.getElementById('dndGameOverlay').style.display = 'flex';
+            renderDndFrame(1);
         }
 
-        function goToBoss() {
-            document.getElementById('gameUI').style.display = 'none';
-            document.getElementById('bossOverlay').style.display = 'flex';
-            toggleBossUI(true);
-            
-            if(bossInterval) clearInterval(bossInterval); 
-            if(bossMovementInterval) clearInterval(bossMovementInterval);
+        function renderDndFrame(frame) {
+            currentDndFrame = frame;
+            const textEl = document.getElementById('dndText');
+            const choicesEl = document.getElementById('dndChoices');
+            const imgEl = document.getElementById('dndImage');
+            choicesEl.innerHTML = ''; 
 
-            bossHp = 10; updateBossSkulls();
-            
-            let bossChar = document.getElementById('arenaBoss');
-            bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
-            bossChar.style.bottom = '12%';
-            
-            startBossFight();
+            if (frame === 1) {
+                imgEl.innerText = "Кадр 1 (Лес)";
+                textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
+                addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
+                addDndChoice("2. Подойти к кустам не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
+                addDndChoice("3. Развернуться и уйти", () => failDndGame("Ты решила не рисковать и отступила."));
+            } else if (frame === 2) {
+                imgEl.innerText = "Кадр 2 (Лагерь гоблинов)";
+                textEl.innerText = "Ты подходишь не торопясь к кустам и видишь лагерь гоблинов. На горе золота красуется твой молот. Что ты будешь делать?";
+                addDndChoice("1. Выпрыгнув начать кричать на гоблинов", () => failDndGame("Твой крик лишь разозлил их. Тебе пришлось спешно ретироваться!"));
+                addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
+                addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
+            } else if (frame === 3) {
+                imgEl.innerText = "Кадр 3 (Молот твой!)";
+                textEl.innerText = "Ты получаешь молот!";
+                addDndChoice("Нажми чтобы продолжить", () => winDndGame());
+            }
+        }
+
+        function addDndChoice(text, callback) {
+            const btn = document.createElement('button');
+            btn.className = 'dnd-btn';
+            btn.innerText = text;
+            btn.onclick = callback;
+            document.getElementById('dndChoices').appendChild(btn);
+        }
+
+        function failDndGame(msg) {
+            const textEl = document.getElementById('dndText');
+            const choicesEl = document.getElementById('dndChoices');
+            textEl.innerText = msg;
+            choicesEl.innerHTML = '';
+            addDndChoice("Вернуться назад", () => {
+                document.getElementById('dndGameOverlay').style.display = 'none';
+                isPaused = false; 
+                targetMovePos = null;
+                // Возвращаем игрока на шаг назад, чтобы можно было заново наступить на платформу
+                player.x = prevPlayerPos.x;
+                player.y = prevPlayerPos.y;
+            });
+        }
+
+        function winDndGame() {
+            document.getElementById('dndGameOverlay').style.display = 'none';
+            showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
+                hammerCollected = true; 
+                score++; 
+                scoreElement.innerText = score + " / " + maxScore; 
+                playCollectSound(); 
+                spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
+                isPaused = false; 
+                checkWin();
+            }, { bgImage: images['dialogTest'].src });
+        }
+
+        function skipDndGame() {
+            winDndGame();
         }
 
         // --- РУННАЯ МИНИ ИГРА ---
@@ -1118,7 +1194,8 @@
                 document.getElementById('tarotGameOverlay').onclick = null; 
                 
                 easterEggRevealed = true;
-                showDialogue("Ты нашла корону!\nОна излучает древнюю магию.", () => {
+                // НОВЫЙ ДИАЛОГ ТАРО
+                showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
                     crownCollected = true; 
                     score++; scoreElement.innerText = score + " / " + maxScore; 
                     playCollectSound(); 
@@ -1177,7 +1254,6 @@
                 if (callback) callback();
             };
 
-            // Надежный запуск звука печатной машинки
             typeSound.currentTime = 0;
             typeSound.loop = true;
             let tpPromise = typeSound.play();
@@ -1243,13 +1319,13 @@
         let player = { x: 4, y: 4 }; let prevPlayerPos = { x: 4, y: 4 }; 
         let score = 0; const maxScore = 4; 
         let crown = { x: 0, y: 4 }; let crownCollected = false; 
-        let shieldObj = { x: 13, y: 4, alpha: 1 }; let shieldCollected = false; // Щит теперь на острове
+        let shieldObj = { x: 13, y: 4, alpha: 1 }; let shieldCollected = false; 
         let shoulders = { x: 4, y: 7 }; let shouldersCollected = false;
         let hammer = { x: 4, y: 0 }; let hammerCollected = false;
         
         let easterEggRevealed = false; 
         let easterEggFound = false;
-        let teleportPrompted = false; // Флаг для защиты от спама меню телепорта
+        let teleportPrompted = false; 
 
         let obstacles = [{x: 3, y: 3}, {x: 5, y: 3}, {x: 3, y: 5}, {x: 5, y: 5}, {x: 4, y: 8}];
         let particles = []; let targetMovePos = null; let moveTimer = 0;
@@ -1282,13 +1358,10 @@
         }
 
         function checkInteractions() {
+            // ИЗМЕНЕННАЯ ЛОГИКА ДЛЯ МОЛОТА -> D&D ИГРА
             if (player.x === hammer.x && player.y === hammer.y && !hammerCollected) { 
                 isPaused = true; targetMovePos = null;
-                showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
-                    hammerCollected = true; score++; scoreElement.innerText = score + " / " + maxScore; 
-                    playCollectSound(); spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
-                    isPaused = false; checkWin();
-                }, { bgImage: images['dialogTest'].src });
+                startDndGame();
             }
             if (player.x === crown.x && player.y === crown.y && !crownCollected) { 
                 isPaused = true; targetMovePos = null;

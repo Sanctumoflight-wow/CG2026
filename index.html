@@ -2,8 +2,10 @@
 <html lang="ru" style="background-color: #111111;">
 <head>
     <meta charset="UTF-8">
+    <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- ТЕГИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА PWA НА IOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#111111">
@@ -12,6 +14,7 @@
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
+        /* ЖЕСТКИЙ ФИКС ДЛЯ IOS SAFARI (ЧТОБЫ ЭКРАН НЕ УЕЗЖАЛ ВВЕРХ И НЕ СКРОЛЛИЛСЯ) */
         html, body {
             width: 100%;
             height: 100%;
@@ -32,6 +35,7 @@
             overscroll-behavior: none;
         }
 
+        /* ПОЛНАЯ БЛОКИРОВКА ЭЛЕМЕНТОВ УПРАВЛЕНИЯ ПЛЕЕРОМ В IOS SAFARI */
         video::-webkit-media-controls,
         video::-webkit-media-controls-play-button,
         video::-webkit-media-controls-start-playback-button,
@@ -40,6 +44,7 @@
             -webkit-appearance: none !important;
         }
 
+        /* --- ЭКРАН С ПРОСЬБОЙ ПОВЕРНУТЬ ТЕЛЕФОН --- */
         #rotate-overlay {
             display: none;
             position: fixed;
@@ -60,6 +65,7 @@
             #gameVersion { display: none !important; }
         }
 
+        /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
         #fullscreenToggleBtn {
             position: fixed; 
             top: 15px; 
@@ -80,6 +86,7 @@
         }
         #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
 
+        /* --- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА В ПРАВОМ НИЖНЕМ УГЛУ --- */
         #debugRestartBtn {
             position: fixed; 
             bottom: 20px; 
@@ -101,6 +108,7 @@
         }
         #debugRestartBtn:active { transform: scale(0.9); border-color: #e74c3c; color: #e74c3c; }
 
+        /* --- СУПЕР-КОНТЕЙНЕР (ФЛЕКС-ЦЕНТРИРОВАНИЕ) --- */
         #game-container {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -112,6 +120,7 @@
             background-color: #111;
         }
 
+        /* --- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ) --- */
         #mobile-wrapper {
             position: relative;
             width: 852px; 
@@ -122,6 +131,7 @@
             transform-origin: center center;
         }
 
+        /* --- ВЕРСИЯ ИГРЫ --- */
         #gameVersion {
             position: absolute;
             bottom: 10px;
@@ -138,6 +148,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         }
 
+        /* --- ТИТУЛЬНЫЙ ЭКРАН --- */
         #titleScreen {
             z-index: 150;
             color: #fff;
@@ -159,6 +170,7 @@
             margin: 0;
         }
 
+        /* --- ПОЛОСА ЗАГРУЗКИ --- */
         #loadingContainer {
             position: absolute;
             bottom: 15%;
@@ -198,6 +210,7 @@
             transition: width 0.2s linear;
         }
 
+        /* --- КНОПКА ИГРАТЬ --- */
         .start-btn {
             background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
             padding: 10px 40px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
@@ -220,9 +233,10 @@
             transform: translate(-50%, 6px) !important;
         }
 
+        /* --- СТАРТОВЫЙ ЭКРАН --- */
         #startScreen {
             display: none; 
-            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            background: url('images/items_bg.jpg') center/cover no-repeat, linear-gradient(135deg, #1a252f, #2c3e50);
             flex-direction: column; justify-content: center; align-items: center; z-index: 100;
             padding: 20px; box-sizing: border-box;
         }
@@ -247,8 +261,10 @@
             flex: 0 0 25%; display: flex; align-items: flex-start; justify-content: center;
         }
 
+        /* --- ЭЛЕМЕНТЫ ИГРЫ --- */
         #gameUI { display: none; z-index: 50; }
         
+        /* ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ */
         #tracker {
             position: absolute; top: 15px; left: 40px; z-index: 10;
             background: rgba(0, 0, 0, 0.6); padding: 10px 20px; border-radius: 15px;
@@ -268,6 +284,7 @@
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
+        /* КНОПКИ УПРАВЛЕНИЯ */
         #controls { 
             position: absolute; bottom: 45px; left: 45px; z-index: 10;
             display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
@@ -276,7 +293,7 @@
         }
         .d-btn { 
             background: rgba(44, 62, 80, 0.8); 
-            border: 3px solid #e67e22; /* Оранжевая обводка средней толщины */
+            border: 3px solid #e67e22; /* Оранжевая обводка */
             border-radius: 15px; 
             display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; 
             backdrop-filter: blur(5px); padding: 0; overflow: hidden;
@@ -292,6 +309,7 @@
         .btn-up { grid-column: 2; grid-row: 1; } .btn-left { grid-column: 1; grid-row: 2; }
         .btn-right { grid-column: 3; grid-row: 2; } .btn-down { grid-column: 2; grid-row: 3; }
 
+        /* --- ЭКРАН ПОБЕДЫ --- */
         #victoryOverlay { 
             display: none; background: rgba(0, 0, 0, 0.6); z-index: 5000; flex-direction: column; 
             justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(3px); position: relative;
@@ -302,6 +320,7 @@
         .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; z-index: 1;}
         .victory-text { font-size: 18px; margin-bottom: 20px; z-index: 1;}
 
+        /* --- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ КАТ-СЦЕН --- */
         #videoOverlay {
             display: none; z-index: 6000; background: #000; position: absolute; top:0; left:0; width:100%; height:100%;
         }
@@ -316,6 +335,16 @@
         }
         #skipVideoBtn:active { transform: scale(0.9); }
 
+        /* --- КНОПКА ПРОПУСТИТЬ БОССА --- */
+        #skipBossBtn {
+            position: absolute; top: 65px; right: 20px; z-index: 6010;
+            background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); color: #fff;
+            padding: 8px 18px; border-radius: 8px; font-family: 'Montserrat', sans-serif; 
+            font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
+        }
+        #skipBossBtn:active { transform: scale(0.9); }
+
+        /* --- ДИАЛОГИ --- */
         #dialogueOverlay {
             display: none; z-index: 4000; background: rgba(0, 0, 0, 0.2); 
         }
@@ -351,6 +380,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
+        /* --- ДНД МИНИ-ИГРА (МОЛОТ) --- */
         #dndGameOverlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #000; z-index: 4500;
@@ -363,47 +393,27 @@
             display: flex; 
             transition: background-image 0.3s ease;
         }
-        .dnd-left-page { 
-            flex: 1; 
-        }
-        .dnd-right-page { 
-            flex: 1; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-        }
+        .dnd-left-page { flex: 1; }
+        .dnd-right-page { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .dnd-content-box {
             background: rgba(10, 15, 20, 0.85); 
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px; 
             padding: 25px 20px; 
-            width: 85%; 
-            max-width: 350px;
+            width: 85%; max-width: 350px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
             text-align: center;
             backdrop-filter: blur(3px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            display: flex; flex-direction: column; justify-content: center;
         }
         .dnd-text {
-            font-size: 18px; 
-            font-family: 'Playfair Display', serif; 
-            margin-bottom: 25px; 
-            line-height: 1.4; 
-            color: #fff; 
-            text-shadow: 0 2px 4px #000;
+            font-size: 18px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; color: #fff; text-shadow: 0 2px 4px #000;
         }
-        .dnd-choices {
-            display: flex; flex-direction: column; gap: 12px; 
-        }
+        .dnd-choices { display: flex; flex-direction: column; gap: 12px; }
         .dnd-btn {
             background: #2c3e50; border: 1px solid #34495e; color: white; 
             padding: 12px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
-            font-family: 'Montserrat', sans-serif;
-            text-shadow: 0 1px 2px #000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-family: 'Montserrat', sans-serif; text-shadow: 0 1px 2px #000; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .dnd-btn:hover, .dnd-btn:active { background: #34495e; border-color: #f1c40f; color: #f1c40f; }
         .dnd-skip {
@@ -412,15 +422,12 @@
             font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 10px;
         }
 
+        /* --- РУНЫ И ТАРО --- */
         #runeGameOverlay {
             display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            backdrop-filter: blur(10px);
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(10px);
         }
-        #runeDisplayArea {
-            display: flex; gap: 15px; height: 150px; justify-content: center; align-items: center;
-            transition: transform 0.1s;
-        }
+        #runeDisplayArea { display: flex; gap: 15px; height: 150px; justify-content: center; align-items: center; transition: transform 0.1s; }
         .rune-pulse { animation: pulseRune 0.8s infinite alternate; }
 
         #tarotGameOverlay {
@@ -428,126 +435,65 @@
             flex-direction: column; justify-content: space-between; align-items: center; text-align: center;
             backdrop-filter: blur(10px); cursor: pointer; padding: 30px 0; box-sizing: border-box;
         }
-        .tarot-container { 
-            display: flex; gap: 30px; justify-content: center; align-items: center; flex: 1; 
-        }
+        .tarot-container { display: flex; gap: 30px; justify-content: center; align-items: center; flex: 1; }
         .tarot-card {
-            width: 200px; 
-            height: auto; border-radius: 12px; border: 2px solid #f1c40f;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); 
-            transition: transform 0.3s ease-in-out;
+            width: 200px; height: auto; border-radius: 12px; border: 2px solid #f1c40f;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); transition: transform 0.3s ease-in-out;
         }
         .tarot-text {
-            color: white; 
-            font-size: 22px; 
-            font-weight: 700; 
-            text-shadow: 0 2px 5px #000; 
-            animation: blink 1.5s infinite;
-            margin-bottom: 20px;
+            color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite; margin-bottom: 20px;
         }
 
+        /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
             display: none; background: url('images/boss_bg.png?v=2') center/cover no-repeat;
             z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
         }
-        
         .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
-        
-        #bossSkullsContainer {
-            position: absolute; top: 15px; right: 40px;
-            display: flex; justify-content: center; align-items: center; z-index: 203;
-        }
+        #bossSkullsContainer { position: absolute; top: 15px; right: 40px; display: flex; justify-content: center; align-items: center; z-index: 203; }
+        #bossHintText { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        #arenaPlayer { position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+        #arenaBoss { position: absolute; bottom: 12%; right: 5%; max-height: 45%; width: auto; z-index: 202; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); transition: bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s; cursor: crosshair; }
+        .player-projectile { position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201; transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f); animation: spin 1s linear infinite; }
 
-        #bossHintText {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
-
-        #arenaPlayer {
-            position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; 
-            z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
-        }
-
-        #arenaBoss {
-            position: absolute; bottom: 12%; right: 5%; max-height: 45%; width: auto; 
-            z-index: 202; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-            transition: bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s; cursor: crosshair;
-        }
-
-        .player-projectile {
-            position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201;
-            transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f);
-            animation: spin 1s linear infinite;
-        }
-
-        #playerHpContainer {
-            position: absolute; top: 20px; left: 20px;
-            display: flex; align-items: center; gap: 15px; z-index: 203;
-        }
+        /* --- СТИЛИ ЩИТА И ЗДОРОВЬЯ --- */
+        #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
         #pauseBtn {
-            background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 10px;
-            color: white; font-size: 20px; width: 45px; height: 45px;
-            cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: 0.2s; padding: 0;
+            background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 10px; color: white; font-size: 20px; width: 45px; height: 45px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; padding: 0;
         }
         #pauseBtn:hover { background: #f1c40f; border-color: #f1c40f; }
         #heartsBox { display: flex; gap: 5px; }
-
         .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
         
-        #shieldContainer {
-            position: absolute; bottom: 25px; left: 20px; 
-            display: flex; flex-direction: column; align-items: center; z-index: 205;
-        }
+        #shieldContainer { position: absolute; bottom: 25px; left: 20px; display: flex; flex-direction: column; align-items: center; z-index: 205; }
         #shieldBtn {
-            width: 56px; height: 56px; border-radius: 12px;
-            background: url('images/Divine_Shield.jpg') center/cover no-repeat;
-            color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000;
-            cursor: pointer; transition: 0.2s; 
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
-            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px;
-            position: relative;
+            width: 56px; height: 56px; border-radius: 12px; background: url('images/Divine_Shield.jpg') center/cover no-repeat;
+            color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000; cursor: pointer; transition: 0.2s; 
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5); display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px; position: relative;
         }
         #shieldBtn:active { transform: scale(0.95); }
         #shieldBtn:disabled { filter: grayscale(100%) brightness(0.5); cursor: not-allowed; box-shadow: none; }
-        
         #shieldBtn.shield-active {
-            filter: grayscale(0%) brightness(1.2) !important;
-            border-color: #f1c40f !important;
-            box-shadow: 0 0 20px #f1c40f, 0 0 40px #f39c12 !important;
-            animation: shieldPulse 0.5s infinite alternate;
+            filter: grayscale(0%) brightness(1.2) !important; border-color: #f1c40f !important;
+            box-shadow: 0 0 20px #f1c40f, 0 0 40px #f39c12 !important; animation: shieldPulse 0.5s infinite alternate;
         }
         
         #shieldBarBg {
-            width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px;
-            position: absolute; bottom: -12px;
+            width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px; position: absolute; bottom: -12px;
             overflow: hidden; display: none; border: 1px solid #fff;
         }
         #shieldBar { width: 100%; height: 100%; background: #f1c40f; }
-
         .boss-projectile {
-            position: absolute; width: 35px; height: 35px; border-radius: 50%;
-            background: radial-gradient(circle, #f1c40f, #e74c3c, #000);
-            box-shadow: 0 0 15px #e74c3c, 0 0 25px #f1c40f;
-            z-index: 201; pointer-events: none;
-            transition: left 2s linear, top 2s linear;
-            animation: spin 1s linear infinite;
+            position: absolute; width: 35px; height: 35px; border-radius: 50%; background: radial-gradient(circle, #f1c40f, #e74c3c, #000);
+            box-shadow: 0 0 15px #e74c3c, 0 0 25px #f1c40f; z-index: 201; pointer-events: none; transition: left 2s linear, top 2s linear; animation: spin 1s linear infinite;
         }
 
-        #finishHimOverlay {
-            display: none; justify-content: center; align-items: center; z-index: 5005; background: rgba(0,0,0,0.5);
-        }
-        #finishHimBtn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; font-size: 40px; padding: 20px 60px; 
-            border: 3px solid #fff; box-shadow: 0 0 30px #e74c3c; animation: pulseRed 1s infinite;
-        }
-
+        #finishHimOverlay { display: none; justify-content: center; align-items: center; z-index: 5005; background: rgba(0,0,0,0.5); }
+        #finishHimBtn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; font-size: 40px; padding: 20px 60px; border: 3px solid #fff; box-shadow: 0 0 30px #e74c3c; animation: pulseRed 1s infinite; }
         .action-btn {
-            padding: 10px 40px; font-size: 20px; font-weight: 700; cursor: pointer;
-            border: none; border-radius: 30px; background: linear-gradient(135deg, #f1c40f, #f39c12);
-            color: #2c3e50; transition: 0.2s; text-transform: uppercase;
-            z-index: 2; /* Над видео Ending */
+            padding: 10px 40px; font-size: 20px; font-weight: 700; cursor: pointer; border: none; border-radius: 30px; 
+            background: linear-gradient(135deg, #f1c40f, #f39c12); color: #2c3e50; transition: 0.2s; text-transform: uppercase; z-index: 2;
         }
         .action-btn:hover { transform: scale(1.05); }
 
@@ -600,8 +546,8 @@
         <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
         <div id="mobile-wrapper">
 
-            <!-- ВЕРСИЯ ИГРЫ (Отображается внутри экрана) -->
-            <div id="gameVersion">v1.06</div>
+            <!-- ВЕРСИЯ ИГРЫ -->
+            <div id="gameVersion">v1.09</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -613,9 +559,9 @@
                 </div>
             </div>
 
-            <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
+            <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ (Muted убран для проигрывания звука) -->
             <div id="victoryOverlay" class="screen-overlay">
-                <video id="endingVideo" src="images/Ending.mp4" loop muted playsinline webkit-playsinline disablePictureInPicture></video>
+                <video id="endingVideo" src="images/Ending.mp4" loop playsinline webkit-playsinline disablePictureInPicture></video>
                 <div class="victory-title">ПОБЕДА!</div>
                 <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
                 <button class="action-btn" onclick="resetGame()">Вернуться в начало</button>
@@ -623,11 +569,9 @@
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
-                <!-- ВИДЕО-ФОН (Заблокированы контролы плеера) -->
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">CALLIOPE<br>GAME 2</div>
                 
-                <!-- БЛОК ЗАГРУЗКИ -->
                 <div id="loadingContainer">
                     <div id="loadingText">Загрузка...</div>
                     <div id="loadingBarBg">
@@ -659,7 +603,6 @@
 
             <!-- ИГРОВОЕ ПОЛЕ -->
             <div id="gameUI" class="screen-overlay">
-                <!-- ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ -->
                 <div id="tracker">
                     <div class="tracker-item">📦 <span id="score">0 / 4</span></div>
                     <div class="tracker-item">💰 <span id="easterScore">0 / 1</span></div>
@@ -675,16 +618,12 @@
                 </div>
             </div>
 
-            <!-- ДНД МИНИ-ИГРА (МОЛОТ) В ВИДЕ КНИГИ -->
+            <!-- ДНД МИНИ-ИГРА -->
             <div id="dndGameOverlay" class="screen-overlay">
                 <div class="dnd-book-bg" id="dndBookBg">
-                    <!-- Левая страница (иллюстрация из картинки) -->
                     <div class="dnd-left-page"></div>
-                    
-                    <!-- Правая страница (текст и кнопки) -->
                     <div class="dnd-right-page">
                         <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить</button>
-                        
                         <div class="dnd-content-box">
                             <div class="dnd-text" id="dndText"></div>
                             <div class="dnd-choices" id="dndChoices"></div>
@@ -747,6 +686,9 @@
                 <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
                 
                 <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
+
+                <!-- КНОПКА ПРОПУСКА БОССА -->
+                <button id="skipBossBtn" onclick="skipBossFight()">Пропустить</button>
             </div>
 
             <!-- ОКНА ДОБИВАНИЯ -->
@@ -765,7 +707,6 @@
     </div> 
 
     <script>
-        // Принудительный старт видео на случай блокировок Safari
         document.addEventListener('DOMContentLoaded', () => {
             const vid = document.getElementById('menuVideo');
             if(vid) vid.play().catch(()=>{});
@@ -790,9 +731,9 @@
         
         let isWinTriggered = false; 
         let isBossFight = false;
-        let winTimeout = null;
+        let winTimer = 0; 
 
-        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ ---
+        // --- СИСТЕМА ЗАГРУЗКИ ---
         const images = {}; 
         const preloadedImages = [];
 
@@ -829,10 +770,7 @@
             'divineShield': 'images/Divine_Shield.jpg',
             'arrow': 'images/Arrow.jpg',
             'fieldBg': 'images/field_bg.jpg',
-            'dnd_1': 'images/dnd_1.jpg',
-            'dnd_2': 'images/dnd_2.jpg',
-            'dnd_3': 'images/dnd_3.jpg',
-            'dnd_death': 'images/dnd_death.jpg' 
+            'itemsBg': 'images/items_bg.jpg'
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -914,7 +852,7 @@
             collectSound.currentTime = 0; 
             let cpPromise = collectSound.play();
             if (cpPromise !== undefined) {
-                cpPromise.catch(()=>{ /* Игнорируем ошибку автоплея */ });
+                cpPromise.catch(()=>{});
             }
         }
 
@@ -988,7 +926,6 @@
             let playPromise = activeVideo.play();
             if (playPromise !== undefined) {
                 playPromise.catch(err => {
-                    console.warn("Cutscene blocked", err);
                     endCutscene();
                 });
             }
@@ -1042,7 +979,7 @@
             
             isWinTriggered = false; 
             isBossFight = false;    
-            if (winTimeout) clearTimeout(winTimeout); 
+            winTimer = 0; 
             
             shieldObj.alpha = 1;
             shieldObj.x = 13; 
@@ -1077,19 +1014,36 @@
             ctx.clearRect(0, 0, 852, 393);
         }
 
+        // СТАРТ ИГРЫ: Бесшумно снимаем звуковые блокировки Apple
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (assetsLoadedCount < totalAssets) return;
             
             bgMusic.volume = 0.3;
-            collectSound.volume = 1.0;
-            typeSound.volume = 1.0;
+            
+            // Тихая разблокировка аудио без "щелчков" в главном меню
+            typeSound.muted = true;
+            collectSound.muted = true;
 
             let unlockType = typeSound.play();
-            if (unlockType !== undefined) unlockType.then(() => typeSound.pause()).catch(()=>{});
+            if (unlockType !== undefined) {
+                unlockType.then(() => { typeSound.pause(); typeSound.currentTime = 0; typeSound.muted = false; }).catch(()=>{});
+            }
             
             let unlockCollect = collectSound.play();
-            if (unlockCollect !== undefined) unlockCollect.then(() => collectSound.pause()).catch(()=>{});
+            if (unlockCollect !== undefined) {
+                unlockCollect.then(() => { collectSound.pause(); collectSound.currentTime = 0; collectSound.muted = false; }).catch(()=>{});
+            }
+
+            // Тихая разблокировка финального видео для гарантии звука в конце
+            let endingVid = document.getElementById('endingVideo');
+            if (endingVid) {
+                endingVid.muted = true;
+                let ep = endingVid.play();
+                if (ep !== undefined) {
+                    ep.then(() => { endingVid.pause(); endingVid.currentTime = 0; endingVid.muted = false; }).catch(()=>{});
+                }
+            }
 
             if (!isIOS) enterFullscreen();
             
@@ -1140,7 +1094,6 @@
                 addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
                 addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
             } else if (frame === 'death') {
-                // ИГРОК УМИРАЕТ В ДНД - ЕГО ПРОСТО ВЫКИДЫВАЕТ НАЗАД (БЕЗ ПОТЕРИ ПРОГРЕССА)
                 bgEl.style.backgroundImage = `url('${images['dnd_death'].src}')`;
                 textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Придется отступить...";
                 addDndChoice("Вернуться назад", () => {
@@ -1155,7 +1108,7 @@
                 textEl.innerText = "Гоблины крепко спят. Ты аккуратно забираешь свой молот!";
                 addDndChoice("Забрать молот", () => {
                     document.getElementById('dndGameOverlay').style.display = 'none';
-                    playCutscene('hammerVideo', winDndGame); // Запускаем видео!
+                    playCutscene('hammerVideo', winDndGame); 
                 });
             }
         }
@@ -1187,7 +1140,6 @@
         }
 
         function winDndGame() {
-            // Эта функция срабатывает ПОСЛЕ видео Hammer.mp4
             showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
                 hammerCollected = true; 
                 addScore();
@@ -1195,7 +1147,7 @@
                 spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
                 isPaused = false; 
                 checkWin();
-                // Возвращаем музыку после катсцены
+                
                 let bgPromise = bgMusic.play();
                 if (bgPromise !== undefined) bgPromise.catch(()=>{});
             }, { bgImage: images['dialogTest'].src });
@@ -1412,12 +1364,14 @@
                 if (callback) callback();
             };
 
-            typeSound.currentTime = 0;
-            typeSound.loop = true;
-            let tpPromise = typeSound.play();
-            if (tpPromise !== undefined) {
-                tpPromise.catch(()=>{ /* Игнорируем ошибку автоплея */ });
-            }
+            try {
+                typeSound.currentTime = 0;
+                typeSound.loop = true;
+                let tpPromise = typeSound.play();
+                if (tpPromise !== undefined) {
+                    tpPromise.catch(()=>{});
+                }
+            } catch(e) {}
 
             dialogueTypingInterval = setInterval(() => {
                 document.getElementById('dialogueText').innerText += dialogueFullText.charAt(dialogueCurrentIndex);
@@ -1425,7 +1379,7 @@
                 if (dialogueCurrentIndex >= dialogueFullText.length) {
                     clearInterval(dialogueTypingInterval);
                     isDialogueTyping = false;
-                    typeSound.pause(); 
+                    try { typeSound.pause(); } catch(e) {}
                 }
             }, 30);
         }
@@ -1438,7 +1392,7 @@
                 clearInterval(dialogueTypingInterval);
                 document.getElementById('dialogueText').innerText = dialogueFullText;
                 isDialogueTyping = false;
-                typeSound.pause(); 
+                try { typeSound.pause(); } catch(e) {}
             } else {
                 if (isButtonMode && e && e.target.id !== 'dialogueActionBtn') {
                     return; 
@@ -1470,13 +1424,9 @@
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
-            
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            
             if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
-            
             if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
-            
             return false; 
         }
 
@@ -1514,12 +1464,7 @@
                 isWinTriggered = true; 
                 isPaused = true; 
                 isPlayerHappy = true;
-                
-                winTimeout = setTimeout(() => { 
-                    showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
-                        goToBoss();
-                    }, { bgImage: images['dialogTest'].src });
-                }, 1000); 
+                winTimer = 60; 
             } 
         }
 
@@ -1579,6 +1524,15 @@
         }
 
         function update() {
+            if (isWinTriggered && winTimer > 0) {
+                winTimer--;
+                if (winTimer <= 0) {
+                    showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
+                        goToBoss();
+                    }, { bgImage: images['dialogTest'].src });
+                }
+            }
+
             if (shieldCollected && shieldObj.alpha > 0) { shieldObj.alpha -= 0.03; if (shieldObj.alpha <= 0) { shieldObj.alpha = 0; } }
             if (targetMovePos && !isPaused) {
                 moveTimer++;
@@ -1839,6 +1793,28 @@
             }, 1000); 
         }
 
+        function goToBoss() {
+            isBossFight = true; 
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('bossOverlay').style.display = 'flex';
+            
+            document.getElementById('playerHpContainer').style.display = 'flex';
+            document.getElementById('bossSkullsContainer').style.display = 'flex';
+            document.getElementById('shieldContainer').style.display = 'flex';
+            document.getElementById('bossHintText').style.display = 'block';
+
+            if(bossInterval) clearInterval(bossInterval);
+            if(bossMovementInterval) clearInterval(bossMovementInterval);
+
+            bossHp = 10; updateBossSkulls();
+
+            let bossChar = document.getElementById('arenaBoss');
+            bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
+            bossChar.style.bottom = '12%';
+
+            startBossFight();
+        }
+
         function shootBossProjectile() {
             if (bossHp <= 0 || playerHp <= 0) return;
             
@@ -1890,7 +1866,6 @@
         }
 
         function startBossFight() {
-            toggleBossUI(true); 
             document.getElementById('pauseIndicator').style.display = 'none'; 
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
@@ -1923,6 +1898,15 @@
                     bossChar.style.bottom = '12%'; 
                 }
             }, 3000);
+        }
+
+        function skipBossFight() {
+            if (isPaused || bossHp <= 0) return;
+            bossHp = 0;
+            updateBossSkulls();
+            clearInterval(bossInterval); 
+            clearInterval(bossMovementInterval); 
+            document.getElementById('finishHimOverlay').style.display = 'flex';
         }
 
         function damageBoss(e) {
@@ -2009,15 +1993,21 @@
             let bossChar = document.getElementById('arenaBoss');
             bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
 
+            let endingVid = document.getElementById('endingVideo');
+            if (endingVid) {
+                endingVid.muted = true;
+                let ep = endingVid.play();
+                if (ep !== undefined) {
+                    ep.then(() => { endingVid.pause(); endingVid.currentTime = 0; endingVid.muted = false; }).catch(()=>{});
+                }
+            }
+
             playCutscene('ultimateVideo', () => {
                 document.getElementById('victoryOverlay').style.display = 'flex';
-                let endingVid = document.getElementById('endingVideo');
                 if(endingVid) {
                     endingVid.currentTime = 0;
                     endingVid.play().catch(()=>{});
                 }
-                let bgPromise = bgMusic.play();
-                if (bgPromise !== undefined) bgPromise.catch(()=>{});
             });
         });
     </script>

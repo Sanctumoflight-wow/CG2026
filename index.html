@@ -380,7 +380,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* --- ДНД МИНИ-ИГРА (МОЛОТ) --- */
+        /* --- ДНД МИНИ-ИГРА (МОЛОТ И ТЕСТ ПЛЕЧЕЙ) --- */
         #dndGameOverlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #000; z-index: 4500;
@@ -547,7 +547,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.09</div>
+            <div id="gameVersion">v1.10</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -559,7 +559,7 @@
                 </div>
             </div>
 
-            <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ (Muted убран для проигрывания звука) -->
+            <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
             <div id="victoryOverlay" class="screen-overlay">
                 <video id="endingVideo" src="images/Ending.mp4" loop playsinline webkit-playsinline disablePictureInPicture></video>
                 <div class="victory-title">ПОБЕДА!</div>
@@ -618,7 +618,7 @@
                 </div>
             </div>
 
-            <!-- ДНД МИНИ-ИГРА -->
+            <!-- ДНД МИНИ-ИГРА И ТЕСТ ПЛЕЧЕЙ -->
             <div id="dndGameOverlay" class="screen-overlay">
                 <div class="dnd-book-bg" id="dndBookBg">
                     <div class="dnd-left-page"></div>
@@ -770,7 +770,11 @@
             'divineShield': 'images/Divine_Shield.jpg',
             'arrow': 'images/Arrow.jpg',
             'fieldBg': 'images/field_bg.jpg',
-            'itemsBg': 'images/items_bg.jpg'
+            'itemsBg': 'images/items_bg.jpg',
+            'dnd_1': 'images/dnd_1.jpg',
+            'dnd_2': 'images/dnd_2.jpg',
+            'dnd_3': 'images/dnd_3.jpg',
+            'dnd_death': 'images/dnd_death.jpg' 
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -1021,7 +1025,6 @@
             
             bgMusic.volume = 0.3;
             
-            // Тихая разблокировка аудио без "щелчков" в главном меню
             typeSound.muted = true;
             collectSound.muted = true;
 
@@ -1035,7 +1038,6 @@
                 unlockCollect.then(() => { collectSound.pause(); collectSound.currentTime = 0; collectSound.muted = false; }).catch(()=>{});
             }
 
-            // Тихая разблокировка финального видео для гарантии звука в конце
             let endingVid = document.getElementById('endingVideo');
             if (endingVid) {
                 endingVid.muted = true;
@@ -1072,6 +1074,35 @@
         function startDndGame() {
             document.getElementById('dndGameOverlay').style.display = 'flex';
             renderDndFrame(1);
+        }
+
+        // --- НОВЫЙ ТЕСТОВЫЙ ЭКРАН ДЛЯ ПЛЕЧЕЙ ---
+        function startShouldersTest() {
+            document.getElementById('dndGameOverlay').style.display = 'flex';
+            const textEl = document.getElementById('dndText');
+            const choicesEl = document.getElementById('dndChoices');
+            const bgEl = document.getElementById('dndBookBg'); 
+            choicesEl.innerHTML = ''; 
+
+            bgEl.style.backgroundImage = `none`; 
+            textEl.innerText = "Тестовый экран (Плечи)";
+            
+            addDndChoice("пройти", () => {
+                document.getElementById('dndGameOverlay').style.display = 'none';
+                winShoulders();
+            });
+            addDndChoice("PH", () => failDndGame("Это пока в разработке (PH)..."));
+            addDndChoice("PH", () => failDndGame("Это пока в разработке (PH)..."));
+            addDndChoice("PH", () => failDndGame("Это пока в разработке (PH)..."));
+        }
+
+        function winShoulders() {
+            showDialogue("Мощные наплечники!\nОни надежно защитят в бою.", () => {
+                shouldersCollected = true; 
+                addScore();
+                playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
+                isPaused = false; checkWin();
+            }, { bgImage: images['dialogFather'].src });
         }
 
         function renderDndFrame(frame) {
@@ -1155,7 +1186,12 @@
 
         function skipDndGame() {
             document.getElementById('dndGameOverlay').style.display = 'none';
-            playCutscene('hammerVideo', winDndGame);
+            // Если фон не пустой (т.е. это не экран плечей), запускаем видео молота
+            if (document.getElementById('dndBookBg').style.backgroundImage !== 'none') {
+                playCutscene('hammerVideo', winDndGame);
+            } else {
+                winShoulders(); // Иначе это пропуск тестового экрана плечей
+            }
         }
 
         let currentRuneRound = 1;
@@ -1483,12 +1519,7 @@
             }
             if (player.x === shoulders.x && player.y === shoulders.y && !shouldersCollected) { 
                 isPaused = true; targetMovePos = null;
-                showDialogue("Мощные наплечники!\nОни надежно защитят в бою.", () => {
-                    shouldersCollected = true; 
-                    addScore();
-                    playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
-                    isPaused = false; checkWin();
-                }, { bgImage: images['dialogFather'].src });
+                startShouldersTest();
             }
 
             if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {

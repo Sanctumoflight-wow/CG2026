@@ -1,3 +1,4 @@
+![Описание картинки](https://raw.githubusercontent.com/Sanctumoflight-wow/JG2026/492fede9cb0fbf041d9b9924d50c22336c33c04b/images/Hammer_Photo.jpeg)
 # Уровень 1 - Поле с блоками
 ## Игра 1
 Карты таро

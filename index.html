@@ -395,30 +395,34 @@
         }
         .dnd-content-box {
             position: absolute;
-            top: 10%; 
-            right: 5%; 
-            width: 42%; 
-            height: 80%;
+            /* ЖЕСТКИЕ ПИКСЕЛИ - Гарантируют фиксацию на правой странице */
+            right: 38px; 
+            top: 40px;
+            width: 350px; 
+            height: 313px;
+            
             background: rgba(25, 30, 35, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px; 
-            padding: 20px 30px; 
+            padding: 20px 25px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
             text-align: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             box-sizing: border-box;
             transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
         .dnd-text {
-            font-size: 18px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; color: #fff; text-shadow: none;
+            font-size: 17px; font-family: 'Playfair Display', serif; margin-bottom: 20px; line-height: 1.4; color: #f8f9fa; text-shadow: none;
         }
         .dnd-choices { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .dnd-btn {
-            background: #2a3644; border: 1px solid #3d4f63; color: white; 
-            padding: 14px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            background: #2a3644; border: 2px solid #3d4f63; color: white; 
+            padding: 12px 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
             font-family: 'Montserrat', sans-serif; text-shadow: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             width: 100%; box-sizing: border-box;
         }
-        .dnd-btn:hover, .dnd-btn:active { background: #3d4f63; border-color: #5dade2; transform: scale(0.98); }
+        .dnd-btn:hover, .dnd-btn:active { background: #3d4f63; border-color: #5dade2; color: #5dade2; transform: scale(0.98); }
         .dnd-skip {
             position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); 
             color: rgba(255,255,255,0.7); padding: 6px 12px; border-radius: 5px; cursor: pointer; 
@@ -551,7 +555,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.11</div>
+            <div id="gameVersion">v1.13</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -733,6 +737,9 @@
         let isWinTriggered = false; 
         let isBossFight = false;
         let winTimer = 0; 
+        
+        // Глобальная переменная для понимания текущего D&D квеста (молот или плечи)
+        let currentDndType = 'hammer';
 
         // --- СИСТЕМА ЗАГРУЗКИ ---
         const images = {}; 
@@ -1073,12 +1080,14 @@
         let currentDndFrame = 1;
 
         function startDndGame() {
+            currentDndType = 'hammer';
             document.getElementById('dndGameOverlay').style.display = 'flex';
             renderDndFrame(1);
         }
 
         // --- НОВЫЙ ТЕСТОВЫЙ ЭКРАН ДЛЯ ПЛЕЧЕЙ ---
         function startShouldersTest() {
+            currentDndType = 'shoulders';
             document.getElementById('dndGameOverlay').style.display = 'flex';
             const textEl = document.getElementById('dndText');
             const choicesEl = document.getElementById('dndChoices');
@@ -1087,8 +1096,12 @@
             choicesEl.innerHTML = ''; 
 
             bgEl.style.backgroundImage = `none`; 
-            boxEl.style.right = '50%';
-            boxEl.style.transform = 'translateX(50%)'; // Центрируем бокс, так как фона нет
+            
+            // Центрируем бокс для тестового экрана без книги
+            boxEl.style.right = 'auto';
+            boxEl.style.left = '50%';
+            boxEl.style.top = '50%';
+            boxEl.style.transform = 'translate(-50%, -50%)';
             
             textEl.innerText = "Тестовый экран (Плечи)";
             
@@ -1118,8 +1131,11 @@
             const boxEl = document.getElementById('dndContentBox');
             choicesEl.innerHTML = ''; 
 
-            boxEl.style.right = '5%';
-            boxEl.style.transform = 'none'; // Сбрасываем центрирование на правую страницу
+            // Возвращаем бокс строго на правую страницу книги
+            boxEl.style.left = 'auto';
+            boxEl.style.right = '38px';
+            boxEl.style.top = '40px';
+            boxEl.style.transform = 'none';
 
             if (frame === 1) {
                 bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`;
@@ -1195,11 +1211,10 @@
 
         function skipDndGame() {
             document.getElementById('dndGameOverlay').style.display = 'none';
-            // Если фон не пустой (т.е. это не экран плечей), запускаем видео молота
-            if (document.getElementById('dndBookBg').style.backgroundImage !== 'none') {
+            if (currentDndType === 'hammer') {
                 playCutscene('hammerVideo', winDndGame);
-            } else {
-                winShoulders(); // Иначе это пропуск тестового экрана плечей
+            } else if (currentDndType === 'shoulders') {
+                winShoulders();
             }
         }
 

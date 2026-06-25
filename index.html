@@ -549,8 +549,7 @@
 
     <!-- АУДИО -->
     <audio id="bgMusic" loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
-        <source src="images/music.mp3" type="audio/mpeg">
+        <source src="Geometry_of_the_Hidden_Temple.mp3" type="audio/mpeg">
     </audio>
     <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
     <audio id="typeSound">
@@ -775,7 +774,6 @@
             'crown': 'images/Crown.png',
             'shoulders': 'images/Shoulders.png',
             'hammer': 'images/Hammer.png',
-            'rock': 'images/textures/winterspringfrostsaberrock.png',
             'tarotCover': 'images/Tarot_Cover.png',
             'tarot1': 'images/Tarot_1.png',
             'shield': 'images/Shield.png',
@@ -801,7 +799,8 @@
             'dnd_1': 'images/dnd_1.jpg',
             'dnd_2': 'images/dnd_2.jpg',
             'dnd_3': 'images/dnd_3.jpg',
-            'dnd_death': 'images/dnd_death.jpg' 
+            'dnd_death': 'images/dnd_death.jpg',
+            'portal': 'images/textures/PORTAL.png'
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -1529,7 +1528,9 @@
         let easterEggFound = false;
         let teleportPrompted = false; 
 
-        let obstacles = [{x: 3, y: 3}, {x: 5, y: 3}, {x: 3, y: 5}, {x: 5, y: 5}, {x: 4, y: 8}];
+        // Массив препятствий теперь полностью пуст (все камни удалены с карты)
+        let obstacles = [];
+        
         let particles = []; let targetMovePos = null; let moveTimer = 0;
         let isPlayerHappy = false;
 
@@ -1542,7 +1543,7 @@
         function movePlayer(dx, dy) {
             if (!gameStarted || isPaused || isBossFight) return; 
             let nextX = player.x + dx; let nextY = player.y + dy;
-            if (!isValidTile(nextX, nextY) || obstacles.find(o => o.x === nextX && o.y === nextY)) { targetMovePos = null; return; }
+            if (!isValidTile(nextX, nextY)) { targetMovePos = null; return; }
             prevPlayerPos = { x: player.x, y: player.y }; player.x = nextX; player.y = nextY;
             checkInteractions();
         }
@@ -1644,8 +1645,8 @@
                 if (moveTimer > 8) { 
                     moveTimer = 0;
                     let tryX = player.x < targetMovePos.x ? 1 : (player.x > targetMovePos.x ? -1 : 0); let tryY = player.y < targetMovePos.y ? 1 : (player.y > targetMovePos.y ? -1 : 0);
-                    if (tryX !== 0 && isValidTile(player.x + tryX, player.y) && !obstacles.find(o => o.x === player.x + tryX && o.y === player.y)) movePlayer(tryX, 0);
-                    else if (tryY !== 0 && isValidTile(player.x, player.y + tryY) && !obstacles.find(o => o.x === player.x && o.y === player.y + tryY)) movePlayer(0, tryY);
+                    if (tryX !== 0 && isValidTile(player.x + tryX, player.y)) movePlayer(tryX, 0);
+                    else if (tryY !== 0 && isValidTile(player.x, player.y + tryY)) movePlayer(0, tryY);
                     else targetMovePos = null; 
                 }
             }
@@ -1688,31 +1689,29 @@
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
                     let isShieldPlatform = ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5));
 
-                    if (!obstacles.find(o => o.x === x && o.y === y)) {
-                        if (isRegularBlock || isShortcut || isShieldPlatform || isEasterEggCube) {
-                            
-                            let blockImg = images['block'];
-                            if (x === 4 && y === 4) {
-                                blockImg = images['block']; 
-                            } else if (x >= 3 && x <= 5 && y < 4) {
-                                blockImg = images['block_3']; 
-                            } else if (x >= 3 && x <= 5 && y > 4) {
-                                blockImg = images['block_4']; 
-                            } else if (x < 4) {
-                                blockImg = images['block_1']; 
-                            } else if (x > 4) {
-                                blockImg = images['block_2']; 
-                            }
+                    if (isRegularBlock || isShortcut || isShieldPlatform || isEasterEggCube) {
+                        
+                        let blockImg = images['block'];
+                        if (x === 4 && y === 4) {
+                            blockImg = images['block']; 
+                        } else if (x >= 3 && x <= 5 && y < 4) {
+                            blockImg = images['block_3']; 
+                        } else if (x >= 3 && x <= 5 && y > 4) {
+                            blockImg = images['block_4']; 
+                        } else if (x < 4) {
+                            blockImg = images['block_1']; 
+                        } else if (x > 4) {
+                            blockImg = images['block_2']; 
+                        }
 
-                            if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
-                                let bW = 100;
-                                let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
-                                let bH = bW * aspect;
-                                ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
-                            } else {
-                                ctx.fillStyle = '#444';
-                                ctx.fillRect(p.x - 49.5, p.y, 99, 85);
-                            }
+                        if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
+                            let bW = 100;
+                            let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
+                            let bH = bW * aspect;
+                            ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
+                        } else {
+                            ctx.fillStyle = '#444';
+                            ctx.fillRect(p.x - 49.5, p.y, 99, 85);
                         }
                     }
                     ctx.globalAlpha = 1.0;
@@ -1731,26 +1730,12 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
 
                     if ((x === 8 && y === 4) || (x === 12 && y === 4)) {
-                        ctx.save();
-                        ctx.strokeStyle = "rgba(231, 76, 60, 0.8)";
-                        ctx.lineWidth = 3;
-                        ctx.shadowColor = "rgba(231, 76, 60, 1)";
-                        ctx.shadowBlur = 15;
-                        ctx.beginPath();
-                        ctx.ellipse(p.x, p.y + 25, 35, 17, 0, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.fillStyle = "rgba(231, 76, 60, 0.2)";
-                        ctx.fill();
-                        ctx.restore();
-                    }
-
-                    if (obstacles.find(o => o.x === x && o.y === y)) {
-                        let rockImg = images['rock'];
-                        if(rockImg && rockImg.complete && rockImg.naturalWidth !== 0) {
-                            let rW = 150;
-                            let aspect = rockImg.naturalHeight / rockImg.naturalWidth;
-                            let rH = rW * aspect;
-                            ctx.drawImage(rockImg, p.x - rW/2, p.y - rH + 50, rW, rH);
+                        let portalImg = images['portal'];
+                        if (portalImg && portalImg.complete && portalImg.naturalWidth !== 0) {
+                            let pW = 130;
+                            let aspect = portalImg.naturalHeight / portalImg.naturalWidth;
+                            let pH = pW * aspect;
+                            ctx.drawImage(portalImg, p.x - pW/2, p.y - pH + 35, pW, pH);
                         }
                     }
                     

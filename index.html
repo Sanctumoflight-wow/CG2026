@@ -390,37 +390,41 @@
             background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
-            display: flex; 
+            position: relative;
             transition: background-image 0.3s ease;
         }
-        .dnd-left-page { flex: 1; }
-        .dnd-right-page { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .dnd-content-box {
-            background: rgba(10, 15, 20, 0.85); 
-            border: 1px solid rgba(255,255,255,0.1);
+            position: absolute;
+            top: 10%; 
+            right: 5%; 
+            width: 42%; 
+            height: 80%;
+            background: rgba(25, 30, 35, 0.95); 
             border-radius: 12px; 
-            padding: 25px 20px; 
-            width: 85%; max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            padding: 20px 30px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
             text-align: center;
-            backdrop-filter: blur(3px);
-            display: flex; flex-direction: column; justify-content: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
         }
         .dnd-text {
-            font-size: 18px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; color: #fff; text-shadow: 0 2px 4px #000;
+            font-size: 18px; font-family: 'Playfair Display', serif; margin-bottom: 25px; line-height: 1.4; color: #fff; text-shadow: none;
         }
-        .dnd-choices { display: flex; flex-direction: column; gap: 12px; }
+        .dnd-choices { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .dnd-btn {
-            background: #2c3e50; border: 1px solid #34495e; color: white; 
-            padding: 12px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
-            font-family: 'Montserrat', sans-serif; text-shadow: 0 1px 2px #000; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            background: #2a3644; border: 1px solid #3d4f63; color: white; 
+            padding: 14px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            font-family: 'Montserrat', sans-serif; text-shadow: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%; box-sizing: border-box;
         }
-        .dnd-btn:hover, .dnd-btn:active { background: #34495e; border-color: #f1c40f; color: #f1c40f; }
+        .dnd-btn:hover, .dnd-btn:active { background: #3d4f63; border-color: #5dade2; transform: scale(0.98); }
         .dnd-skip {
-            position: absolute; top: 15px; right: 15px; background: transparent; border: 1px solid rgba(255,255,255,0.3); 
-            color: rgba(255,255,255,0.5); padding: 5px 10px; border-radius: 5px; cursor: pointer; 
-            font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 10px;
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); 
+            color: rgba(255,255,255,0.7); padding: 6px 12px; border-radius: 5px; cursor: pointer; 
+            font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 11px; backdrop-filter: blur(5px);
         }
+        .dnd-skip:active { transform: scale(0.9); }
 
         /* --- РУНЫ И ТАРО --- */
         #runeGameOverlay {
@@ -547,7 +551,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.10</div>
+            <div id="gameVersion">v1.11</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -621,13 +625,10 @@
             <!-- ДНД МИНИ-ИГРА И ТЕСТ ПЛЕЧЕЙ -->
             <div id="dndGameOverlay" class="screen-overlay">
                 <div class="dnd-book-bg" id="dndBookBg">
-                    <div class="dnd-left-page"></div>
-                    <div class="dnd-right-page">
-                        <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить</button>
-                        <div class="dnd-content-box">
-                            <div class="dnd-text" id="dndText"></div>
-                            <div class="dnd-choices" id="dndChoices"></div>
-                        </div>
+                    <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить</button>
+                    <div class="dnd-content-box" id="dndContentBox">
+                        <div class="dnd-text" id="dndText"></div>
+                        <div class="dnd-choices" id="dndChoices"></div>
                     </div>
                 </div>
             </div>
@@ -1082,9 +1083,13 @@
             const textEl = document.getElementById('dndText');
             const choicesEl = document.getElementById('dndChoices');
             const bgEl = document.getElementById('dndBookBg'); 
+            const boxEl = document.getElementById('dndContentBox');
             choicesEl.innerHTML = ''; 
 
             bgEl.style.backgroundImage = `none`; 
+            boxEl.style.right = '50%';
+            boxEl.style.transform = 'translateX(50%)'; // Центрируем бокс, так как фона нет
+            
             textEl.innerText = "Тестовый экран (Плечи)";
             
             addDndChoice("пройти", () => {
@@ -1110,7 +1115,11 @@
             const textEl = document.getElementById('dndText');
             const choicesEl = document.getElementById('dndChoices');
             const bgEl = document.getElementById('dndBookBg'); 
+            const boxEl = document.getElementById('dndContentBox');
             choicesEl.innerHTML = ''; 
+
+            boxEl.style.right = '5%';
+            boxEl.style.transform = 'none'; // Сбрасываем центрирование на правую страницу
 
             if (frame === 1) {
                 bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`;

@@ -756,7 +756,7 @@
             'crown': 'images/Crown.png',
             'shoulders': 'images/Shoulders.png',
             'hammer': 'images/Hammer.png',
-            'rock': 'images/textures/winterspringfrostsaberrock.png',
+            'portal': 'images/PORTAL.png',
             'tarotCover': 'images/Tarot_Cover.png',
             'tarot1': 'images/Tarot_1.png',
             'shield': 'images/Shield.png',
@@ -1501,7 +1501,9 @@
         let easterEggFound = false;
         let teleportPrompted = false; 
 
-        let obstacles = [{x: 3, y: 3}, {x: 5, y: 3}, {x: 3, y: 5}, {x: 5, y: 5}, {x: 4, y: 8}];
+        // Камни удалены, путь свободен
+        let obstacles = [];
+        
         let particles = []; let targetMovePos = null; let moveTimer = 0;
         let isPlayerHappy = false;
 
@@ -1680,18 +1682,15 @@
                     if (dist === 5) alpha = 0.2;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
 
+                    // Отрисовка порталов вместо красных кругов
                     if ((x === 8 && y === 4) || (x === 12 && y === 4)) {
-                        ctx.save();
-                        ctx.strokeStyle = "rgba(231, 76, 60, 0.8)";
-                        ctx.lineWidth = 3;
-                        ctx.shadowColor = "rgba(231, 76, 60, 1)";
-                        ctx.shadowBlur = 15;
-                        ctx.beginPath();
-                        ctx.ellipse(p.x, p.y + 25, 35, 17, 0, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.fillStyle = "rgba(231, 76, 60, 0.2)";
-                        ctx.fill();
-                        ctx.restore();
+                        if(images['portal'] && images['portal'].complete && images['portal'].naturalWidth !== 0) {
+                            let portW = 120; // Ширина портала
+                            let aspect = images['portal'].naturalHeight / images['portal'].naturalWidth;
+                            let portH = portW * aspect;
+                            // Смещаем портал чуть выше по оси Y (p.y - portH + 40), чтобы он ровно стоял на плитке
+                            ctx.drawImage(images['portal'], p.x - portW/2, p.y - portH + 40, portW, portH);
+                        }
                     }
 
                     if (obstacles.find(o => o.x === x && o.y === y)) {

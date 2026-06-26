@@ -86,7 +86,7 @@
         }
         #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
 
-        /* --- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА В ПРАВОМ НИЖНЕМ УГЛУ --- */
+        /* --- ОТЛАДОЧНЫЕ КНОПКИ В ПРАВОМ НИЖНЕМ УГЛУ --- */
         #debugRestartBtn {
             position: fixed; 
             bottom: 20px; 
@@ -107,6 +107,27 @@
             transition: 0.2s;
         }
         #debugRestartBtn:active { transform: scale(0.9); border-color: #e74c3c; color: #e74c3c; }
+
+        #debugWinBtn {
+            position: fixed; 
+            bottom: 20px; 
+            right: 80px; 
+            width: 50px; 
+            height: 50px; 
+            background: rgba(0, 0, 0, 0.6); 
+            border: 2px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 50%;
+            color: #2ecc71; 
+            font-size: 24px; 
+            cursor: pointer; 
+            display: none;
+            justify-content: center; 
+            align-items: center;
+            z-index: 9999; 
+            backdrop-filter: blur(5px);
+            transition: 0.2s;
+        }
+        #debugWinBtn:active { transform: scale(0.9); border-color: #2ecc71; }
 
         /* --- СУПЕР-КОНТЕЙНЕР (ФЛЕКС-ЦЕНТРИРОВАНИЕ) --- */
         #game-container {
@@ -170,43 +191,41 @@
             margin: 0;
         }
 
-        /* --- ПОЛОСА ЗАГРУЗКИ --- */
+        /* --- ПОЛОСА ЗАГРУЗКИ (WoW STYLE) --- */
         #loadingContainer {
             position: absolute;
-            bottom: 15%;
+            bottom: 12%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            width: 300px;
+            gap: 8px;
+            width: 80%;
+            max-width: 500px;
             z-index: 2;
         }
-        #loadingText {
-            font-size: 16px;
-            font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
+        #loadingTip {
+            font-size: 13px;
+            color: #e0e0e0;
             font-family: 'Montserrat', sans-serif;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            animation: blink 1s infinite;
-            margin: 0;
+            text-shadow: 0 2px 4px #000;
+            text-align: center;
         }
         #loadingBarBg {
             width: 100%;
-            height: 20px;
-            border: 3px solid #e67e22; 
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            overflow: hidden;
+            height: 16px;
+            background: #111;
+            border: 2px solid #222;
+            border-radius: 4px;
+            box-shadow: 0 0 5px #000 inset, 0 0 8px rgba(0,0,0,0.8);
             position: relative;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            overflow: hidden;
         }
         #loadingBarFill {
             height: 100%;
             width: 0%;
-            background-color: #3498db; 
+            background: linear-gradient(to bottom, #3498db, #1d6fa5);
             transition: width 0.2s linear;
         }
 
@@ -270,10 +289,11 @@
             background: rgba(0, 0, 0, 0.6); padding: 10px 20px; border-radius: 15px;
             border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
             display: flex; flex-direction: column; gap: 10px;
+            align-items: center; text-align: center;
             transition: opacity 0.3s;
         }
         .tracker-item {
-            display: flex; align-items: center; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px #000; color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px #000; color: white; width: 100%;
         }
         .tracker-item span { 
             margin-left: 15px; 
@@ -320,7 +340,7 @@
         .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; z-index: 1;}
         .victory-text { font-size: 18px; margin-bottom: 20px; z-index: 1;}
 
-        /* --- ЭКРАН ВЫБОРА ПАСХАЛКИ (НОВЫЙ) --- */
+        /* --- ЭКРАН ВЫБОРА ПАСХАЛКИ --- */
         #easterEggPromptOverlay {
             display: none; background: rgba(0,0,0,0.85); z-index: 5500; flex-direction: column;
             justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);
@@ -328,6 +348,18 @@
         .easter-title { font-size: 30px; font-weight: 900; color: #f1c40f; margin-bottom: 20px; text-shadow: 0 4px 10px #000; }
         .easter-text { font-size: 18px; margin-bottom: 30px; color: white; font-weight: 700; max-width: 80%; line-height: 1.5; }
         .easter-btn-row { display: flex; gap: 30px; }
+
+        /* --- МИНИ-ОКНО ПЕРЕСПРОСА (ТОЧНО К БОССУ?) --- */
+        #confirmBossOverlay {
+            display: none; background: rgba(0,0,0,0.85); z-index: 5600; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);
+        }
+        .confirm-box {
+            background: #2c3e50; border: 2px solid #e74c3c; border-radius: 15px; padding: 25px; max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .confirm-title { font-size: 22px; font-weight: 900; color: #e74c3c; margin-bottom: 15px; text-shadow: 0 2px 4px #000; }
+        .confirm-text { font-size: 14px; color: white; margin-bottom: 20px; line-height: 1.4; font-weight: 500; }
 
         /* --- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ КАТ-СЦЕН --- */
         #videoOverlay {
@@ -529,8 +561,9 @@
     <!-- КНОПКА ПОЛНОГО ЭКРАНА (ПОВЕРХ ВСЕГО) -->
     <button id="fullscreenToggleBtn">На весь экран</button>
 
-    <!-- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА -->
+    <!-- ОТЛАДОЧНЫЕ КНОПКИ -->
     <button id="debugRestartBtn" onclick="resetGame()" title="Вернуться в начало">↻</button>
+    <button id="debugWinBtn" onclick="debugSkipLevel()" title="Мгновенно пройти уровень">✔️</button>
 
     <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
@@ -563,7 +596,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.18</div>
+            <div id="gameVersion">v1.19</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -572,6 +605,18 @@
                 <div class="easter-btn-row">
                     <button id="btnEasterYes" class="action-btn" style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 12px 30px;">ДА, ИСКАТЬ</button>
                     <button id="btnEasterNo" class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 12px 30px;">НЕТ, К БОССУ</button>
+                </div>
+            </div>
+
+            <!-- МИНИ-ОКНО ПЕРЕСПРОСА ДЛЯ ПАСХАЛКИ -->
+            <div id="confirmBossOverlay" class="screen-overlay">
+                <div class="confirm-box">
+                    <div class="confirm-title">ТЫ УВЕРЕНА?</div>
+                    <div class="confirm-text">Пасхалка так и останется ненайденной на этом уровне. Точно идем к боссу?</div>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button id="btnConfirmYes" class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 10px 15px; font-size: 14px;">ИДТИ К БОССУ</button>
+                        <button id="btnConfirmNo" class="action-btn" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 10px 15px; font-size: 14px;">ВЕРНУТЬСЯ</button>
+                    </div>
                 </div>
             </div>
 
@@ -598,8 +643,9 @@
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">CALLIOPE<br>GAME 2</div>
                 
+                <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
                 <div id="loadingContainer">
-                    <div id="loadingText">Загрузка...</div>
+                    <div id="loadingTip"><span style="color: #f1c40f; font-weight: 900;">Tip:</span> Ищите скрытые пути, чтобы найти пасхалку!</div>
                     <div id="loadingBarBg">
                         <div id="loadingBarFill"></div>
                     </div>
@@ -629,9 +675,10 @@
 
             <!-- ИГРОВОЕ ПОЛЕ -->
             <div id="gameUI" class="screen-overlay">
+                <!-- ОБНОВЛЕННЫЙ ТРЕКЕР (ЦЕНТРИРОВАНИЕ И ЯЙЦО) -->
                 <div id="tracker">
                     <div class="tracker-item">📦 <span id="score">0 / 4</span></div>
-                    <div class="tracker-item">💰 <span id="easterScore">0 / 1</span></div>
+                    <div class="tracker-item">🥚 <span id="easterScore">0 / 1</span></div>
                 </div>
                 
                 <canvas id="gameCanvas"></canvas>
@@ -999,7 +1046,9 @@
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('dndGameOverlay').style.display = 'none';
             document.getElementById('debugRestartBtn').style.display = 'none'; 
+            document.getElementById('debugWinBtn').style.display = 'none';
             document.getElementById('easterEggPromptOverlay').style.display = 'none';
+            document.getElementById('confirmBossOverlay').style.display = 'none';
             document.getElementById('titleScreen').style.display = 'flex';
             
             score = 0;
@@ -1054,6 +1103,19 @@
             ctx.clearRect(0, 0, 852, 393);
         }
 
+        // Кнопка быстрого прохождения уровня (Debug)
+        function debugSkipLevel() {
+            if (isBossFight) return;
+            score = 4;
+            scoreElement.innerText = "4 / 4";
+            scoreElement.style.color = '#f1c40f'; 
+            crownCollected = true;
+            shieldCollected = true;
+            shouldersCollected = true;
+            hammerCollected = true;
+            checkWin();
+        }
+
         // СТАРТ ИГРЫ: Бесшумно снимаем звуковые блокировки Apple
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -1100,6 +1162,7 @@
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'flex';
             document.getElementById('debugRestartBtn').style.display = 'flex'; 
+            document.getElementById('debugWinBtn').style.display = 'flex'; 
             gameStarted = true; 
             if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
@@ -1408,6 +1471,16 @@
         let isDialogueTyping = false;
         let onDialogueComplete = null;
 
+        // ИСПРАВЛЕНА ОШИБКА: Добавлена функция скрытия интерфейса босса, чтобы не вызывать ReferenceError
+        function toggleBossUI(show) {
+            const display = show ? 'flex' : 'none';
+            document.getElementById('playerHpContainer').style.display = display;
+            document.getElementById('bossSkullsContainer').style.display = display;
+            document.getElementById('shieldContainer').style.display = display;
+            document.getElementById('bossHintText').style.display = show ? 'block' : 'none';
+            document.getElementById('skipBossBtn').style.display = show ? 'block' : 'none';
+        }
+
         function showDialogue(text, callback, options = {}) {
             document.getElementById('dialogueOverlay').style.display = 'flex';
             document.getElementById('dialogueText').innerText = "";
@@ -1611,6 +1684,7 @@
             }
         }
 
+        // Логика двойного подтверждения для пасхалки
         function update() {
             if (isWinTriggered && winTimer > 0) {
                 winTimer--;
@@ -1627,6 +1701,19 @@
                         
                         document.getElementById('btnEasterNo').onclick = () => {
                             document.getElementById('easterEggPromptOverlay').style.display = 'none';
+                            document.getElementById('confirmBossOverlay').style.display = 'flex';
+                        };
+
+                        // Кнопки нового мини-окна переспроса
+                        document.getElementById('btnConfirmNo').onclick = () => {
+                            document.getElementById('confirmBossOverlay').style.display = 'none';
+                            isWinTriggered = false; 
+                            isPaused = false;
+                            isPlayerHappy = false;
+                        };
+
+                        document.getElementById('btnConfirmYes').onclick = () => {
+                            document.getElementById('confirmBossOverlay').style.display = 'none';
                             showDialogue("Тогда вперед, к победе!\nУ нас достаточно сил, чтобы победить босса!", () => {
                                 goToBoss();
                             }, { bgImage: images['dialogTest'].src });

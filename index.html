@@ -208,6 +208,8 @@
         #titleScreen {
             z-index: 150;
             color: #fff;
+            /* Фон-заглушка на случай миллисекундной подгрузки видео */
+            background: url('images/items_bg.jpg') center/cover no-repeat;
         }
         .main-title {
             position: absolute;
@@ -297,7 +299,7 @@
         }
         .start-items-row {
             flex: 0 0 60%; width: 90%; display: flex; gap: 15px; justify-content: center; align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
         .start-items-row .img-block {
             flex: 1; height: 80%; display: flex; justify-content: center; align-items: center;
@@ -536,7 +538,7 @@
             box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); transition: transform 0.3s ease-in-out;
         }
         .tarot-text {
-            color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite; margin-bottom: 20px;
+            color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite margin-bottom: 20px;
         }
 
         /* --- АРЕНА ДЛЯ БОССА --- */
@@ -663,7 +665,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.30</div>
+            <div id="gameVersion">v1.31</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -707,7 +709,7 @@
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
-                <video id="menuVideo" src="images/Menu.mp4" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
+                <video id="menuVideo" src="images/Menu.mp4" poster="images/items_bg.jpg" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">КАЛЛИОПА<br>#1</div>
                 
                 <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
@@ -723,19 +725,23 @@
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
             <div id="startScreen" class="screen-overlay">
-                <div class="start-items-row">
-                    <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
-                    <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
-                    <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
-                    <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
-                    <div class="img-block secret-item">
-                        <span style="font-size: 40px; color: #f1c40f; font-weight: 900; text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);">?</span>
+                <!-- Обертка для предметов и текста, сдвинутая вверх от кнопки СТАРТ -->
+                <div style="transform: translateY(-20px); width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div class="start-items-row">
+                        <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
+                        <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
+                        <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
+                        <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
+                        <div class="img-block secret-item">
+                            <span style="font-size: 40px; color: #f1c40f; font-weight: 900; text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);">?</span>
+                        </div>
+                    </div>
+                    <div class="start-text">
+                        Собери все предметы уровня
                     </div>
                 </div>
-                <div class="start-text">
-                    Собери все предметы уровня
-                </div>
-                <!-- Обертка удалена для идеального совпадения координат -->
+                
+                <!-- Кнопка осталась жестко привязанной внизу -->
                 <button id="startFieldBtn" class="start-btn">СТАРТ</button>
             </div>
 
@@ -1356,6 +1362,15 @@
 
             // Начинаем 2-й этап фоновой загрузки (файлы босса)
             startBossBackgroundLoading();
+            
+            // Защита, если босс еще не догрузился - показываем кружок при старте игры
+            if (!isBossAssetsFullyLoaded) {
+                const debugLoad = document.getElementById('debugBossLoad');
+                if (debugLoad) {
+                    debugLoad.style.display = 'flex';
+                    debugLoad.style.opacity = '1';
+                }
+            }
 
             requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
@@ -2215,7 +2230,10 @@
             bossHp = 10; updateBossSkulls();
 
             let bossChar = document.getElementById('arenaBoss');
-            bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
+            // ИСПРАВЛЕНИЕ: Сброс transition, чтобы босс сразу занял позицию
+            bossChar.style.transition = 'bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s';
+            bossChar.style.transform = 'translateY(0) rotate(0deg)'; 
+            bossChar.style.opacity = '1';
             bossChar.style.bottom = '12%';
 
             startBossFight();
@@ -2231,11 +2249,11 @@
             const bossChar = document.getElementById('arenaBoss');
             const bossRect = bossChar.getBoundingClientRect();
             const wrapperRect = document.getElementById('mobile-wrapper').getBoundingClientRect();
-            const scale = wrapperRect.width / 852;
+            const scale = wrapperRect.width / 852 || 1;
             
             // Расчет стартовой позиции: чуть левее центра спрайта босса
-            const startX = (bossRect.left - wrapperRect.left) / scale + 20; 
-            const startY = (bossRect.top - wrapperRect.top) / scale + (bossRect.height / scale) / 2;
+            const startX = (bossRect.left - wrapperRect.left) / scale + 10; 
+            const startY = (bossRect.top - wrapperRect.top) / scale + (bossRect.height / scale) * 0.4;
 
             const endX = 118; 
             const endY = 193; 
@@ -2313,13 +2331,11 @@
                 if (!isPaused) shootBossProjectile(); 
             }, 3000);
             
+            let isBossUp = false;
             bossMovementInterval = setInterval(() => {
                 if (bossHp <= 0 || isPaused) return;
-                if (bossChar.style.bottom === '12%') {
-                    bossChar.style.bottom = '40%'; 
-                } else {
-                    bossChar.style.bottom = '12%'; 
-                }
+                isBossUp = !isBossUp;
+                bossChar.style.bottom = isBossUp ? '40%' : '12%'; 
             }, 3000);
         }
 

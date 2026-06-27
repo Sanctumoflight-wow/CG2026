@@ -248,7 +248,7 @@
         }
         #titlePlayBtn {
             position: absolute;
-            bottom: 20px; /* ВЫРОВНЕНО С ВЕРСИЕЙ ИГРЫ */
+            bottom: 20px; 
             left: 50%;
             transform: translateX(-50%);
             display: none; 
@@ -311,7 +311,7 @@
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
-        /* КНОПКИ УПРАВЛЕНИЯ С НОВОЙ СВЕТЛОЙ ОБВОДКОЙ */
+        /* КНОПКИ УПРАВЛЕНИЯ С ЧЕРНОЙ ОБВОДКОЙ */
         #controls { 
             position: absolute; bottom: 45px; left: 45px; z-index: 10;
             display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
@@ -320,16 +320,16 @@
         }
         .d-btn { 
             background: rgba(44, 62, 80, 0.8); 
-            border: 2px solid rgba(255, 255, 255, 0.4); /* Светлая минималистичная обводка */
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.1), 0 0 10px rgba(255,255,255,0.1);
+            border: 2px solid #000; /* ЧЕРНАЯ ОБВОДКА ПО ЗАПРОСУ */
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 10px rgba(0,0,0,0.5);
             border-radius: 15px; 
             display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; 
             backdrop-filter: blur(5px); padding: 0; overflow: hidden; transition: 0.1s;
         }
         .d-btn:active { 
             transform: scale(0.9); 
-            border-color: #fff; 
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.4);
+            border-color: #f1c40f; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.8);
         }
         
         .arrow-icon { width: 100%; height: 100%; object-fit: cover; pointer-events: none; border-radius: 13px; }
@@ -525,7 +525,6 @@
         /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
         #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
         
-        /* КНОПКА ПАУЗЫ ИДЕАЛЬНО РАСТЯНУТА КАК ЩИТ */
         #pauseBtn {
             width: 56px; height: 56px; border-radius: 12px; 
             background: url('images/IMG_4299.png') center/cover no-repeat;
@@ -630,7 +629,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.28</div>
+            <div id="gameVersion">v1.29</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -731,34 +730,37 @@
                 
                 <canvas id="gameCanvas"></canvas>
                 
-                <!-- ОБНОВЛЕННЫЙ ТУТОРИАЛ УПРАВЛЕНИЯ -->
-                <div id="movementTutorial" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.7); z-index: 5000; pointer-events: none;">
-                    
-                    <!-- SVG СТРЕЛКА УКАЗАТЕЛЬ -->
-                    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-                        <defs>
-                            <marker id="tutorialArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
-                                <polygon points="0 2, 10 5, 0 8" fill="rgba(255,255,255,0.8)" />
-                            </marker>
-                        </defs>
-                        <!-- Линия от текста к кнопкам управления -->
-                        <path d="M 426 180 Q 250 180 150 240" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-dasharray="6,6" marker-end="url(#tutorialArrow)" />
-                    </svg>
-
-                    <!-- ТЕКСТ ПОД РАМКОЙ -->
-                    <div style="position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); font-size: 20px; font-weight: 700; text-align: center; color: white; text-shadow: 0 2px 4px #000; line-height: 1.4; white-space: nowrap;">
-                        Управляй перемещением с помощью стрелок
-                    </div>
-
+                <!-- ТЕМНЫЙ ФОН ТУТОРИАЛА (ПОД КНОПКАМИ) -->
+                <div id="movementTutorialBg" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.7); z-index: 5000; pointer-events: none;">
                     <div style="position: absolute; bottom: 35px; left: 35px; width: 204px; height: 204px; border: 3px dashed rgba(255,255,255,0.8); border-radius: 20px; transform: rotate(45deg); animation: blink 1.5s infinite; pointer-events: none;"></div>
                 </div>
 
+                <!-- КНОПКИ УПРАВЛЕНИЯ -->
                 <div id="controls">
                     <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
                     <div class="d-btn btn-left" id="btnLeft"><img src="images/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
                     <div class="d-btn btn-right" id="btnRight"><img src="images/Arrow.jpg" class="arrow-icon arrow-right" alt="Right"></div>
                     <div class="d-btn btn-down" id="btnDown"><img src="images/Arrow.jpg" class="arrow-icon arrow-down" alt="Down"></div>
                 </div>
+
+                <!-- ТЕКСТ И СТРЕЛКА ТУТОРИАЛА (ПОВЕРХ КНОПОК И ФОНА) -->
+                <div id="movementTutorialUI" class="screen-overlay" style="display: none; z-index: 5002; pointer-events: none;">
+                    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        <defs>
+                            <marker id="tutorialArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                                <polygon points="0 2, 10 5, 0 8" fill="rgba(255,255,255,0.8)" />
+                            </marker>
+                        </defs>
+                        <!-- Линия от текста к кнопкам (стартует чуть выше, чтобы соответствовать новой позиции текста) -->
+                        <path d="M 426 120 Q 250 120 150 240" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-dasharray="6,6" marker-end="url(#tutorialArrow)" />
+                    </svg>
+
+                    <!-- Поднятый текст -->
+                    <div style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, 0); background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); font-size: 20px; font-weight: 700; text-align: center; color: white; text-shadow: 0 2px 4px #000; line-height: 1.4; white-space: nowrap;">
+                        Управляй перемещением с помощью стрелок
+                    </div>
+                </div>
+
             </div>
 
             <!-- ДНД МИНИ-ИГРА И ТЕСТ ПЛЕЧЕЙ -->
@@ -940,6 +942,7 @@
         const totalBossAssets = Object.keys(bossAssets).length;
         let bossAssetsLoadedCount = 0;
         let isBossAssetsFullyLoaded = false;
+        let isBossLoadingStarted = false; // ЗАЩИТНЫЙ ФЛАГ
         
         const playButton = document.getElementById('titlePlayBtn');
         const loadingContainer = document.getElementById('loadingContainer');
@@ -1018,8 +1021,10 @@
             }
         }
 
+        // ФУНКЦИЯ ЗАГРУЗКИ ФАЙЛОВ БОССА
         function startBossBackgroundLoading() {
-            if (isBossAssetsFullyLoaded) return;
+            if (isBossAssetsFullyLoaded || isBossLoadingStarted) return;
+            isBossLoadingStarted = true;
             
             // Показываем кружок, если игрок уже в игре
             if (gameStarted) {
@@ -1235,7 +1240,8 @@
             winTimer = 0; 
             
             hasMoved = false;
-            document.getElementById('movementTutorial').style.display = 'none';
+            document.getElementById('movementTutorialBg').style.display = 'none';
+            document.getElementById('movementTutorialUI').style.display = 'none';
             document.getElementById('controls').style.zIndex = '10';
 
             shieldObj.alpha = 1;
@@ -1367,14 +1373,15 @@
             document.getElementById('debugWinBtn').style.display = 'flex'; 
             gameStarted = true; 
             
-            // Включаем туториал управления
-            document.getElementById('movementTutorial').style.display = 'block';
+            // Включаем туториал управления (два слоя: под и над кнопками)
+            document.getElementById('movementTutorialBg').style.display = 'block';
+            document.getElementById('movementTutorialUI').style.display = 'block';
             document.getElementById('controls').style.zIndex = '5001';
 
             // Начинаем 2-й этап фоновой загрузки (файлы босса)
-            startBackgroundLoading();
+            startBossBackgroundLoading();
 
-            if (level1AssetsLoadedCount === totalLevel1Assets) requestAnimationFrame(gameLoop);
+            if (level1AssetsLoadedCount >= totalLevel1Assets) requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
         }
 
@@ -1832,7 +1839,8 @@
             // Скрываем обучение при первом шаге
             if (!hasMoved) {
                 hasMoved = true;
-                document.getElementById('movementTutorial').style.display = 'none';
+                document.getElementById('movementTutorialBg').style.display = 'none';
+                document.getElementById('movementTutorialUI').style.display = 'none';
                 document.getElementById('controls').style.zIndex = '10';
             }
 

@@ -11,6 +11,9 @@
     <meta name="theme-color" content="#111111">
     <meta name="color-scheme" content="dark">
     
+    <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ВИДЕО ДЛЯ ИСКЛЮЧЕНИЯ ЧЕРНЫХ ЭКРАНОВ -->
+    <link rel="preload" href="images/Menu.mp4" as="video" type="video/mp4">
+    
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
@@ -152,17 +155,18 @@
             transform-origin: center center;
         }
 
-        /* --- ВЕРСИЯ ИГРЫ --- */
+        /* --- ВЕРСИЯ ИГРЫ (ОДНА ЛИНИЯ С КНОПКОЙ ИГРАТЬ) --- */
         #gameVersion {
             position: absolute;
-            bottom: 10px;
-            left: 15px;
+            bottom: 20px;
+            left: 20px;
             color: rgba(255, 255, 255, 0.3);
             font-size: 14px;
             font-family: 'Montserrat', sans-serif;
             z-index: 10000;
             pointer-events: none;
             font-weight: 700;
+            line-height: 1;
         }
 
         .screen-overlay {
@@ -244,7 +248,7 @@
         }
         #titlePlayBtn {
             position: absolute;
-            bottom: 15%; 
+            bottom: 20px; /* ВЫРОВНЕНО С ВЕРСИЕЙ ИГРЫ */
             left: 50%;
             transform: translateX(-50%);
             display: none; 
@@ -307,7 +311,7 @@
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
-        /* КНОПКИ УПРАВЛЕНИЯ */
+        /* КНОПКИ УПРАВЛЕНИЯ С НОВОЙ СВЕТЛОЙ ОБВОДКОЙ */
         #controls { 
             position: absolute; bottom: 45px; left: 45px; z-index: 10;
             display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
@@ -316,12 +320,17 @@
         }
         .d-btn { 
             background: rgba(44, 62, 80, 0.8); 
-            border: 3px solid #e67e22; /* Оранжевая обводка */
+            border: 2px solid rgba(255, 255, 255, 0.4); /* Светлая минималистичная обводка */
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.1), 0 0 10px rgba(255,255,255,0.1);
             border-radius: 15px; 
             display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; 
-            backdrop-filter: blur(5px); padding: 0; overflow: hidden;
+            backdrop-filter: blur(5px); padding: 0; overflow: hidden; transition: 0.1s;
         }
-        .d-btn:active { transform: scale(0.9); border-color: #f1c40f; }
+        .d-btn:active { 
+            transform: scale(0.9); 
+            border-color: #fff; 
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.4);
+        }
         
         .arrow-icon { width: 100%; height: 100%; object-fit: cover; pointer-events: none; border-radius: 13px; }
         .arrow-up { transform: rotate(0deg); }
@@ -516,10 +525,13 @@
         /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
         #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
         
+        /* КНОПКА ПАУЗЫ ИДЕАЛЬНО РАСТЯНУТА КАК ЩИТ */
         #pauseBtn {
-            width: 56px; height: 56px; border-radius: 12px; background: rgba(25, 30, 35, 0.95); color: white;
-            border: 2px solid #fff; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0, 0.5);
-            display: flex; justify-content: center; align-items: center; padding: 0; position: relative; z-index: 205;
+            width: 56px; height: 56px; border-radius: 12px; 
+            background: url('images/IMG_4299.png') center/cover no-repeat;
+            border: 2px solid #fff; cursor: pointer; transition: 0.2s; 
+            box-shadow: 0 5px 15px rgba(0,0,0, 0.5);
+            padding: 0; position: relative; z-index: 205;
         }
         #pauseBtn:active { transform: scale(0.95); }
 
@@ -618,7 +630,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.25</div>
+            <div id="gameVersion">v1.28</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -662,7 +674,7 @@
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
-                <video id="menuVideo" src="images/Menu.mp4" poster="images/items_bg.jpg" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
+                <video id="menuVideo" src="images/Menu.mp4" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">КАЛЛИОПА<br>#1</div>
                 
                 <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
@@ -707,16 +719,38 @@
                         <span class="tracker-icon">🥚</span>
                         <span id="easterScore" class="tracker-text">0 / 1</span>
                     </div>
+                    <!-- Третий кружок: Фоновая загрузка босса -->
+                    <div class="tracker-row" id="bossLoadingRow" style="display: none; transition: opacity 0.5s ease-out;">
+                        <span class="tracker-icon" style="position:relative; width:32px; height:32px; display:flex; justify-content:center; align-items:center;">
+                            <div id="bossLoadingCircle" style="position:absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#3498db 0%, rgba(255,255,255,0.1) 0%); transition: background 0.3s ease;"></div>
+                            <span style="position:absolute; font-size:16px; z-index:2; text-shadow: 0 1px 2px #000;">⚔️</span>
+                        </span>
+                        <span id="bossLoadText" class="tracker-text" style="font-size: 20px;">0%</span>
+                    </div>
                 </div>
                 
                 <canvas id="gameCanvas"></canvas>
                 
-                <!-- ТУТОРИАЛ УПРАВЛЕНИЯ -->
+                <!-- ОБНОВЛЕННЫЙ ТУТОРИАЛ УПРАВЛЕНИЯ -->
                 <div id="movementTutorial" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.7); z-index: 5000; pointer-events: none;">
-                    <div style="position: absolute; bottom: 280px; left: 20px; width: 234px; font-size: 18px; font-weight: 700; text-align: center; color: white; text-shadow: 0 2px 4px #000; line-height: 1.4;">
+                    
+                    <!-- SVG СТРЕЛКА УКАЗАТЕЛЬ -->
+                    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        <defs>
+                            <marker id="tutorialArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                                <polygon points="0 2, 10 5, 0 8" fill="rgba(255,255,255,0.8)" />
+                            </marker>
+                        </defs>
+                        <!-- Линия от текста к кнопкам управления -->
+                        <path d="M 426 180 Q 250 180 150 240" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-dasharray="6,6" marker-end="url(#tutorialArrow)" />
+                    </svg>
+
+                    <!-- ТЕКСТ ПОД РАМКОЙ -->
+                    <div style="position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); font-size: 20px; font-weight: 700; text-align: center; color: white; text-shadow: 0 2px 4px #000; line-height: 1.4; white-space: nowrap;">
                         Управляй перемещением с помощью стрелок
                     </div>
-                    <div style="position: absolute; bottom: 35px; left: 35px; width: 204px; height: 204px; border: 3px dashed white; border-radius: 20px; transform: rotate(45deg); animation: blink 1.5s infinite; pointer-events: none;"></div>
+
+                    <div style="position: absolute; bottom: 35px; left: 35px; width: 204px; height: 204px; border: 3px dashed rgba(255,255,255,0.8); border-radius: 20px; transform: rotate(45deg); animation: blink 1.5s infinite; pointer-events: none;"></div>
                 </div>
 
                 <div id="controls">
@@ -773,9 +807,7 @@
                 <div class="arena-ground"></div>
                 
                 <div id="playerHpContainer">
-                    <button id="pauseBtn" onclick="togglePause()">
-                        <img id="pausePlayImg" src="images/IMG_4299.png" style="width: 32px; height: 32px; border-radius: 8px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">
-                    </button>
+                    <button id="pauseBtn" onclick="togglePause()"></button>
                     <div id="heartsBox">
                         <span class="heart">❤️</span>
                         <span class="heart">❤️</span>
@@ -848,7 +880,17 @@
         const images = {}; 
         const preloadedImages = [];
 
-        const allAssets = {
+        // ЭТАП 1: МГНОВЕННАЯ ЗАГРУЗКА (Только 5 файлов для стартового экрана)
+        const menuAssets = {
+            'itemsBg': 'images/items_bg.jpg',
+            'crown': 'images/Crown.png',
+            'shoulders': 'images/Shoulders.png',
+            'shield': 'images/Shield.png',
+            'hammer': 'images/Hammer.png'
+        };
+
+        // ЭТАП 2: ФОНОВАЯ ЗАГРУЗКА 1 УРОВНЯ
+        const level1Assets = {
             'block': 'images/textures/block.png',
             'block_1': 'images/textures/block_1.png',
             'block_2': 'images/textures/block_2.png',
@@ -856,12 +898,8 @@
             'block_4': 'images/textures/block_4.png',
             'player': 'images/model/Julia/Julia.png',
             'playerHappy': 'images/model/Julia/Julia_Happy.png',
-            'crown': 'images/Crown.png',
-            'shoulders': 'images/Shoulders.png',
-            'hammer': 'images/Hammer.png',
             'tarotCover': 'images/Tarot_Cover.png',
             'tarot1': 'images/Tarot_1.png',
-            'shield': 'images/Shield.png',
             'rune1': 'images/Rune_1.png',
             'rune2': 'images/Rune_2.png',
             'rune3': 'images/Rune_3.png',
@@ -872,55 +910,141 @@
             'dialogLera': 'images/dialogs/Lera.png',
             'dialogFather': 'images/dialogs/Father.png',
             'dialogJulia': 'images/dialogs/Julia.png',
-            'boss': 'images/boss.png?v=3',
-            'bossBg': 'images/boss_bg.png?v=2',
-            'juliaShield': 'images/model/Julia/Julia_Shield.png',
-            'juliaHit': 'images/model/Julia/Julia_Hit.png',
-            'alch': 'images/alch.png',
-            'divineShield': 'images/Divine_Shield.jpg',
             'arrow': 'images/Arrow.jpg',
             'fieldBg': 'images/field_bg.jpg',
-            'itemsBg': 'images/items_bg.jpg',
             'dnd_1': 'images/dnd_1.jpg',
             'dnd_2': 'images/dnd_2.jpg',
             'dnd_3': 'images/dnd_3.jpg',
             'dnd_death': 'images/dnd_death.jpg',
             'portal': 'images/textures/PORTAL.png',
             'chest': 'images/IMG_4300.png',
-            'pauseIcon': 'images/IMG_4299.png',
-            'playIcon': 'images/IMG_4301.png'
+            'pauseIcon': 'images/IMG_4299.png'
         };
 
-        const totalAssets = Object.keys(allAssets).length;
-        let assetsLoadedCount = 0;
+        // ЭТАП 3: ФОНОВАЯ ЗАГРУЗКА БОССА
+        const bossAssets = {
+            'boss': 'images/boss.png?v=3',
+            'bossBg': 'images/boss_bg.png?v=2',
+            'juliaShield': 'images/model/Julia/Julia_Shield.png',
+            'juliaHit': 'images/model/Julia/Julia_Hit.png',
+            'alch': 'images/alch.png',
+            'divineShield': 'images/Divine_Shield.jpg'
+        };
+
+        const totalMenuAssets = Object.keys(menuAssets).length;
+        let menuAssetsLoadedCount = 0;
+        
+        const totalLevel1Assets = Object.keys(level1Assets).length;
+        let level1AssetsLoadedCount = 0;
+
+        const totalBossAssets = Object.keys(bossAssets).length;
+        let bossAssetsLoadedCount = 0;
+        let isBossAssetsFullyLoaded = false;
+        
         const playButton = document.getElementById('titlePlayBtn');
         const loadingContainer = document.getElementById('loadingContainer');
         const loadingBarFill = document.getElementById('loadingBarFill');
 
-        const checkPreloaderProgress = () => {
-            assetsLoadedCount++;
-            let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
+        const checkMenuPreloaderProgress = () => {
+            menuAssetsLoadedCount++;
+            let percent = Math.round((menuAssetsLoadedCount / totalMenuAssets) * 100);
             
-            if (assetsLoadedCount < totalAssets) {
+            if (menuAssetsLoadedCount < totalMenuAssets) {
                 loadingBarFill.style.width = percent + '%';
             } else {
                 loadingContainer.style.display = 'none';
                 playButton.style.display = 'block';
+                
+                // СРАЗУ ЗАПУСКАЕМ ТИХУЮ ЗАГРУЗКУ 1 УРОВНЯ
+                startLevel1BackgroundLoading();
             }
         };
 
-        for (const [key, src] of Object.entries(allAssets)) {
+        // ЗАГРУЖАЕМ ТОЛЬКО 5 КАРТИНОК И СРАЗУ ПОКАЗЫВАЕМ КНОПКУ "ИГРАТЬ"
+        for (const [key, src] of Object.entries(menuAssets)) {
             const img = new Image();
             img.src = src;
             preloadedImages.push(img);
-            images[key] = img;
-
-            img.onload = checkPreloaderProgress;
-            img.onerror = () => {
-                console.warn(`[ПРЕЛОАДЕР] Ошибка загрузки ассета: ${src}. Пропускаем...`);
-                images[key] = null; 
-                checkPreloaderProgress(); 
+            img.onload = () => {
+                images[key] = img;
+                checkMenuPreloaderProgress();
             };
+            img.onerror = () => {
+                images[key] = null; 
+                checkMenuPreloaderProgress(); 
+            };
+        }
+
+        // ФУНКЦИИ ФОНОВОЙ ЗАГРУЗКИ (Вызываются автоматически)
+        function startLevel1BackgroundLoading() {
+            for (const [key, src] of Object.entries(level1Assets)) {
+                const img = new Image();
+                img.src = src;
+                preloadedImages.push(img);
+                img.onload = () => {
+                    images[key] = img;
+                    level1AssetsLoadedCount++;
+                    if (level1AssetsLoadedCount >= totalLevel1Assets) startBossBackgroundLoading();
+                };
+                img.onerror = () => {
+                    images[key] = null;
+                    level1AssetsLoadedCount++;
+                    if (level1AssetsLoadedCount >= totalLevel1Assets) startBossBackgroundLoading();
+                };
+            }
+        }
+
+        function updateBossLoadProgress() {
+            bossAssetsLoadedCount++;
+            let percent = Math.round((bossAssetsLoadedCount / totalBossAssets) * 100);
+
+            const loadText = document.getElementById('bossLoadText');
+            const loadCircle = document.getElementById('bossLoadingCircle');
+
+            if (loadText && loadCircle) {
+                loadText.innerText = percent + '%';
+                loadCircle.style.background = `conic-gradient(#3498db ${percent}%, rgba(255,255,255,0.1) ${percent}%)`;
+            }
+
+            if (bossAssetsLoadedCount >= totalBossAssets) {
+                isBossAssetsFullyLoaded = true;
+                setTimeout(() => {
+                    const row = document.getElementById('bossLoadingRow');
+                    if (row) {
+                        row.style.opacity = '0';
+                        setTimeout(() => row.style.display = 'none', 500);
+                    }
+                }, 1500);
+            }
+        }
+
+        function startBossBackgroundLoading() {
+            if (isBossAssetsFullyLoaded) return;
+            
+            // Показываем кружок, если игрок уже в игре
+            if (gameStarted) {
+                const row = document.getElementById('bossLoadingRow');
+                if (row) {
+                    row.style.display = 'flex';
+                    row.style.opacity = '1';
+                }
+            }
+
+            bossAssetsLoadedCount = 0;
+
+            for (const [key, src] of Object.entries(bossAssets)) {
+                const img = new Image();
+                img.src = src;
+                preloadedImages.push(img);
+                img.onload = () => {
+                    images[key] = img;
+                    updateBossLoadProgress();
+                };
+                img.onerror = () => {
+                    images[key] = null;
+                    updateBossLoadProgress();
+                };
+            }
         }
 
         function resizeGame() {
@@ -1150,7 +1274,6 @@
             ctx.clearRect(0, 0, 852, 393);
         }
 
-        // Кнопка быстрого прохождения уровня (Debug)
         function debugSkipLevel() {
             if (isBossFight) return;
             score = 4;
@@ -1166,7 +1289,7 @@
         // СТАРТ ИГРЫ: Бесшумно снимаем звуковые блокировки Apple
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
-            if (assetsLoadedCount < totalAssets) return;
+            if (level1AssetsLoadedCount < totalLevel1Assets) return;
             
             bgMusic.volume = 0.3;
             bossMusic.volume = 0.3;
@@ -1209,8 +1332,33 @@
             if (bgPromise !== undefined) bgPromise.catch(()=>{});
         });
 
+        // ЗАГРУЗКА БЛОКОВ 1 УРОВНЯ
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
             e.preventDefault();
+            const btn = document.getElementById('startFieldBtn');
+
+            // ЕСЛИ ФОНОВЫЕ ФАЙЛЫ ЕЩЕ НЕ ДОКАЧАЛИСЬ
+            if (level1AssetsLoadedCount < totalLevel1Assets) {
+                btn.innerText = "ЗАГРУЗКА...";
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.7';
+
+                const checkReady = setInterval(() => {
+                    if (level1AssetsLoadedCount >= totalLevel1Assets) {
+                        clearInterval(checkReady);
+                        btn.innerText = "СТАРТ";
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.opacity = '1';
+                        startLevel();
+                    }
+                }, 100);
+                return;
+            }
+
+            startLevel();
+        });
+
+        function startLevel() {
             if (!isIOS) enterFullscreen();
             document.getElementById('startScreen').style.display = 'none'; 
             document.getElementById('gameUI').style.display = 'block';
@@ -1223,9 +1371,12 @@
             document.getElementById('movementTutorial').style.display = 'block';
             document.getElementById('controls').style.zIndex = '5001';
 
-            if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
+            // Начинаем 2-й этап фоновой загрузки (файлы босса)
+            startBackgroundLoading();
+
+            if (level1AssetsLoadedCount === totalLevel1Assets) requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
-        });
+        }
 
         let currentDndFrame = 1;
 
@@ -1999,7 +2150,6 @@
         function togglePause() {
             if (document.getElementById('bossOverlay').style.display === 'flex') {
                 isPaused = !isPaused;
-                document.getElementById('pausePlayImg').src = isPaused ? "images/IMG_4301.png" : "images/IMG_4299.png";
                 document.getElementById('pauseIndicator').style.display = isPaused ? "flex" : "none";
             }
         }
@@ -2058,6 +2208,13 @@
         }
 
         function goToBoss() {
+            if (!isBossAssetsFullyLoaded) {
+                showDialogue("Загрузка арены... Пожалуйста, подожди пару секунд.", () => {
+                    setTimeout(goToBoss, 500); 
+                }, { hideBossUI: true, buttonText: "Ждем..." });
+                return;
+            }
+
             isBossFight = true; 
             document.getElementById('gameUI').style.display = 'none';
             document.getElementById('bossOverlay').style.display = 'flex';
@@ -2139,7 +2296,6 @@
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
             isPaused = false;
-            document.getElementById('pausePlayImg').src = "images/IMG_4299.png";
             
             let pImg = document.getElementById('arenaPlayer');
             pImg.src = images['player'].src;

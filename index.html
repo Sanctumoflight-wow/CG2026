@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" style="background-color: #111111;">
+<html lang="ru" style="background-color: #000000;">
 <head>
     <meta charset="UTF-8">
     <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
@@ -8,10 +8,11 @@
     <!-- ТЕГИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА PWA НА IOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#111111">
+    <meta name="theme-color" content="#000000">
     <meta name="color-scheme" content="dark">
     
-    <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ВИДЕО ДЛЯ ИСКЛЮЧЕНИЯ ЧЕРНЫХ ЭКРАНОВ -->
+    <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ДЛЯ ИСКЛЮЧЕНИЯ СЕРЫХ ЭКРАНОВ -->
+    <link rel="preload" href="images/items_bg.jpg" as="image">
     <link rel="preload" href="images/Menu.mp4" as="video" type="video/mp4">
     
     <title>Calliope Game 2</title>
@@ -24,7 +25,7 @@
             position: fixed;
             top: 0; left: 0;
             overflow: hidden;
-            background-color: #111; 
+            background-color: #000; 
             margin: 0; 
             padding: 0;
         }
@@ -52,7 +53,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #111;
+            background: #000;
             z-index: 99999;
             flex-direction: column;
             justify-content: center;
@@ -87,7 +88,7 @@
             transition: 0.2s;
             backdrop-filter: blur(5px);
         }
-        #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
+        #fullscreenToggleBtn:hover { background: #f1c40f; color: #000; }
 
         /* --- ОТЛАДОЧНЫЕ КНОПКИ В ПРАВОМ НИЖНЕМ УГЛУ --- */
         #debugRestartBtn {
@@ -147,6 +148,7 @@
             align-items: center;
             z-index: 9999;
             backdrop-filter: blur(5px);
+            transition: opacity 0.5s ease;
         }
         #debugBossLoadingCircle {
             position: absolute;
@@ -172,7 +174,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background-color: #111;
+            background-color: #000;
         }
 
         /* --- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ) --- */
@@ -180,7 +182,7 @@
             position: relative;
             width: 852px; 
             height: 393px;
-            background-color: #2c3e50;
+            background-color: #000; /* Заменен с серого #2c3e50 на черный */
             overflow: hidden;
             flex-shrink: 0; 
             transform-origin: center center;
@@ -208,8 +210,7 @@
         #titleScreen {
             z-index: 150;
             color: #fff;
-            /* Фон-заглушка на случай миллисекундной подгрузки видео */
-            background: url('images/items_bg.jpg') center/cover no-repeat;
+            background-color: #000;
         }
         .main-title {
             position: absolute;
@@ -295,17 +296,16 @@
             display: none; 
             background: url('images/items_bg.jpg') center/cover no-repeat, linear-gradient(135deg, #1a252f, #2c3e50);
             flex-direction: column; justify-content: center; align-items: center; z-index: 100;
-            padding: 20px; box-sizing: border-box;
         }
         .start-items-row {
-            flex: 0 0 60%; width: 90%; display: flex; gap: 15px; justify-content: center; align-items: center;
-            margin-bottom: 20px;
+            flex: 0 0 auto; width: 90%; display: flex; gap: 15px; justify-content: center; align-items: center;
+            margin-bottom: 20px; height: 180px;
         }
         .start-items-row .img-block {
-            flex: 1; height: 80%; display: flex; justify-content: center; align-items: center;
+            flex: 1; height: 100%; display: flex; justify-content: center; align-items: center;
             background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px); transition: 0.3s;
+            backdrop-filter: blur(10px); transition: 0.3s; box-sizing: border-box;
         }
         .start-items-row .img-block img { 
             max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); 
@@ -313,7 +313,7 @@
         .start-text {
             display: flex; align-items: center; justify-content: center;
             font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px #000;
-            text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
         /* --- ЭЛЕМЕНТЫ ИГРЫ --- */
@@ -549,8 +549,20 @@
         .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
         #bossSkullsContainer { position: absolute; top: 15px; right: 40px; display: flex; justify-content: center; align-items: center; z-index: 203; }
         #bossHintText { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        
         #arenaPlayer { position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
-        #arenaBoss { position: absolute; bottom: 12%; right: 5%; max-height: 45%; width: auto; z-index: 202; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); transition: bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s; cursor: crosshair; }
+        
+        /* ИСПРАВЛЕНИЕ БОССА: Движение вынесено в независимый контейнер */
+        #bossContainer {
+            position: absolute; bottom: 12%; right: 5%; height: 45%; width: auto; z-index: 202;
+            transition: bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in;
+        }
+        #arenaBoss { 
+            height: 100%; width: auto; 
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); 
+            transition: transform 0.1s, filter 0.1s; cursor: crosshair; 
+        }
+        
         .player-projectile { position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201; transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f); animation: spin 1s linear infinite; }
 
         /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
@@ -665,7 +677,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.31</div>
+            <div id="gameVersion">v1.32</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -725,8 +737,8 @@
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
             <div id="startScreen" class="screen-overlay">
-                <!-- Обертка для предметов и текста, сдвинутая вверх от кнопки СТАРТ -->
-                <div style="transform: translateY(-20px); width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <!-- Обертка для избежания перекрытия текста кнопкой СТАРТ -->
+                <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 80px; box-sizing: border-box;">
                     <div class="start-items-row">
                         <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
                         <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
@@ -782,7 +794,7 @@
                                 <polygon points="0 2, 10 5, 0 8" fill="rgba(255,255,255,0.8)" />
                             </marker>
                         </defs>
-                        <!-- Линия от текста к кнопкам (стартует чуть выше, чтобы соответствовать новой позиции текста) -->
+                        <!-- Линия от текста к кнопкам -->
                         <path d="M 426 120 Q 250 120 150 240" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-dasharray="6,6" marker-end="url(#tutorialArrow)" />
                     </svg>
 
@@ -857,7 +869,11 @@
                 </div>
 
                 <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
-                <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
+                
+                <!-- ОБНОВЛЕННАЯ СТРУКТУРА БОССА (Контейнер отвечает за движение, img за урон) -->
+                <div id="bossContainer">
+                    <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
+                </div>
                 
                 <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
 
@@ -966,7 +982,7 @@
         const totalBossAssets = Object.keys(bossAssets).length;
         let bossAssetsLoadedCount = 0;
         let isBossAssetsFullyLoaded = false;
-        let isBossLoadingStarted = false; // ЗАЩИТНЫЙ ФЛАГ
+        let isBossLoadingStarted = false; 
         
         const playButton = document.getElementById('titlePlayBtn');
         const loadingContainer = document.getElementById('loadingContainer');
@@ -1018,7 +1034,6 @@
                     const debugLoad = document.getElementById('debugBossLoad');
                     if (debugLoad) {
                         debugLoad.style.opacity = '0';
-                        debugLoad.style.transition = 'opacity 0.5s ease';
                         setTimeout(() => debugLoad.style.display = 'none', 500);
                     }
                 }, 1500);
@@ -1030,15 +1045,6 @@
             if (isBossAssetsFullyLoaded || isBossLoadingStarted) return;
             isBossLoadingStarted = true;
             
-            // Показываем кружок дебага, только когда находимся в игре
-            if (gameStarted) {
-                const debugLoad = document.getElementById('debugBossLoad');
-                if (debugLoad) {
-                    debugLoad.style.display = 'flex';
-                    debugLoad.style.opacity = '1';
-                }
-            }
-
             bossAssetsLoadedCount = 0;
 
             for (const [key, src] of Object.entries(bossAssets)) {
@@ -1351,8 +1357,19 @@
             document.getElementById('startScreen').style.display = 'none'; 
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'flex';
+            
+            // Включаем интерфейс дебага и кружок загрузки
             document.getElementById('debugRestartBtn').style.display = 'flex'; 
             document.getElementById('debugWinBtn').style.display = 'flex'; 
+            
+            if (!isBossAssetsFullyLoaded) {
+                const debugLoad = document.getElementById('debugBossLoad');
+                if (debugLoad) {
+                    debugLoad.style.display = 'flex';
+                    debugLoad.style.opacity = '1';
+                }
+            }
+            
             gameStarted = true; 
             
             // Включаем туториал управления
@@ -1362,15 +1379,6 @@
 
             // Начинаем 2-й этап фоновой загрузки (файлы босса)
             startBossBackgroundLoading();
-            
-            // Защита, если босс еще не догрузился - показываем кружок при старте игры
-            if (!isBossAssetsFullyLoaded) {
-                const debugLoad = document.getElementById('debugBossLoad');
-                if (debugLoad) {
-                    debugLoad.style.display = 'flex';
-                    debugLoad.style.opacity = '1';
-                }
-            }
 
             requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
@@ -1965,7 +1973,7 @@
             if (images['fieldBg'] && images['fieldBg'].complete && images['fieldBg'].naturalWidth !== 0) {
                 ctx.drawImage(images['fieldBg'], 0, 0, 852, 393);
             } else {
-                ctx.fillStyle = '#2c3e50';
+                ctx.fillStyle = '#000';
                 ctx.fillRect(0, 0, 852, 393);
             }
             
@@ -2149,7 +2157,6 @@
         function togglePause() {
             if (document.getElementById('bossOverlay').style.display === 'flex') {
                 isPaused = !isPaused;
-                document.getElementById('pausePlayImg').src = isPaused ? "images/IMG_4301.png" : "images/IMG_4299.png";
                 document.getElementById('pauseIndicator').style.display = isPaused ? "flex" : "none";
             }
         }
@@ -2229,12 +2236,12 @@
 
             bossHp = 10; updateBossSkulls();
 
-            let bossChar = document.getElementById('arenaBoss');
-            // ИСПРАВЛЕНИЕ: Сброс transition, чтобы босс сразу занял позицию
-            bossChar.style.transition = 'bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s';
-            bossChar.style.transform = 'translateY(0) rotate(0deg)'; 
-            bossChar.style.opacity = '1';
-            bossChar.style.bottom = '12%';
+            let bossContainer = document.getElementById('bossContainer');
+            // Перезагрузка стилей контейнера для готовности к полету
+            bossContainer.style.transition = 'bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in';
+            bossContainer.style.transform = 'translateY(0) rotate(0deg)'; 
+            bossContainer.style.opacity = '1';
+            bossContainer.style.bottom = '12%';
 
             startBossFight();
         }
@@ -2245,13 +2252,13 @@
             let projectile = document.createElement('div');
             projectile.className = 'boss-projectile';
             
-            // Получаем точные координаты летящего босса на экране
-            const bossChar = document.getElementById('arenaBoss');
-            const bossRect = bossChar.getBoundingClientRect();
+            // Получаем точные координаты из контейнера
+            const bossContainer = document.getElementById('bossContainer');
+            const bossRect = bossContainer.getBoundingClientRect();
             const wrapperRect = document.getElementById('mobile-wrapper').getBoundingClientRect();
             const scale = wrapperRect.width / 852 || 1;
             
-            // Расчет стартовой позиции: чуть левее центра спрайта босса
+            // Динамический расчет стартовой позиции: левее центра контейнера босса
             const startX = (bossRect.left - wrapperRect.left) / scale + 10; 
             const startY = (bossRect.top - wrapperRect.top) / scale + (bossRect.height / scale) * 0.4;
 
@@ -2307,7 +2314,6 @@
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
             isPaused = false;
-            document.getElementById('pausePlayImg').src = "images/IMG_4299.png";
             
             let pImg = document.getElementById('arenaPlayer');
             pImg.src = images['player'].src;
@@ -2320,8 +2326,8 @@
             btn.classList.remove('shield-active');
             document.getElementById('shieldBarBg').style.display = 'none';
 
-            let bossChar = document.getElementById('arenaBoss');
-            bossChar.style.bottom = '12%';
+            let bossContainer = document.getElementById('bossContainer');
+            bossContainer.style.bottom = '12%';
 
             bgMusic.pause();
             let bMusic = document.getElementById('bossMusic');
@@ -2335,7 +2341,8 @@
             bossMovementInterval = setInterval(() => {
                 if (bossHp <= 0 || isPaused) return;
                 isBossUp = !isBossUp;
-                bossChar.style.bottom = isBossUp ? '40%' : '12%'; 
+                let container = document.getElementById('bossContainer');
+                if (container) container.style.bottom = isBossUp ? '40%' : '12%'; 
             }, 3000);
         }
 
@@ -2387,6 +2394,7 @@
                     updateBossSkulls();
                     
                     const bossChar = document.getElementById('arenaBoss');
+                    // Анимация получения урона воздействует только на внутреннюю картинку
                     bossChar.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
                     bossChar.style.filter = 'brightness(2) drop-shadow(0 0 20px #fff)'; 
                     setTimeout(() => { bossChar.style.transform = 'scale(1) rotate(0deg)'; bossChar.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.8))'; }, 100);
@@ -2443,8 +2451,10 @@
             document.getElementById('finishHimOverlay').style.display = 'none';
             document.getElementById('bossMusic').pause();
             
-            let bossChar = document.getElementById('arenaBoss');
-            bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
+            let bossContainer = document.getElementById('bossContainer');
+            bossContainer.style.transition = 'all 1s ease-in'; 
+            bossContainer.style.transform = 'translateY(100vh) rotate(90deg)'; 
+            bossContainer.style.opacity = '0';
 
             let endingVid = document.getElementById('endingVideo');
             if (endingVid) {

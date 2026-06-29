@@ -182,7 +182,7 @@
             position: relative;
             width: 852px; 
             height: 393px;
-            background-color: #000; /* Заменен с серого #2c3e50 на черный */
+            background-color: #000;
             overflow: hidden;
             flex-shrink: 0; 
             transform-origin: center center;
@@ -538,7 +538,7 @@
             box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); transition: transform 0.3s ease-in-out;
         }
         .tarot-text {
-            color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite margin-bottom: 20px;
+            color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite; margin-bottom: 20px;
         }
 
         /* --- АРЕНА ДЛЯ БОССА --- */
@@ -677,7 +677,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.32</div>
+            <div id="gameVersion">v1.33</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -737,7 +737,6 @@
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
             <div id="startScreen" class="screen-overlay">
-                <!-- Обертка для избежания перекрытия текста кнопкой СТАРТ -->
                 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 80px; box-sizing: border-box;">
                     <div class="start-items-row">
                         <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
@@ -753,7 +752,6 @@
                     </div>
                 </div>
                 
-                <!-- Кнопка осталась жестко привязанной внизу -->
                 <button id="startFieldBtn" class="start-btn">СТАРТ</button>
             </div>
 
@@ -870,7 +868,6 @@
 
                 <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
                 
-                <!-- ОБНОВЛЕННАЯ СТРУКТУРА БОССА (Контейнер отвечает за движение, img за урон) -->
                 <div id="bossContainer">
                     <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
                 </div>
@@ -886,7 +883,7 @@
                 <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
             </div>
 
-            <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО (Hammer, Ultimate) -->
+            <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО -->
             <div id="videoOverlay" class="screen-overlay">
                 <button id="skipVideoBtn">Пропустить</button>
                 <video id="hammerVideo" class="cutscene-video" src="images/Hammer.mp4" playsinline webkit-playsinline></video>
@@ -929,7 +926,7 @@
         const images = {}; 
         const preloadedImages = [];
 
-        // ЭТАП 1: МГНОВЕННАЯ ЗАГРУЗКА (Меню + 1 уровень объединены для быстрого старта без загрузочных окон)
+        // ЭТАП 1: МГНОВЕННАЯ ЗАГРУЗКА
         const initialAssets = {
             'itemsBg': 'images/items_bg.jpg',
             'crown': 'images/Crown.png',
@@ -941,6 +938,7 @@
             'block_2': 'images/textures/block_2.png',
             'block_3': 'images/textures/block_3.png',
             'block_4': 'images/textures/block_4.png',
+            'block_6': 'images/textures/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
             'player': 'images/model/Julia/Julia.png',
             'playerHappy': 'images/model/Julia/Julia_Happy.png',
             'tarotCover': 'images/Tarot_Cover.png',
@@ -1000,7 +998,6 @@
             }
         };
 
-        // ЗАГРУЖАЕМ ВСЁ ДЛЯ ПЕРВОГО УРОВНЯ
         for (const [key, src] of Object.entries(initialAssets)) {
             const img = new Image();
             img.src = src;
@@ -1015,7 +1012,6 @@
             };
         }
 
-        // ИНДИКАТОР В ДЕБАГ МЕНЮ
         function updateBossLoadProgress() {
             bossAssetsLoadedCount++;
             let percent = Math.round((bossAssetsLoadedCount / totalBossAssets) * 100);
@@ -1040,7 +1036,6 @@
             }
         }
 
-        // ФУНКЦИЯ ЗАГРУЗКИ ФАЙЛОВ БОССА
         function startBossBackgroundLoading() {
             if (isBossAssetsFullyLoaded || isBossLoadingStarted) return;
             isBossLoadingStarted = true;
@@ -1303,7 +1298,6 @@
             checkWin();
         }
 
-        // СТАРТ ИГРЫ: Бесшумно снимаем звуковые блокировки Apple
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (initialAssetsLoadedCount < totalInitialAssets) return;
@@ -1349,7 +1343,6 @@
             if (bgPromise !== undefined) bgPromise.catch(()=>{});
         });
 
-        // ЗАПУСК УРОВНЯ
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
             e.preventDefault();
             
@@ -1358,7 +1351,6 @@
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'flex';
             
-            // Включаем интерфейс дебага и кружок загрузки
             document.getElementById('debugRestartBtn').style.display = 'flex'; 
             document.getElementById('debugWinBtn').style.display = 'flex'; 
             
@@ -1372,12 +1364,10 @@
             
             gameStarted = true; 
             
-            // Включаем туториал управления
             document.getElementById('movementTutorialBg').style.display = 'block';
             document.getElementById('movementTutorialUI').style.display = 'block';
             document.getElementById('controls').style.zIndex = '5001';
 
-            // Начинаем 2-й этап фоновой загрузки (файлы босса)
             startBossBackgroundLoading();
 
             requestAnimationFrame(gameLoop);
@@ -1782,30 +1772,29 @@
         const mapSizeX = 21;
         const mapSizeY = 9;
 
-        // Основные зеленые блоки
+        // ИЗМЕНЕННАЯ КАРТА: Добавлены "2" (block_6) точно по местам "солнышек" вокруг центрального креста
         const mapLayout = [
             [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 0,0,0], 
             [0,0,0,0, 0,0,0,1, 1,1,0, 0,0,0,0, 0,0,0, 0,0,0], 
-            [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 0,0,0], 
-            [0,0,0,0, 1,0,0,0, 1,0,0, 1,0,0,0, 0,0,0, 0,0,0], 
-            [0,0,0,0, 1,1,1,1, 1,1,1, 1,1,0,0, 0,0,0, 1,0,0], 
-            [0,0,0,0, 1,0,0,0, 1,0,0, 1,0,0,0, 0,0,0, 1,0,0], 
-            [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 1,0,0], 
+            [0,0,0,0, 0,0,0,2, 1,2,0, 0,0,0,0, 0,0,0, 0,0,0], // Вулканы сверху
+            [0,0,0,0, 1,0,2,2, 1,2,2, 1,0,0,0, 0,0,0, 0,0,0], // Огибают сверху по бокам
+            [0,0,0,0, 1,1,1,1, 1,1,1, 1,1,0,0, 0,0,0, 1,0,0], // ПУТЬ СВОБОДЕН (игрок пройдет без проблем)
+            [0,0,0,0, 1,0,2,2, 1,2,2, 1,0,0,0, 0,0,0, 1,0,0], // Огибают снизу по бокам
+            [0,0,0,0, 0,0,0,2, 1,2,0, 0,0,0,0, 0,0,0, 1,0,0], // Вулканы снизу
             [0,0,0,0, 0,0,0,1, 1,1,0, 0,0,0,0, 0,0,1, 1,1,0], 
             [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 1,0,0]  
         ];
 
-        // Полностью НЕВИДИМЫЙ путь, по которому можно просто пройти
         const secretPath = [
             {x: 4, y: 3}, {x: 3, y: 3}, {x: 2, y: 3}, {x: 1, y: 3}, {x: 1, y: 4}
         ];
 
         function isValidTile(x, y) { 
-            // 1. Обычные блоки
+            // 1. Обычные блоки (Вулканы "2" непроходимы, поэтому игрок в них не упрется, они как стены)
             if (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY && mapLayout[y][x] === 1) return true;
-            // 2. Невидимый мост (персонаж ходит по воздуху), активен после короны
+            // 2. Невидимый мост
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // 3. Оранжевые шорткаты, активны только после сбора яйца
+            // 3. Оранжевые шорткаты
             if (easterEggFound && y === 4 && (x === 2 || x === 3)) return true;
             return false; 
         }
@@ -1821,8 +1810,6 @@
         let easterEggFound = false;
         let teleportPrompted = false; 
 
-        let obstacles = [];
-        
         let particles = []; let targetMovePos = null; let moveTimer = 0;
         let isPlayerHappy = false;
 
@@ -1835,7 +1822,6 @@
         function movePlayer(dx, dy) {
             if (!gameStarted || isPaused || isBossFight) return; 
 
-            // Скрываем обучение при первом шаге
             if (!hasMoved) {
                 hasMoved = true;
                 document.getElementById('movementTutorialBg').style.display = 'none';
@@ -1908,7 +1894,6 @@
             }
         }
 
-        // Логика двойного подтверждения для пасхалки
         function update() {
             if (isWinTriggered && winTimer > 0) {
                 winTimer--;
@@ -1928,7 +1913,6 @@
                             document.getElementById('confirmBossOverlay').style.display = 'flex';
                         };
 
-                        // Кнопки нового мини-окна переспроса
                         document.getElementById('btnConfirmNo').onclick = () => {
                             document.getElementById('confirmBossOverlay').style.display = 'none';
                             isWinTriggered = false; 
@@ -1967,6 +1951,9 @@
             }
         }
 
+        // ОБНОВЛЕННАЯ ФУНКЦИЯ ОТРИСОВКИ:
+        // Все сущности и блоки теперь рисуются в едином Z-цикле для идеального 3D эффекта.
+        // Высокие блоки (Вулканы) теперь будут правильно перекрывать или находиться за персонажем!
         function drawGame() {
             ctx.clearRect(0, 0, 852, 393);
             
@@ -1984,74 +1971,65 @@
             ctx.scale(zoom, zoom); 
             ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
 
-            const viewRadius = 6;
+            // Увеличен радиус обзора для высоких объектов
+            const viewRadius = 8; 
 
-            // ЦИКЛ 1: Отрисовка исключительно физических блоков (пол)
+            // Сортировка Z-index обеспечивается самим направлением циклов y -> x
             for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
                 for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
+
+                    const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
+                    if (dist > 7) continue; 
+                    
+                    let alpha = 1.0; 
+                    if (dist === 5) alpha = 0.8; 
+                    if (dist === 6) alpha = 0.5; 
+                    if (dist === 7) alpha = 0.2;
+                    
+                    ctx.globalAlpha = alpha; 
+                    const p = toScreen(x, y);
+
                     let isRegularBlock = false;
+                    let isVolcanoBlock = false;
                     if (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY) {
                         isRegularBlock = (mapLayout[y][x] === 1);
+                        isVolcanoBlock = (mapLayout[y][x] === 2);
                     }
-                    
-                    // Шорткаты отрисовываются ТОЛЬКО если пасхалка уже собрана
                     let isShortcut = (easterEggFound && y === 4 && (x === 2 || x === 3));
 
-                    // Невидимый путь secretPath здесь УМЫШЛЕННО пропускается!
-                    if (!isRegularBlock && !isShortcut) continue;
-                    
-                    const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
-                    if (dist > 5) continue; 
-                    
-                    let alpha = 1.0; 
-                    if (dist === 3) alpha = 0.8; 
-                    if (dist === 4) alpha = 0.5; 
-                    if (dist === 5) alpha = 0.2;
-                    
-                    ctx.globalAlpha = alpha; 
-                    const p = toScreen(x, y);
+                    // --- 1. ОТРИСОВКА БЛОКОВ ПОЛА ---
+                    if (isRegularBlock || isShortcut || isVolcanoBlock) {
+                        let blockImg = images['block'];
 
-                    let blockImg = images['block'];
-                    if (x === 8 && y === 4) {
-                        blockImg = images['block']; 
-                    } else if (x >= 7 && x <= 9 && y < 4) {
-                        blockImg = images['block_3']; 
-                    } else if (x >= 7 && x <= 9 && y > 4) {
-                        blockImg = images['block_4']; 
-                    } else if (x < 8) {
-                        blockImg = images['block_1']; 
-                    } else if (x > 8) {
-                        blockImg = images['block_2']; 
+                        // Расставляем разные виды блоков
+                        if (isVolcanoBlock) {
+                            blockImg = images['block_6']; // Вулкан
+                        } else if (x === 8 && y === 4) {
+                            blockImg = images['block']; 
+                        } else if (x >= 7 && x <= 9 && y < 4) {
+                            blockImg = images['block_3']; 
+                        } else if (x >= 7 && x <= 9 && y > 4) {
+                            blockImg = images['block_4']; 
+                        } else if (x < 8) {
+                            blockImg = images['block_1']; 
+                        } else if (x > 8) {
+                            blockImg = images['block_2']; 
+                        }
+
+                        if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
+                            let bW = 100;
+                            let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
+                            let bH = bW * aspect;
+                            // Динамическое выравнивание по нижней точке для любых блоков (включая высокие вулканы)
+                            ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
+                        } else {
+                            // Заглушка, если картинка не прогрузилась
+                            ctx.fillStyle = isVolcanoBlock ? '#e74c3c' : '#444';
+                            ctx.fillRect(p.x - 49.5, p.y - (isVolcanoBlock ? 40 : 0), 99, isVolcanoBlock ? 120 : 85);
+                        }
                     }
 
-                    if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
-                        let bW = 100;
-                        let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
-                        let bH = bW * aspect;
-                        ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
-                    } else {
-                        ctx.fillStyle = '#444';
-                        ctx.fillRect(p.x - 49.5, p.y, 99, 85);
-                    }
-                    
-                    ctx.globalAlpha = 1.0;
-                }
-            }
-            
-            // ЦИКЛ 2: Отрисовка сущностей (порталы, артефакты, яйцо и сам игрок)
-            for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
-                for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
-
-                    const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
-                    if (dist > 5) continue; 
-                    
-                    let alpha = 1.0; 
-                    if (dist === 3) alpha = 0.8; 
-                    if (dist === 4) alpha = 0.5; 
-                    if (dist === 5) alpha = 0.2;
-                    ctx.globalAlpha = alpha; 
-                    const p = toScreen(x, y);
-
+                    // --- 2. ОТРИСОВКА СУЩНОСТЕЙ ДЛЯ ЭТОЙ ЖЕ КЛЕТКИ (ОНИ ВСЕГДА ПОВЕРХ СВОЕГО БЛОКА ПОЛА) ---
                     if ((x === 12 && y === 4) || (x === 18 && y === 4)) {
                         let portalImg = images['portal'];
                         if (portalImg && portalImg.complete && portalImg.naturalWidth !== 0) {
@@ -2067,6 +2045,7 @@
                             ctx.drawImage(images['hammer'], p.x - 32, p.y - 60, 64, 64);
                         }
                     }
+
                     if (x === crown.x && y === crown.y && !crownCollected) {
                         if (images['crown'] && images['crown'].complete && images['crown'].naturalWidth !== 0) ctx.drawImage(images['crown'], p.x - 32, p.y - 60, 64, 64);
                     }
@@ -2088,7 +2067,7 @@
                         }
                     }
 
-                    // Отрисовка яйца-пасхалки (доступно после взятия короны)
+                    // Отрисовка яйца-пасхалки
                     if (easterEggRevealed && !easterEggFound && x === 1 && y === 4) {
                         ctx.font = "40px sans-serif";
                         ctx.textAlign = "center";
@@ -2096,7 +2075,7 @@
                         ctx.fillText("🥚", p.x, p.y - 40);
                     }
                     
-                    // Отрисовка игрока
+                    // Отрисовка ИГРОКА (Он всегда правильно перекроет/будет перекрыт блоками вокруг)
                     if (x === player.x && y === player.y) {
                         ctx.save();
                         ctx.strokeStyle = "rgba(241, 196, 15, 0.4)";
@@ -2127,9 +2106,12 @@
                             ctx.fillRect(p.x - 20, p.y - 100, 40, 100);
                         }
                     }
+
                     ctx.globalAlpha = 1.0;
                 }
             }
+
+            // Эффекты рисуются самыми последними поверх всего
             particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
             ctx.globalAlpha = 1.0; ctx.restore(); 
         }
@@ -2237,7 +2219,6 @@
             bossHp = 10; updateBossSkulls();
 
             let bossContainer = document.getElementById('bossContainer');
-            // Перезагрузка стилей контейнера для готовности к полету
             bossContainer.style.transition = 'bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in';
             bossContainer.style.transform = 'translateY(0) rotate(0deg)'; 
             bossContainer.style.opacity = '1';
@@ -2252,13 +2233,11 @@
             let projectile = document.createElement('div');
             projectile.className = 'boss-projectile';
             
-            // Получаем точные координаты из контейнера
             const bossContainer = document.getElementById('bossContainer');
             const bossRect = bossContainer.getBoundingClientRect();
             const wrapperRect = document.getElementById('mobile-wrapper').getBoundingClientRect();
             const scale = wrapperRect.width / 852 || 1;
             
-            // Динамический расчет стартовой позиции: левее центра контейнера босса
             const startX = (bossRect.left - wrapperRect.left) / scale + 10; 
             const startY = (bossRect.top - wrapperRect.top) / scale + (bossRect.height / scale) * 0.4;
 
@@ -2394,7 +2373,6 @@
                     updateBossSkulls();
                     
                     const bossChar = document.getElementById('arenaBoss');
-                    // Анимация получения урона воздействует только на внутреннюю картинку
                     bossChar.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
                     bossChar.style.filter = 'brightness(2) drop-shadow(0 0 20px #fff)'; 
                     setTimeout(() => { bossChar.style.transform = 'scale(1) rotate(0deg)'; bossChar.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.8))'; }, 100);

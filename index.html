@@ -2,7 +2,7 @@
 <html lang="ru" style="background-color: #000000;">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="images/Crown.png" type="image/png">
+    <link rel="icon" href="assets/images/items/Crown.png" type="image/png">
     <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
@@ -15,11 +15,11 @@
     <meta name="color-scheme" content="dark">
 
     <!-- ИКОНКА НА ДОМАШНИЙ ЭКРАН (для запуска игры как приложения) -->
-    <link rel="apple-touch-icon" href="images/app_icon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/app_icon.png">
+    <link rel="apple-touch-icon" href="assets/icons/app_icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/app_icon.png">
 
     <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ДЛЯ ИСКЛЮЧЕНИЯ СЕРЫХ ЭКРАНОВ -->
-    <link rel="preload" href="images/items_bg.jpg" as="image">
+    <link rel="preload" href="assets/images/backgrounds/items_bg.jpg" as="image">
 
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
@@ -311,7 +311,7 @@
         /* --- СТАРТОВЫЙ ЭКРАН --- */
         #startScreen {
             display: none; 
-            background: url('images/items_bg.jpg') center/cover no-repeat, linear-gradient(135deg, #1a252f, #2c3e50);
+            background: url('assets/images/backgrounds/items_bg.jpg') center/cover no-repeat, linear-gradient(135deg, #1a252f, #2c3e50);
             flex-direction: column; justify-content: center; align-items: center; z-index: 100;
         }
         .start-items-row {
@@ -457,7 +457,7 @@
         }
         .dialogue-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: url('images/dialogs/Dialog_TEST.png') center/100% 100% no-repeat; 
+            background: url('assets/images/dialogs/Dialog_TEST.png') center/100% 100% no-repeat; 
             pointer-events: auto; cursor: pointer;
             transition: background-image 0.3s ease;
         }
@@ -560,7 +560,7 @@
 
         /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
-            display: none; background: url('images/boss_bg.png?v=2') center/cover no-repeat;
+            display: none; background: url('assets/images/backgrounds/boss_bg.png?v=2') center/cover no-repeat;
             z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
         }
         .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
@@ -587,7 +587,7 @@
         
         #pauseBtn {
             width: 56px; height: 56px; border-radius: 12px; 
-            background: url('images/IMG_4299.png') center/cover no-repeat;
+            background: url('assets/images/ui/IMG_4299.png') center/cover no-repeat;
             border: 2px solid #fff; cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(0,0,0, 0.5);
             padding: 0; position: relative; z-index: 205;
@@ -608,7 +608,7 @@
         
         #shieldContainer { position: absolute; bottom: 25px; left: 20px; display: flex; flex-direction: column; align-items: center; z-index: 205; }
         #shieldBtn {
-            width: 56px; height: 56px; border-radius: 12px; background: url('images/Divine_Shield.jpg') center/cover no-repeat;
+            width: 56px; height: 56px; border-radius: 12px; background: url('assets/images/ui/Divine_Shield.jpg') center/cover no-repeat;
             color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000; cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5); display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px; position: relative;
         }
@@ -678,10 +678,10 @@
 
     <!-- АУДИО -->
     <audio id="bgMusic" loop>
-        <source src="Geometry_of_the_Hidden_Temple.mp3" type="audio/mpeg">
+        <source src="assets/audio/Geometry_of_the_Hidden_Temple.mp3" type="audio/mpeg">
     </audio>
     <audio id="bossMusic" loop>
-        <source src="Crown_of_Stone_and_Sea.mp3" type="audio/mpeg">
+        <source src="assets/audio/Crown_of_Stone_and_Sea.mp3" type="audio/mpeg">
     </audio>
     <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
     <audio id="typeSound">
@@ -729,7 +729,7 @@
 
             <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
             <div id="victoryOverlay" class="screen-overlay">
-                <video id="endingVideo" src="images/Ending.mp4" loop playsinline webkit-playsinline disablePictureInPicture></video>
+                <video id="endingVideo" src="assets/video/Ending.mp4" loop playsinline webkit-playsinline disablePictureInPicture></video>
                 <div class="victory-title">ПОБЕДА!</div>
                 <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
                 <button class="action-btn" onclick="resetGame()">Вернуться в начало</button>
@@ -737,7 +737,7 @@
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
-                <video id="menuVideo" src="images/Menu.mp4" poster="images/menu_poster.jpg" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
+                <video id="menuVideo" src="assets/video/Menu.mp4" poster="assets/images/menu_poster.jpg" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">КАЛЛИОПА<br>#1</div>
                 
                 <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
@@ -755,10 +755,10 @@
             <div id="startScreen" class="screen-overlay">
                 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 80px; box-sizing: border-box;">
                     <div class="start-items-row">
-                        <div class="img-block"><img src="images/Crown.png" alt="Корона"></div>
-                        <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
-                        <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
-                        <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
+                        <div class="img-block"><img src="assets/images/items/Crown.png" alt="Корона"></div>
+                        <div class="img-block"><img src="assets/images/items/Shoulders.png" alt="Наплечники"></div>
+                        <div class="img-block"><img src="assets/images/items/Shield.png" alt="Щит"></div>
+                        <div class="img-block"><img src="assets/images/items/Hammer.png" alt="Молот"></div>
                         <div class="img-block secret-item">
                             <span style="font-size: 40px; color: #f1c40f; font-weight: 900; text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);">?</span>
                         </div>
@@ -776,7 +776,7 @@
                 <!-- ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ -->
                 <div id="tracker">
                     <div class="tracker-row">
-                        <span class="tracker-icon"><img src="images/IMG_4300.png" alt="Chest" style="width: 32px; height: 32px; object-fit: contain;"></span>
+                        <span class="tracker-icon"><img src="assets/images/ui/IMG_4300.png" alt="Chest" style="width: 32px; height: 32px; object-fit: contain;"></span>
                         <span id="score" class="tracker-text">0 / 4</span>
                     </div>
                     <div class="tracker-row">
@@ -794,10 +794,10 @@
 
                 <!-- КНОПКИ УПРАВЛЕНИЯ -->
                 <div id="controls">
-                    <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
-                    <div class="d-btn btn-left" id="btnLeft"><img src="images/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
-                    <div class="d-btn btn-right" id="btnRight"><img src="images/Arrow.jpg" class="arrow-icon arrow-right" alt="Right"></div>
-                    <div class="d-btn btn-down" id="btnDown"><img src="images/Arrow.jpg" class="arrow-icon arrow-down" alt="Down"></div>
+                    <div class="d-btn btn-up" id="btnUp"><img src="assets/images/ui/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
+                    <div class="d-btn btn-left" id="btnLeft"><img src="assets/images/ui/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
+                    <div class="d-btn btn-right" id="btnRight"><img src="assets/images/ui/Arrow.jpg" class="arrow-icon arrow-right" alt="Right"></div>
+                    <div class="d-btn btn-down" id="btnDown"><img src="assets/images/ui/Arrow.jpg" class="arrow-icon arrow-down" alt="Down"></div>
                 </div>
 
                 <!-- ТЕКСТ И СТРЕЛКА ТУТОРИАЛА (ПОВЕРХ КНОПОК И ФОНА) -->
@@ -842,9 +842,9 @@
             <div id="tarotGameOverlay" class="screen-overlay">
                 <div style="flex: 1;"></div>
                 <div class="tarot-container">
-                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard0" alt="Таро 1">
-                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard1" alt="Таро 2">
-                    <img src="images/Tarot_Cover.png" class="tarot-card" id="tarotCard2" alt="Таро 3">
+                    <img src="assets/images/tarot/Tarot_Cover.png" class="tarot-card" id="tarotCard0" alt="Таро 1">
+                    <img src="assets/images/tarot/Tarot_Cover.png" class="tarot-card" id="tarotCard1" alt="Таро 2">
+                    <img src="assets/images/tarot/Tarot_Cover.png" class="tarot-card" id="tarotCard2" alt="Таро 3">
                 </div>
                 <div style="flex: 1; display: flex; align-items: flex-end;">
                     <p class="tarot-text" id="tarotText" style="display: none;">Нажми, чтобы продолжить...</p>
@@ -882,10 +882,10 @@
                     <div id="shieldBarBg"><div id="shieldBar"></div></div>
                 </div>
 
-                <img id="arenaPlayer" src="images/model/Julia/Julia.png" alt="Player">
+                <img id="arenaPlayer" src="assets/images/player/Julia.png" alt="Player">
                 
                 <div id="bossContainer">
-                    <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
+                    <img id="arenaBoss" src="assets/images/boss/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
                 </div>
                 
                 <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
@@ -902,8 +902,8 @@
             <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО -->
             <div id="videoOverlay" class="screen-overlay">
                 <button id="skipVideoBtn">Пропустить</button>
-                <video id="hammerVideo" class="cutscene-video" src="images/Hammer.mp4" playsinline webkit-playsinline></video>
-                <video id="ultimateVideo" class="cutscene-video" src="images/ultimate.mp4" playsinline webkit-playsinline></video>
+                <video id="hammerVideo" class="cutscene-video" src="assets/video/Hammer.mp4" playsinline webkit-playsinline></video>
+                <video id="ultimateVideo" class="cutscene-video" src="assets/video/ultimate.mp4" playsinline webkit-playsinline></video>
             </div>
 
         </div>
@@ -950,52 +950,52 @@
 
         // ЭТАП 1: МГНОВЕННАЯ ЗАГРУЗКА
         const initialAssets = {
-            'itemsBg': 'images/items_bg.jpg',
-            'crown': 'images/Crown.png',
-            'shoulders': 'images/Shoulders.png',
-            'shield': 'images/Shield.png',
-            'hammer': 'images/Hammer.png',
-            'block': 'images/textures/block.png',
-            'block_1': 'images/textures/block_1.png',
-            'block_2': 'images/textures/block_2.png',
-            'block_3': 'images/textures/block_3.png',
-            'block_4': 'images/textures/block_4.png',
-            'block_6': 'images/textures/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
-            'player': 'images/model/Julia/Julia.png',
-            'playerHappy': 'images/model/Julia/Julia_Happy.png',
-            'tarotCover': 'images/Tarot_Cover.png',
-            'tarot1': 'images/Tarot_1.png',
-            'tarot2': 'images/Tarot_2.png',
-            'tarot3': 'images/Tarot_3.png',
-            'rune1': 'images/Rune_1.png',
-            'rune2': 'images/Rune_2.png',
-            'rune3': 'images/Rune_3.png',
-            'rune4': 'images/Rune_4.png',
-            'rune5': 'images/Rune_5.png',
-            'dialogTest': 'images/dialogs/Dialog_TEST.png',
-            'dialogAlina': 'images/dialogs/Alina.png',
-            'dialogLera': 'images/dialogs/Lera.png',
-            'dialogFather': 'images/dialogs/Father.png',
-            'dialogJulia': 'images/dialogs/Julia.png',
-            'arrow': 'images/Arrow.jpg',
-            'fieldBg': 'images/field_bg.jpg',
-            'dnd_1': 'images/dnd_1.jpg',
-            'dnd_2': 'images/dnd_2.jpg',
-            'dnd_3': 'images/dnd_3.jpg',
-            'dnd_death': 'images/dnd_death.jpg',
-            'portal': 'images/textures/PORTAL.png',
-            'chest': 'images/IMG_4300.png',
-            'pauseIcon': 'images/IMG_4299.png'
+            'itemsBg': 'assets/images/backgrounds/items_bg.jpg',
+            'crown': 'assets/images/items/Crown.png',
+            'shoulders': 'assets/images/items/Shoulders.png',
+            'shield': 'assets/images/items/Shield.png',
+            'hammer': 'assets/images/items/Hammer.png',
+            'block': 'assets/images/blocks/block.png',
+            'block_1': 'assets/images/blocks/block_1.png',
+            'block_2': 'assets/images/blocks/block_2.png',
+            'block_3': 'assets/images/blocks/block_3.png',
+            'block_4': 'assets/images/blocks/block_4.png',
+            'block_6': 'assets/images/blocks/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
+            'player': 'assets/images/player/Julia.png',
+            'playerHappy': 'assets/images/player/Julia_Happy.png',
+            'tarotCover': 'assets/images/tarot/Tarot_Cover.png',
+            'tarot1': 'assets/images/tarot/Tarot_1.png',
+            'tarot2': 'assets/images/tarot/Tarot_2.png',
+            'tarot3': 'assets/images/tarot/Tarot_3.png',
+            'rune1': 'assets/images/runes/Rune_1.png',
+            'rune2': 'assets/images/runes/Rune_2.png',
+            'rune3': 'assets/images/runes/Rune_3.png',
+            'rune4': 'assets/images/runes/Rune_4.png',
+            'rune5': 'assets/images/runes/Rune_5.png',
+            'dialogTest': 'assets/images/dialogs/Dialog_TEST.png',
+            'dialogAlina': 'assets/images/dialogs/Alina.png',
+            'dialogLera': 'assets/images/dialogs/Lera.png',
+            'dialogFather': 'assets/images/dialogs/Father.png',
+            'dialogJulia': 'assets/images/dialogs/Julia.png',
+            'arrow': 'assets/images/ui/Arrow.jpg',
+            'fieldBg': 'assets/images/backgrounds/field_bg.jpg',
+            'dnd_1': 'assets/images/dnd/dnd_1.jpg',
+            'dnd_2': 'assets/images/dnd/dnd_2.jpg',
+            'dnd_3': 'assets/images/dnd/dnd_3.jpg',
+            'dnd_death': 'assets/images/dnd/dnd_death.jpg',
+            'portal': 'assets/images/blocks/PORTAL.png',
+            'chest': 'assets/images/ui/IMG_4300.png',
+            'pauseIcon': 'assets/images/ui/IMG_4299.png'
         };
 
         // ЭТАП 2: ФОНОВАЯ ЗАГРУЗКА БОССА
         const bossAssets = {
-            'boss': 'images/boss.png?v=3',
-            'bossBg': 'images/boss_bg.png?v=2',
-            'juliaShield': 'images/model/Julia/Julia_Shield.png',
-            'juliaHit': 'images/model/Julia/Julia_Hit.png',
-            'alch': 'images/alch.png',
-            'divineShield': 'images/Divine_Shield.jpg'
+            'boss': 'assets/images/boss/boss.png?v=3',
+            'bossBg': 'assets/images/backgrounds/boss_bg.png?v=2',
+            'juliaShield': 'assets/images/player/Julia_Shield.png',
+            'juliaHit': 'assets/images/player/Julia_Hit.png',
+            'alch': 'assets/images/items/alch.png',
+            'divineShield': 'assets/images/ui/Divine_Shield.jpg'
         };
 
         const totalInitialAssets = Object.keys(initialAssets).length;

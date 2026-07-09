@@ -8,17 +8,30 @@
     
     <!-- ТЕГИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА PWA НА IOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Каллиопа">
     <meta name="theme-color" content="#000000">
     <meta name="color-scheme" content="dark">
-    
+
+    <!-- ИКОНКА НА ДОМАШНИЙ ЭКРАН (для запуска игры как приложения) -->
+    <link rel="apple-touch-icon" href="images/Crown.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/Crown.png">
+
     <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ДЛЯ ИСКЛЮЧЕНИЯ СЕРЫХ ЭКРАНОВ -->
     <link rel="preload" href="images/items_bg.jpg" as="image">
-    <link rel="preload" href="images/Menu.mp4" as="video" type="video/mp4">
-    
+
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
+        /* БЕЗОПАСНЫЕ ЗОНЫ (Dynamic Island / вырез / индикатор Home на iPhone) */
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+        }
+
         /* ЖЕСТКИЙ ФИКС ДЛЯ IOS SAFARI (ЧТОБЫ ЭКРАН НЕ УЕЗЖАЛ ВВЕРХ И НЕ СКРОЛЛИЛСЯ) */
         html, body {
             width: 100%;
@@ -72,9 +85,9 @@
 
         /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
         #fullscreenToggleBtn {
-            position: fixed; 
-            top: 15px; 
-            left: 50%; 
+            position: fixed;
+            top: max(15px, var(--sat));
+            left: 50%;
             transform: translateX(-50%); 
             z-index: 10005; 
             background: rgba(0, 0, 0, 0.8); 
@@ -93,9 +106,9 @@
 
         /* --- ОТЛАДОЧНЫЕ КНОПКИ В ПРАВОМ НИЖНЕМ УГЛУ --- */
         #debugRestartBtn {
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
+            position: fixed;
+            bottom: max(20px, var(--sab));
+            right: max(20px, var(--sar));
             width: 50px; 
             height: 50px; 
             background: rgba(0, 0, 0, 0.6); 
@@ -114,9 +127,9 @@
         #debugRestartBtn:active { transform: scale(0.9); border-color: #e74c3c; color: #e74c3c; }
 
         #debugWinBtn {
-            position: fixed; 
-            bottom: 20px; 
-            right: 80px; 
+            position: fixed;
+            bottom: max(20px, var(--sab));
+            right: max(80px, calc(var(--sar) + 60px));
             width: 50px; 
             height: 50px; 
             background: rgba(0, 0, 0, 0.6); 
@@ -137,8 +150,8 @@
         /* ИНДИКАТОР ЗАГРУЗКИ БОССА В ДЕБАГ МЕНЮ */
         #debugBossLoad {
             position: fixed;
-            bottom: 20px;
-            right: 140px;
+            bottom: max(20px, var(--sab));
+            right: max(140px, calc(var(--sar) + 120px));
             width: 50px;
             height: 50px;
             background: rgba(0, 0, 0, 0.6);
@@ -176,6 +189,9 @@
             justify-content: center;
             overflow: hidden;
             background-color: #000;
+            /* Держим игровое поле внутри безопасной зоны экрана iPhone */
+            padding: var(--sat) var(--sar) var(--sab) var(--sal);
+            box-sizing: border-box;
         }
 
         /* --- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ) --- */
@@ -656,7 +672,7 @@
     <div id="ios-pwa-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100%; background: #111; z-index: 100000; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px; box-sizing: border-box;">
         <div style="font-size: 60px; margin-bottom: 20px;">📲</div>
         <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 15px; font-size: 22px; color: #f1c40f; display: block;">Добавьте на экран</h2>
-        <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.5; max-width: 400px; margin-bottom: 30px;">Apple блокирует полный экран в браузере.<br><br>Нажмите иконку <b>«Поделиться»</b> внизу экрана (квадрат со стрелочкой) и выберите <b>«На экран Домой»</b>.<br><br>Затем запустите игру с рабочего стола для полного погружения!</p>
+        <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.5; max-width: 400px; margin-bottom: 30px;">Apple блокирует полный экран в браузере.<br><br>Откройте эту страницу в <b>Safari</b>, нажмите иконку <b>«Поделиться»</b> (квадрат со стрелочкой) и выберите <b>«На экран Домой»</b>.<br><br>Затем запустите игру с домашнего экрана — она откроется на весь экран!</p>
         <div style="font-size: 40px; animation: bounceDown 1.5s infinite;">👇</div>
     </div>
 
@@ -670,7 +686,6 @@
     <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
     <audio id="typeSound">
         <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=ui-click-43196.mp3" type="audio/mpeg">
-        <source src="images/type.mp3" type="audio/mpeg">
     </audio>
 
     <div id="game-container">
@@ -924,8 +939,14 @@
         
         let currentDndType = 'hammer';
 
-        const images = {}; 
+        const images = {};
         const preloadedImages = [];
+
+        // Безопасный доступ к src картинки: не роняет игру, если ассет не загрузился (404/сеть).
+        function imgSrc(key) {
+            const im = images[key];
+            return (im && im.src) ? im.src : '';
+        }
 
         // ЭТАП 1: МГНОВЕННАЯ ЗАГРУЗКА
         const initialAssets = {
@@ -1062,14 +1083,23 @@
 
         function resizeGame() {
             const wrapper = document.getElementById('mobile-wrapper');
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
-            
+
+            // Вычитаем безопасные зоны (вырез/Dynamic Island/индикатор Home),
+            // чтобы всё поле помещалось на экране и ничего не пряталось под вырезом.
+            const cs = getComputedStyle(document.documentElement);
+            const sat = parseFloat(cs.getPropertyValue('--sat')) || 0;
+            const sab = parseFloat(cs.getPropertyValue('--sab')) || 0;
+            const sal = parseFloat(cs.getPropertyValue('--sal')) || 0;
+            const sar = parseFloat(cs.getPropertyValue('--sar')) || 0;
+
+            const winW = window.innerWidth - sal - sar;
+            const winH = window.innerHeight - sat - sab;
+
             const baseW = 852;
             const baseH = 393;
-            
+
             const scale = Math.min(winW / baseW, winH / baseH);
-            wrapper.style.transform = `scale(${scale})`; 
+            wrapper.style.transform = `scale(${scale})`;
         }
         
         window.addEventListener('resize', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
@@ -1418,7 +1448,7 @@
                 addScore();
                 playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
                 isPaused = false; checkWin();
-            }, { bgImage: images['dialogFather'].src });
+            }, { bgImage: imgSrc('dialogFather') });
         }
 
         function renderDndFrame(frame) {
@@ -1435,19 +1465,19 @@
             boxEl.style.transform = 'none';
 
             if (frame === 1) {
-                bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`; 
+                bgEl.style.backgroundImage = `url('${imgSrc('dnd_1')}')`; 
                 textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
                 addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
                 addDndChoice("2. Подойти не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
                 addDndChoice("3. Развернуться и уйти", () => failDndGame("Ты решила не рисковать и отступила."));
             } else if (frame === 2) {
-                bgEl.style.backgroundImage = `url('${images['dnd_2'].src}')`;
+                bgEl.style.backgroundImage = `url('${imgSrc('dnd_2')}')`;
                 textEl.innerText = "Ты подходишь не торопясь к кустам и видишь лагерь гоблинов. На горе золота красуется твой молот. Что ты будешь делать?";
                 addDndChoice("1. Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death'));
                 addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
                 addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
             } else if (frame === 'death') {
-                bgEl.style.backgroundImage = `url('${images['dnd_death'].src}')`;
+                bgEl.style.backgroundImage = `url('${imgSrc('dnd_death')}')`;
                 textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Придется отступить...";
                 addDndChoice("Вернуться назад", () => {
                     document.getElementById('dndGameOverlay').style.display = 'none';
@@ -1457,7 +1487,7 @@
                     player.y = prevPlayerPos.y;
                 });
             } else if (frame === 3) {
-                bgEl.style.backgroundImage = `url('${images['dnd_3'].src}')`;
+                bgEl.style.backgroundImage = `url('${imgSrc('dnd_3')}')`;
                 textEl.innerText = "Гоблины крепко спят. Ты аккуратно забираешь свой молот!";
                 addDndChoice("Забрать молот", () => {
                     document.getElementById('dndGameOverlay').style.display = 'none';
@@ -1503,7 +1533,7 @@
                 
                 let bgPromise = bgMusic.play();
                 if (bgPromise !== undefined) bgPromise.catch(()=>{});
-            }, { bgImage: images['dialogTest'].src });
+            }, { bgImage: imgSrc('dialogTest') });
         }
 
         function skipDndGame() {
@@ -1531,7 +1561,7 @@
                     spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
                     
                     isPaused = false; checkWin();
-                }, { bgImage: images['dialogAlina'].src });
+                }, { bgImage: imgSrc('dialogAlina') });
             }
         }
 
@@ -1553,7 +1583,7 @@
 
             for (let i = 0; i < expectedSequence.length; i++) {
                 const runeId = expectedSequence[i];
-                displayArea.innerHTML = `<img src="${images[`rune${runeId}`].src}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`; 
+                displayArea.innerHTML = `<img src="${imgSrc('rune'+runeId)}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`; 
                 await new Promise(r => setTimeout(r, 800));
                 displayArea.innerHTML = '';
                 await new Promise(r => setTimeout(r, 200));
@@ -1567,7 +1597,7 @@
             for (let i = 0; i < displayRunes.length; i++) {
                 const runeId = displayRunes[i];
                 let img = document.createElement('img');
-                img.src = images[`rune${runeId}`].src; 
+                img.src = imgSrc('rune'+runeId); 
                 img.style.width = "80px";
                 img.style.height = "80px";
                 img.style.objectFit = "contain";
@@ -1610,7 +1640,7 @@
                             spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
                             
                             isPaused = false; checkWin();
-                        }, { bgImage: images['dialogAlina'].src });
+                        }, { bgImage: imgSrc('dialogAlina') });
                     }
                 }
             } else {
@@ -1640,7 +1670,7 @@
             const textEl = document.getElementById('tarotText');
             
             for(let card of cards) { 
-                card.src = images['tarotCover'].src; 
+                card.src = imgSrc('tarotCover'); 
                 card.style.transform = 'scale(1) rotateY(0deg)'; 
             }
             textEl.style.display = 'none';
@@ -1650,7 +1680,7 @@
             for(let i=0; i<3; i++) {
                 cards[i].style.transform = 'scale(1.1) rotateY(90deg)';
                 await new Promise(r => setTimeout(r, 250)); 
-                cards[i].src = images['tarot' + (i + 1)].src;
+                cards[i].src = imgSrc('tarot'+(i+1));
                 cards[i].style.transform = 'scale(1) rotateY(0deg)';
                 await new Promise(r => setTimeout(r, 400)); 
             }
@@ -1670,7 +1700,7 @@
                     spawnParticles(crown.x, crown.y, '#f1c40f'); 
                     
                     isPaused = false; checkWin();
-                }, { bgImage: images['dialogLera'].src });
+                }, { bgImage: imgSrc('dialogLera') });
             };
         }
 
@@ -1697,7 +1727,7 @@
             if (options.bgImage) {
                 container.style.backgroundImage = `url('${options.bgImage}')`;
             } else {
-                container.style.backgroundImage = `url('${images['dialogTest'].src}')`;
+                container.style.backgroundImage = `url('${imgSrc('dialogTest')}')`;
             }
             
             document.getElementById('tracker').style.display = 'none';
@@ -1878,7 +1908,7 @@
                     playCollectSound(); 
                     spawnParticles(player.x, player.y, '#f1c40f');
                     isPaused = false; checkWin();
-                }, { bgImage: images['dialogJulia'].src }); 
+                }, { bgImage: imgSrc('dialogJulia') }); 
             }
 
             if (player.x === 12 && player.y === 4) {
@@ -1930,12 +1960,12 @@
                             document.getElementById('confirmBossOverlay').style.display = 'none';
                             showDialogue("Тогда вперед, к победе!\nУ нас достаточно сил, чтобы победить босса!", () => {
                                 goToBoss();
-                            }, { bgImage: images['dialogTest'].src });
+                            }, { bgImage: imgSrc('dialogTest') });
                         };
                     } else {
                         showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
                             goToBoss();
-                        }, { bgImage: images['dialogTest'].src });
+                        }, { bgImage: imgSrc('dialogTest') });
                     }
                 }
             }
@@ -2124,13 +2154,13 @@
 
         resizeGame();
 
-        function gameLoop() { 
-            if (!gameStarted) return; 
-            if (!isBossFight) {
-                update(); 
-                drawGame(); 
-            }
-            requestAnimationFrame(gameLoop); 
+        function gameLoop() {
+            // Во время боя с боссом поле не рисуется (бой управляется DOM-анимацией и таймерами),
+            // поэтому останавливаем цикл отрисовки — экономим заряд батареи телефона.
+            if (!gameStarted || isBossFight) return;
+            update();
+            drawGame();
+            requestAnimationFrame(gameLoop);
         }
 
         let bossHp = 10; 
@@ -2170,7 +2200,7 @@
             shieldOnCooldown = true;
             
             const playerImg = document.getElementById('arenaPlayer');
-            playerImg.src = images['juliaShield'].src;
+            playerImg.src = imgSrc('juliaShield');
             
             const btn = document.getElementById('shieldBtn');
             const barBg = document.getElementById('shieldBarBg');
@@ -2186,7 +2216,7 @@
             
             setTimeout(() => {
                 isShieldActive = false;
-                if (playerHp > 0) playerImg.src = images['player'].src;
+                if (playerHp > 0) playerImg.src = imgSrc('player');
                 barBg.style.display = 'none'; 
                 btn.classList.remove('shield-active');
                 btn.innerText = "⏳"; 
@@ -2303,7 +2333,7 @@
             isPaused = false;
             
             let pImg = document.getElementById('arenaPlayer');
-            pImg.src = images['player'].src;
+            pImg.src = imgSrc('player');
             pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
             pImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))';
             
@@ -2347,15 +2377,15 @@
             canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
 
             const playerImg = document.getElementById('arenaPlayer');
-            playerImg.src = images['juliaHit'].src;
+            playerImg.src = imgSrc('juliaHit');
             setTimeout(() => {
                 if (playerHp > 0 && !isShieldActive) {
-                    playerImg.src = images['player'].src; 
+                    playerImg.src = imgSrc('player'); 
                 }
             }, 500);
 
             let projectile = document.createElement('img');
-            projectile.src = images['alch'].src; projectile.className = 'player-projectile';
+            projectile.src = imgSrc('alch'); projectile.className = 'player-projectile';
             
             const localClick = getLocalCoords(e.clientX, e.clientY);
             const endX = localClick.x - 12; 
@@ -2372,8 +2402,20 @@
             setTimeout(() => {
                 projectile.remove();
                 if (bossHp <= 0 || isPaused) return;
-                
-                const dist = Math.hypot(endX - 722, endY - 258);
+
+                // ФИКС: считаем РЕАЛЬНЫЙ центр босса в момент попадания.
+                // Босс двигается вверх/вниз, поэтому фиксированные координаты давали ложные "увороты".
+                let bossCenterX = 722, bossCenterY = 258;
+                const bossElHit = document.getElementById('arenaBoss');
+                const wrapHit = document.getElementById('mobile-wrapper');
+                if (bossElHit && wrapHit) {
+                    const bR = bossElHit.getBoundingClientRect();
+                    const wR = wrapHit.getBoundingClientRect();
+                    const scHit = (wR.width / 852) || 1;
+                    bossCenterX = (bR.left - wR.left) / scHit + (bR.width / scHit) / 2;
+                    bossCenterY = (bR.top - wR.top) / scHit + (bR.height / scHit) / 2;
+                }
+                const dist = Math.hypot(endX - bossCenterX, endY - bossCenterY);
                 const isHit = dist < 120;
 
                 if (isHit) {

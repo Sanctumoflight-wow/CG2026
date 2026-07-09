@@ -208,8 +208,8 @@
         /* --- ВЕРСИЯ ИГРЫ (ОДНА ЛИНИЯ С КНОПКОЙ ИГРАТЬ) --- */
         #gameVersion {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
+            top: 12px;
+            left: 15px;
             color: rgba(255, 255, 255, 0.3);
             font-size: 14px;
             font-family: 'Montserrat', sans-serif;
@@ -338,23 +338,23 @@
         
         /* ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ */
         #tracker {
-            position: absolute; top: 15px; left: 20px; z-index: 10;
-            background: rgba(20, 25, 30, 0.85); padding: 15px 25px; border-radius: 18px;
+            position: absolute; bottom: 12px; left: 15px; z-index: 10;
+            background: rgba(20, 25, 30, 0.82); padding: 7px 14px; border-radius: 12px;
             border: 2px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px);
-            display: flex; flex-direction: column; gap: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex; flex-direction: row; gap: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.5);
             align-items: center;
             transition: opacity 0.3s;
         }
         .tracker-row {
-            display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
         }
         .tracker-icon {
-            font-size: 32px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); text-align: center;
+            font-size: 18px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); text-align: center; line-height: 1;
         }
         .tracker-text {
-            font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.8); width: 80px; text-align: left;
+            font-size: 17px; font-weight: 900; color: #fff; letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8); text-align: left; white-space: nowrap;
         }
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
@@ -693,7 +693,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.34</div>
+            <div id="gameVersion">v1.35</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -776,7 +776,7 @@
                 <!-- ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ -->
                 <div id="tracker">
                     <div class="tracker-row">
-                        <span class="tracker-icon"><img src="assets/images/ui/IMG_4300.png" alt="Chest" style="width: 32px; height: 32px; object-fit: contain;"></span>
+                        <span class="tracker-icon"><img src="assets/images/ui/IMG_4300.png" alt="Chest" style="width: 18px; height: 18px; object-fit: contain;"></span>
                         <span id="score" class="tracker-text">0 / 4</span>
                     </div>
                     <div class="tracker-row">
@@ -888,7 +888,7 @@
                     <img id="arenaBoss" src="assets/images/boss/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
                 </div>
                 
-                <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
+                <p id="bossHintText" style="display:none;"></p>
 
                 <!-- КНОПКА ПРОПУСКА БОССА -->
                 <button id="skipBossBtn" onclick="skipBossFight()">Пропустить</button>
@@ -1716,7 +1716,7 @@
             document.getElementById('playerHpContainer').style.display = display;
             document.getElementById('bossSkullsContainer').style.display = display;
             document.getElementById('shieldContainer').style.display = display;
-            document.getElementById('bossHintText').style.display = show ? 'block' : 'none';
+            document.getElementById('bossHintText').style.display = 'none';
             document.getElementById('skipBossBtn').style.display = show ? 'block' : 'none';
         }
 
@@ -2255,7 +2255,7 @@
             document.getElementById('playerHpContainer').style.display = 'flex';
             document.getElementById('bossSkullsContainer').style.display = 'flex';
             document.getElementById('shieldContainer').style.display = 'flex';
-            document.getElementById('bossHintText').style.display = 'block';
+            document.getElementById('bossHintText').style.display = 'none';
 
             if(bossInterval) clearInterval(bossInterval);
             if(bossMovementInterval) clearInterval(bossMovementInterval);
@@ -2411,19 +2411,9 @@
                 projectile.remove();
                 if (bossHp <= 0 || isPaused) return;
 
-                // ФИКС: считаем РЕАЛЬНЫЙ центр босса в момент попадания.
-                // Босс двигается вверх/вниз, поэтому фиксированные координаты давали ложные "увороты".
-                let bossCenterX = 722, bossCenterY = 258;
-                const bossElHit = document.getElementById('arenaBoss');
-                const wrapHit = document.getElementById('mobile-wrapper');
-                if (bossElHit && wrapHit) {
-                    const bR = bossElHit.getBoundingClientRect();
-                    const wR = wrapHit.getBoundingClientRect();
-                    const scHit = (wR.width / 852) || 1;
-                    bossCenterX = (bR.left - wR.left) / scHit + (bR.width / scHit) / 2;
-                    bossCenterY = (bR.top - wR.top) / scHit + (bR.height / scHit) / 2;
-                }
-                const dist = Math.hypot(endX - bossCenterX, endY - bossCenterY);
+                // Попадание проверяется по ФИКСИРОВАННОЙ "домашней" точке босса (722, 258).
+                // Босс перелетает вверх/вниз, поэтому при частых кликах снаряды уходят мимо (промах) — так и задумано.
+                const dist = Math.hypot(endX - 722, endY - 258);
                 const isHit = dist < 120;
 
                 if (isHit) {

@@ -581,6 +581,17 @@
         }
         
         .player-projectile { position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201; transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f); animation: spin 1s linear infinite; }
+        /* Свечение в точке нажатия (тап для выстрела) */
+        .tap-glow {
+            position: absolute; width: 64px; height: 64px; margin-left: -32px; margin-top: -32px;
+            border-radius: 50%; pointer-events: none; z-index: 204;
+            background: radial-gradient(circle, rgba(241,196,15,0.55) 0%, rgba(243,156,18,0.25) 40%, rgba(241,196,15,0) 72%);
+            animation: tapGlow 0.5s ease-out forwards;
+        }
+        @keyframes tapGlow {
+            0% { transform: scale(0.35); opacity: 0.95; }
+            100% { transform: scale(1.7); opacity: 0; }
+        }
 
         /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
         #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
@@ -693,7 +704,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.36</div>
+            <div id="gameVersion">v1.37</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -2465,9 +2476,22 @@
             }, 2000); 
         }
 
+        // Свечение в точке нажатия — тактильная отдача при выстреле.
+        function spawnTapGlow(clientX, clientY) {
+            const loc = getLocalCoords(clientX, clientY);
+            const glow = document.createElement('div');
+            glow.className = 'tap-glow';
+            glow.style.left = loc.x + 'px';
+            glow.style.top = loc.y + 'px';
+            document.getElementById('bossOverlay').appendChild(glow);
+            setTimeout(() => glow.remove(), 500);
+        }
+
         // Стрельба по боссу: тап в ЛЮБУЮ точку арены (кроме кнопок управления) запускает снаряд туда.
         document.getElementById('bossOverlay').addEventListener('pointerdown', (e) => {
             if (e.target.closest('#playerHpContainer, #shieldContainer, #skipBossBtn, #finishHimOverlay, #pauseIndicator, #bossSkullsContainer')) return;
+            if (isPaused || bossHp <= 0 || playerHp <= 0) return; // свечение только во время активного боя
+            spawnTapGlow(e.clientX, e.clientY);
             damageBoss(e);
         });
 

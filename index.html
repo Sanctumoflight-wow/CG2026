@@ -528,6 +528,37 @@
         }
         .dnd-skip:active { transform: scale(0.9); }
 
+        /* --- МИНИ-ИГРА АРИНЫ: РАСТОПИТЬ ЛЁД (RAW, фон дорисуем) --- */
+        #shouldersGameOverlay {
+            display: none; z-index: 4500;
+            background: radial-gradient(circle at 50% 42%, #1b3a4a, #0d1013);
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        #iceMeltTitle {
+            color: #eaf6ff; font-size: 22px; font-weight: 900; margin-bottom: 20px;
+            text-shadow: 0 2px 6px #000; font-family: 'Montserrat', sans-serif;
+        }
+        #iceBlock {
+            position: relative; width: 190px; height: 190px; cursor: pointer;
+            border-radius: 16px; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.07s; user-select: none;
+            background: linear-gradient(145deg, rgba(160,220,255,0.25), rgba(90,160,210,0.15));
+            border: 2px solid rgba(200,235,255,0.4); box-shadow: 0 0 30px rgba(140,210,255,0.4);
+        }
+        #frozenShoulders { width: 76%; height: 76%; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); pointer-events: none; }
+        #iceOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 16px;
+            background: linear-gradient(145deg, rgba(210,240,255,0.85), rgba(120,190,230,0.72));
+            box-shadow: inset 0 0 25px rgba(255,255,255,0.6); pointer-events: none;
+            transition: opacity 0.15s;
+        }
+        #meltBarBg {
+            width: 240px; height: 18px; background: rgba(0,0,0,0.6); border: 2px solid #eaf6ff;
+            border-radius: 10px; margin-top: 26px; overflow: hidden;
+        }
+        #meltBarFill { height: 100%; width: 0%; background: linear-gradient(to right, #5dade2, #aef0ff); transition: width 0.1s; }
+        #meltHint { color: #aef0ff; font-size: 15px; margin-top: 12px; font-weight: 700; animation: blink 1.5s infinite; }
+
         /* --- РУНЫ И ТАРО --- */
         #runeGameOverlay {
             display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
@@ -696,7 +727,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.38</div>
+            <div id="gameVersion">v1.39</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -832,6 +863,18 @@
                         <div class="dnd-choices" id="dndChoices"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- МИНИ-ИГРА АРИНЫ: РАСТОПИТЬ ЛЁД (RAW) -->
+            <div id="shouldersGameOverlay" class="screen-overlay">
+                <button class="dnd-skip" onclick="event.stopPropagation(); skipShouldersGame()">Пропустить</button>
+                <div id="iceMeltTitle">Растопи лёд — жми по глыбе!</div>
+                <div id="iceBlock" onpointerdown="meltIceTap()">
+                    <img id="frozenShoulders" src="assets/images/items/Shoulders.png" alt="Наплечники">
+                    <div id="iceOverlay"></div>
+                </div>
+                <div id="meltBarBg"><div id="meltBarFill"></div></div>
+                <div id="meltHint">Жми быстрее! ❄️</div>
             </div>
 
             <!-- РУННАЯ МИНИ-ИГРА -->
@@ -1422,31 +1465,55 @@
             renderDndFrame(1);
         }
 
-        function startShouldersTest() {
-            currentDndType = 'shoulders';
-            document.getElementById('dndGameOverlay').style.display = 'flex';
-            const textEl = document.getElementById('dndText');
-            const choicesEl = document.getElementById('dndChoices');
-            const bgEl = document.getElementById('dndBookBg'); 
-            const boxEl = document.getElementById('dndContentBox');
-            choicesEl.innerHTML = ''; 
+        // === МИНИ-ИГРА АРИНЫ — «Растопи лёд» (тап-кликер, RAW-версия) ===
+        let meltProgress = 0;
+        let meltActive = false;
+        let meltDecayInterval = null;
 
-            bgEl.style.backgroundImage = 'none';
-            
-            boxEl.style.right = 'auto';
-            boxEl.style.left = '50%';
-            boxEl.style.top = '50%';
-            boxEl.style.transform = 'translate(-50%, -50%)';
-            
-            textEl.innerText = "Тестовый экран (Плечи)";
-            
-            addDndChoice("пройти", () => {
-                document.getElementById('dndGameOverlay').style.display = 'none';
+        function startShouldersTest() {
+            document.getElementById('shouldersGameOverlay').style.display = 'flex';
+            meltProgress = 0;
+            meltActive = true;
+            updateMeltVisual();
+            if (meltDecayInterval) clearInterval(meltDecayInterval);
+            // Лёгкое «подмерзание»: прогресс медленно откатывается, поэтому надо тапать бодро (пройти легко).
+            meltDecayInterval = setInterval(() => {
+                if (!meltActive) return;
+                if (meltProgress > 0) { meltProgress = Math.max(0, meltProgress - 1.2); updateMeltVisual(); }
+            }, 100);
+        }
+
+        function meltIceTap() {
+            if (!meltActive) return;
+            meltProgress = Math.min(100, meltProgress + 6);
+            updateMeltVisual();
+            const block = document.getElementById('iceBlock');
+            block.style.transform = 'scale(0.94)';
+            setTimeout(() => { block.style.transform = 'scale(1)'; }, 70);
+            if (meltProgress >= 100) finishMelt();
+        }
+
+        function updateMeltVisual() {
+            document.getElementById('meltBarFill').style.width = meltProgress + '%';
+            document.getElementById('iceOverlay').style.opacity = (1 - meltProgress / 100).toFixed(2);
+        }
+
+        function finishMelt() {
+            meltActive = false;
+            if (meltDecayInterval) clearInterval(meltDecayInterval);
+            document.getElementById('iceOverlay').style.opacity = '0';
+            playCollectSound();
+            setTimeout(() => {
+                document.getElementById('shouldersGameOverlay').style.display = 'none';
                 winShoulders();
-            });
-            addDndChoice("PH", () => failDndGame("Это пока в разработке (PH)..."));
-            addDndChoice("PH", () => failDndGame("Это пока в разработке (PH)..."));
-            addDndChoice("PH", () => failDndGame("Это пока в разработке (PH)..."));
+            }, 450);
+        }
+
+        function skipShouldersGame() {
+            meltActive = false;
+            if (meltDecayInterval) clearInterval(meltDecayInterval);
+            document.getElementById('shouldersGameOverlay').style.display = 'none';
+            winShoulders();
         }
 
         function winShoulders() {

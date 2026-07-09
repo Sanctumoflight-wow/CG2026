@@ -442,14 +442,6 @@
         }
         #skipVideoBtn:active { transform: scale(0.9); }
 
-        /* --- КНОПКА ПРОПУСТИТЬ БОССА --- */
-        #skipBossBtn {
-            position: absolute; top: 65px; right: 20px; z-index: 6010;
-            background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); color: #fff;
-            padding: 8px 18px; border-radius: 8px; font-family: 'Montserrat', sans-serif; 
-            font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
-        }
-        #skipBossBtn:active { transform: scale(0.9); }
 
         /* --- ДИАЛОГИ --- */
         #dialogueOverlay {
@@ -564,7 +556,7 @@
             z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
         }
         .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
-        #bossSkullsContainer { position: absolute; top: 15px; right: 40px; display: flex; justify-content: center; align-items: center; z-index: 203; }
+        #bossSkullsContainer { position: absolute; top: 15px; right: 40px; height: 56px; display: flex; justify-content: center; align-items: center; z-index: 203; }
         #bossHintText { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         
         #arenaPlayer { position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
@@ -594,7 +586,7 @@
         }
 
         /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
-        #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
+        #playerHpContainer { position: absolute; top: 15px; left: 20px; height: 56px; display: flex; align-items: center; gap: 15px; z-index: 203; }
         
         #pauseBtn {
             width: 56px; height: 56px; border-radius: 12px; 
@@ -704,7 +696,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.37</div>
+            <div id="gameVersion">v1.38</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -902,7 +894,6 @@
                 <p id="bossHintText" style="display:none;"></p>
 
                 <!-- КНОПКА ПРОПУСКА БОССА -->
-                <button id="skipBossBtn" onclick="skipBossFight()">Пропустить</button>
             </div>
 
             <!-- ОКНА ДОБИВАНИЯ -->
@@ -1333,7 +1324,7 @@
         }
 
         function debugSkipLevel() {
-            if (isBossFight) return;
+            if (isBossFight) { skipBossFight(); return; } // на арене босса галочка мгновенно завершает бой
             score = 4;
             scoreElement.innerText = "4 / 4";
             scoreElement.style.color = '#f1c40f'; 
@@ -1732,7 +1723,6 @@
             document.getElementById('bossSkullsContainer').style.display = display;
             document.getElementById('shieldContainer').style.display = display;
             document.getElementById('bossHintText').style.display = 'none';
-            document.getElementById('skipBossBtn').style.display = show ? 'block' : 'none';
         }
 
         function showDialogue(text, callback, options = {}) {
@@ -2489,7 +2479,7 @@
 
         // Стрельба по боссу: тап в ЛЮБУЮ точку арены (кроме кнопок управления) запускает снаряд туда.
         document.getElementById('bossOverlay').addEventListener('pointerdown', (e) => {
-            if (e.target.closest('#playerHpContainer, #shieldContainer, #skipBossBtn, #finishHimOverlay, #pauseIndicator, #bossSkullsContainer')) return;
+            if (e.target.closest('#playerHpContainer, #shieldContainer, #finishHimOverlay, #pauseIndicator, #bossSkullsContainer')) return;
             if (isPaused || bossHp <= 0 || playerHp <= 0) return; // свечение только во время активного боя
             spawnTapGlow(e.clientX, e.clientY);
             damageBoss(e);

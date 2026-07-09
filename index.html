@@ -693,7 +693,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.35</div>
+            <div id="gameVersion">v1.36</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -885,7 +885,7 @@
                 <img id="arenaPlayer" src="assets/images/player/Julia.png" alt="Player">
                 
                 <div id="bossContainer">
-                    <img id="arenaBoss" src="assets/images/boss/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
+                    <img id="arenaBoss" src="assets/images/boss/boss.png?v=3" alt="Boss">
                 </div>
                 
                 <p id="bossHintText" style="display:none;"></p>
@@ -1260,7 +1260,8 @@
             document.getElementById('easterEggPromptOverlay').style.display = 'none';
             document.getElementById('confirmBossOverlay').style.display = 'none';
             document.getElementById('titleScreen').style.display = 'flex';
-            
+            document.getElementById('gameVersion').style.display = 'block'; // версия снова видна на загрузочном экране
+
             score = 0;
             scoreElement.innerText = score + " / " + maxScore;
             scoreElement.style.color = "white"; 
@@ -1335,7 +1336,10 @@
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (initialAssetsLoadedCount < totalInitialAssets) return;
-            
+
+            // Версию показываем только на загрузочном экране — при старте игры прячем.
+            document.getElementById('gameVersion').style.display = 'none';
+
             bgMusic.volume = 0.3;
             bossMusic.volume = 0.3;
             
@@ -2396,8 +2400,9 @@
             projectile.src = imgSrc('alch'); projectile.className = 'player-projectile';
             
             const localClick = getLocalCoords(e.clientX, e.clientY);
-            const endX = localClick.x - 12; 
-            const endY = localClick.y - 12;
+            const aimX = localClick.x, aimY = localClick.y; // точка прицела — куда игрок ткнул
+            const endX = aimX - 12;
+            const endY = aimY - 12;
             
             const startX = 118; 
             const startY = 193; 
@@ -2411,10 +2416,22 @@
                 projectile.remove();
                 if (bossHp <= 0 || isPaused) return;
 
-                // Попадание проверяется по ФИКСИРОВАННОЙ "домашней" точке босса (722, 258).
-                // Босс перелетает вверх/вниз, поэтому при частых кликах снаряды уходят мимо (промах) — так и задумано.
-                const dist = Math.hypot(endX - 722, endY - 258);
-                const isHit = dist < 120;
+                // Попадание засчитывается ТОЛЬКО если дракон реально находится в точке прилёта снаряда.
+                // Дракон перелетает вверх/вниз: если он ушёл с этой точки — снаряд летит мимо (промах).
+                let isHit = false;
+                const bossElHit = document.getElementById('arenaBoss');
+                const wrapHit = document.getElementById('mobile-wrapper');
+                if (bossElHit && wrapHit) {
+                    const bR = bossElHit.getBoundingClientRect();
+                    const wR = wrapHit.getBoundingClientRect();
+                    const scHit = (wR.width / 852) || 1;
+                    const bx0 = (bR.left - wR.left) / scHit;
+                    const by0 = (bR.top - wR.top) / scHit;
+                    const bx1 = bx0 + bR.width / scHit;
+                    const by1 = by0 + bR.height / scHit;
+                    const m = 8; // небольшой допуск, чтобы попадание по краю тоже засчитывалось
+                    isHit = (aimX >= bx0 - m && aimX <= bx1 + m && aimY >= by0 - m && aimY <= by1 + m);
+                }
 
                 if (isHit) {
                     bossHp -= 1; 
@@ -2447,6 +2464,12 @@
                 }
             }, 2000); 
         }
+
+        // Стрельба по боссу: тап в ЛЮБУЮ точку арены (кроме кнопок управления) запускает снаряд туда.
+        document.getElementById('bossOverlay').addEventListener('pointerdown', (e) => {
+            if (e.target.closest('#playerHpContainer, #shieldContainer, #skipBossBtn, #finishHimOverlay, #pauseIndicator, #bossSkullsContainer')) return;
+            damageBoss(e);
+        });
 
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
         document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });

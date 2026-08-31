@@ -578,14 +578,21 @@
         .rune-pulse { animation: pulseRune 0.8s infinite alternate; }
 
         #tarotGameOverlay {
-            display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
+            display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500;
             flex-direction: column; justify-content: space-between; align-items: center; text-align: center;
-            backdrop-filter: blur(10px); cursor: pointer; padding: 30px 0; box-sizing: border-box;
+            backdrop-filter: blur(10px); cursor: pointer; padding: 18px 0; box-sizing: border-box;
         }
-        .tarot-container { display: flex; gap: 30px; justify-content: center; align-items: center; flex: 1; }
+        .tarot-container { display: flex; gap: 30px; justify-content: center; align-items: flex-start; flex: 1; }
+        .tarot-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .tarot-card {
-            width: 200px; height: auto; border-radius: 12px; border: 2px solid #f1c40f;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); transition: transform 0.3s ease-in-out;
+            width: 200px; height: auto; border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+            transition: transform 0.3s ease-in-out; cursor: pointer;
+        }
+        .tarot-caption {
+            font-family: 'Forum', serif; color: #f5e6c8; font-size: 18px; letter-spacing: 1px;
+            text-shadow: 0 2px 4px #000; opacity: 0; transition: opacity 0.4s ease;
         }
         .tarot-text {
             color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite; margin-bottom: 20px;
@@ -898,9 +905,18 @@
             <div id="tarotGameOverlay" class="screen-overlay">
                 <div style="flex: 1;"></div>
                 <div class="tarot-container">
-                    <img src="assets/images/tarot/Tarot_Cover.png" class="tarot-card" id="tarotCard0" alt="Таро 1">
-                    <img src="assets/images/tarot/Tarot_Cover.png" class="tarot-card" id="tarotCard1" alt="Таро 2">
-                    <img src="assets/images/tarot/Tarot_Cover.png" class="tarot-card" id="tarotCard2" alt="Таро 3">
+                    <div class="tarot-slot">
+                        <img src="assets/images/tarot/TAROT_COVER.png" class="tarot-card" id="tarotCard0" alt="Таро 1" onclick="flipTarot(0)">
+                        <div class="tarot-caption" id="tarotCap0">Сила</div>
+                    </div>
+                    <div class="tarot-slot">
+                        <img src="assets/images/tarot/TAROT_COVER.png" class="tarot-card" id="tarotCard1" alt="Таро 2" onclick="flipTarot(1)">
+                        <div class="tarot-caption" id="tarotCap1">Доброта</div>
+                    </div>
+                    <div class="tarot-slot">
+                        <img src="assets/images/tarot/TAROT_COVER.png" class="tarot-card" id="tarotCard2" alt="Таро 3" onclick="flipTarot(2)">
+                        <div class="tarot-caption" id="tarotCap2">Дух</div>
+                    </div>
                 </div>
                 <div style="flex: 1; display: flex; align-items: flex-end;">
                     <p class="tarot-text" id="tarotText" style="display: none;">Нажми, чтобы продолжить...</p>
@@ -1019,10 +1035,10 @@
             'block_6': 'assets/images/blocks/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
             'player': 'assets/images/player/Julia.png',
             'playerHappy': 'assets/images/player/Julia_Happy.png',
-            'tarotCover': 'assets/images/tarot/Tarot_Cover.png',
-            'tarot1': 'assets/images/tarot/Tarot_1.png',
-            'tarot2': 'assets/images/tarot/Tarot_2.png',
-            'tarot3': 'assets/images/tarot/Tarot_3.png',
+            'tarotCover': 'assets/images/tarot/TAROT_COVER.png',
+            'tarot1': 'assets/images/tarot/TAROT_1.png',
+            'tarot2': 'assets/images/tarot/TAROT_2.png',
+            'tarot3': 'assets/images/tarot/TAROT_3.png',
             'rune1': 'assets/images/runes/Rune_1.png',
             'rune2': 'assets/images/runes/Rune_2.png',
             'rune3': 'assets/images/runes/Rune_3.png',
@@ -1745,48 +1761,53 @@
             }
         }
 
+        let tarotOpened = [false, false, false];
+
         function startTarotGame() {
-            document.getElementById('tarotGameOverlay').style.display = 'flex';
-            animateTarot();
+            const ov = document.getElementById('tarotGameOverlay');
+            ov.style.display = 'flex';
+            ov.onclick = null;                 // тап-«продолжить» включим только после 3 карт
+            tarotOpened = [false, false, false];
+            document.getElementById('tarotText').style.display = 'none';
+            for (let i = 0; i < 3; i++) {
+                const card = document.getElementById('tarotCard' + i);
+                card.src = imgSrc('tarotCover');
+                card.style.transform = 'scale(1) rotateY(0deg)';
+                card.style.cursor = 'pointer';
+                document.getElementById('tarotCap' + i).style.opacity = '0';
+            }
         }
 
-        async function animateTarot() {
-            const cards = [document.getElementById('tarotCard0'), document.getElementById('tarotCard1'), document.getElementById('tarotCard2')];
-            const textEl = document.getElementById('tarotText');
-            
-            for(let card of cards) { 
-                card.src = imgSrc('tarotCover'); 
-                card.style.transform = 'scale(1) rotateY(0deg)'; 
+        async function flipTarot(i) {
+            if (tarotOpened[i]) return;        // уже открыта — игнор
+            if (tarotOpened.every(v => v)) return;
+            tarotOpened[i] = true;
+            const card = document.getElementById('tarotCard' + i);
+            card.style.transform = 'scale(1.1) rotateY(90deg)';
+            try { typeSound.currentTime = 0; typeSound.play().catch(()=>{}); } catch(e) {}
+            await new Promise(r => setTimeout(r, 220));
+            card.src = imgSrc('tarot' + (i + 1));
+            card.style.transform = 'scale(1) rotateY(0deg)';
+            card.style.cursor = 'default';
+            document.getElementById('tarotCap' + i).style.opacity = '1';   // подпись проявляется
+
+            if (tarotOpened.every(v => v)) {
+                await new Promise(r => setTimeout(r, 450));
+                document.getElementById('tarotText').style.display = 'block';
+                const ov = document.getElementById('tarotGameOverlay');
+                ov.onclick = () => {
+                    ov.style.display = 'none';
+                    ov.onclick = null;
+                    easterEggRevealed = true;
+                    showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
+                        crownCollected = true;
+                        addScore();
+                        playCollectSound();
+                        spawnParticles(crown.x, crown.y, '#f1c40f');
+                        isPaused = false; checkWin();
+                    }, { bgImage: imgSrc('dialogLera') });
+                };
             }
-            textEl.style.display = 'none';
-
-            await new Promise(r => setTimeout(r, 600));
-
-            for(let i=0; i<3; i++) {
-                cards[i].style.transform = 'scale(1.1) rotateY(90deg)';
-                await new Promise(r => setTimeout(r, 250)); 
-                cards[i].src = imgSrc('tarot'+(i+1));
-                cards[i].style.transform = 'scale(1) rotateY(0deg)';
-                await new Promise(r => setTimeout(r, 400)); 
-            }
-
-            await new Promise(r => setTimeout(r, 300));
-            textEl.style.display = 'block'; 
-            
-            document.getElementById('tarotGameOverlay').onclick = () => {
-                document.getElementById('tarotGameOverlay').style.display = 'none';
-                document.getElementById('tarotGameOverlay').onclick = null; 
-                
-                easterEggRevealed = true; 
-                showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
-                    crownCollected = true; 
-                    addScore();
-                    playCollectSound(); 
-                    spawnParticles(crown.x, crown.y, '#f1c40f'); 
-                    
-                    isPaused = false; checkWin();
-                }, { bgImage: imgSrc('dialogLera') });
-            };
         }
 
         let dialogueFullText = "";

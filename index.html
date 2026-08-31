@@ -454,25 +454,27 @@
             transition: background-image 0.3s ease;
         }
         #dialogueText {
-            position: absolute; 
-            top: 55%; bottom: 15%; 
-            left: 35%; right: 5%;  
-            font-size: 26px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px #000; 
-            font-family: 'Playfair Display', serif; line-height: 1.4;
-            text-align: left; padding: 10px; overflow: hidden;
-            display: block; white-space: pre-wrap; 
+            /* Ровно по синему блоку картинки Dialog (852x393): L335 T180 R826 B371 */
+            position: absolute;
+            left: 39.32%; right: 2.93%;   /* 335px .. 826px */
+            top: 45.80%; bottom: 5.34%;   /* 180px .. 371px */
+            box-sizing: border-box; padding: 20px 26px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 25px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px #000;
+            font-family: 'Playfair Display', serif; line-height: 1.35;
+            text-align: center; overflow: hidden; white-space: pre-wrap;
         }
         .dialogue-hint {
-            position: absolute; 
-            top: 35%; right: 8%;
-            font-size: 16px; color: #f1c40f; font-family: 'Montserrat', sans-serif;
+            position: absolute;
+            bottom: 6.5%; right: 4%; top: auto;   /* нижний-правый угол синего блока */
+            font-size: 15px; color: #f1c40f; font-family: 'Montserrat', sans-serif;
             opacity: 0.8; animation: blink 1.5s infinite; text-shadow: 0 2px 4px #000;
         }
         #dialogueActionBtn {
             position: absolute;
-            top: 25%;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 24%;               /* над синим блоком (блок начинается с 45.8%) */
+            right: 4%; left: auto;  /* прижата к правому краю блока */
+            transform: none;
             display: none;
             z-index: 4010;
             white-space: nowrap;

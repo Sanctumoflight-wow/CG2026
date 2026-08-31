@@ -22,7 +22,14 @@
     <link rel="preload" href="assets/images/backgrounds/items_bg.jpg" as="image">
 
     <title>Calliope Game 2</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <style>
+        /* Наш единственный шрифт — Forum (self-hosted, кириллица, woff2). Google убран. */
+        @font-face {
+            font-family: 'Forum';
+            src: url('assets/fonts/Forum.woff2') format('woff2');
+            font-weight: normal; font-style: normal; font-display: swap;
+        }
+    </style>
     <style>
         /* БЕЗОПАСНЫЕ ЗОНЫ (Dynamic Island / вырез / индикатор Home на iPhone) */
         :root {
@@ -45,7 +52,7 @@
         }
 
         body { 
-            font-family: 'Montserrat', sans-serif; 
+            font-family: 'Forum', serif; 
             color: white; 
             touch-action: none; 
             user-select: none; 
@@ -212,7 +219,7 @@
             left: 15px;
             color: rgba(255, 255, 255, 0.3);
             font-size: 14px;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Forum', serif;
             z-index: 10000;
             pointer-events: none;
             font-weight: 700;
@@ -237,7 +244,7 @@
             font-weight: 900; 
             letter-spacing: -1px; 
             text-transform: uppercase;
-            font-family: 'Montserrat', sans-serif; 
+            font-family: 'Forum', serif; 
             text-shadow: 0 4px 10px rgba(0,0,0,0.9); 
             z-index: 1;
             text-align: left;
@@ -262,7 +269,7 @@
         #loadingTip {
             font-size: 14px;
             color: #f8b700;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Forum', serif;
             text-shadow: 1px 1px 2px #000;
             text-align: center;
             margin-bottom: 5px;
@@ -290,7 +297,7 @@
             background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
             padding: 10px 40px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
             box-shadow: 0 6px 0 #a04000, 0 10px 15px rgba(0,0,0,0.6); text-transform: uppercase;
-            transition: all 0.1s ease; font-family: 'Montserrat', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            transition: all 0.1s ease; font-family: 'Forum', serif; text-shadow: 0 2px 4px rgba(0,0,0,0.4);
             z-index: 1;
         }
         .start-btn:active {
@@ -437,7 +444,7 @@
         #skipVideoBtn {
             position: absolute; top: 20px; right: 20px; z-index: 6010;
             background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); color: #fff;
-            padding: 8px 18px; border-radius: 8px; font-family: 'Montserrat', sans-serif; 
+            padding: 8px 18px; border-radius: 8px; font-family: 'Forum', serif; 
             font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
         }
         #skipVideoBtn:active { transform: scale(0.9); }
@@ -449,7 +456,7 @@
         }
         .dialogue-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: url('assets/images/dialogs/Dialog_TEST.png') center/100% 100% no-repeat; 
+            background: url('assets/images/dialogs/DIALOG_RED_ROSE.png') center/100% 100% no-repeat;
             pointer-events: auto; cursor: pointer;
             transition: background-image 0.3s ease;
         }
@@ -461,13 +468,14 @@
             box-sizing: border-box; padding: 20px 26px;
             display: flex; align-items: center; justify-content: center;
             font-size: 25px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px #000;
-            font-family: 'Playfair Display', serif; line-height: 1.35;
+            font-family: 'Forum', serif; line-height: 1.35;
             text-align: center; overflow: hidden; white-space: pre-wrap;
         }
         .dialogue-hint {
             position: absolute;
-            bottom: 6.5%; right: 4%; top: auto;   /* нижний-правый угол синего блока */
-            font-size: 15px; color: #f1c40f; font-family: 'Montserrat', sans-serif;
+            top: 40%; right: 3%; bottom: auto;   /* над правым-верхним углом рамки */
+            text-align: right;
+            font-size: 15px; color: #f1c40f; font-family: 'Forum', serif;
             opacity: 0.8; animation: blink 1.5s infinite; text-shadow: 0 2px 4px #000;
         }
         #dialogueActionBtn {
@@ -513,20 +521,20 @@
             backdrop-filter: blur(5px);
         }
         .dnd-text {
-            font-size: 17px; font-family: 'Playfair Display', serif; margin-bottom: 20px; line-height: 1.4; color: #f8f9fa; text-shadow: none;
+            font-size: 17px; font-family: 'Forum', serif; margin-bottom: 20px; line-height: 1.4; color: #f8f9fa; text-shadow: none;
         }
         .dnd-choices { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .dnd-btn {
             background: #2a3644; border: 2px solid #3d4f63; color: white; 
             padding: 12px 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
-            font-family: 'Montserrat', sans-serif; text-shadow: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            font-family: 'Forum', serif; text-shadow: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             width: 100%; box-sizing: border-box;
         }
         .dnd-btn:hover, .dnd-btn:active { background: #3d4f63; border-color: #5dade2; color: #5dade2; transform: scale(0.98); }
         .dnd-skip {
             position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); 
             color: rgba(255,255,255,0.7); padding: 6px 12px; border-radius: 5px; cursor: pointer; 
-            font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 11px; backdrop-filter: blur(5px);
+            font-family: 'Forum', serif; transition: 0.2s; z-index: 4505; font-size: 11px; backdrop-filter: blur(5px);
         }
         .dnd-skip:active { transform: scale(0.9); }
 
@@ -538,7 +546,7 @@
         }
         #iceMeltTitle {
             color: #eaf6ff; font-size: 22px; font-weight: 900; margin-bottom: 20px;
-            text-shadow: 0 2px 6px #000; font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 2px 6px #000; font-family: 'Forum', serif;
         }
         #iceBlock {
             position: relative; width: 190px; height: 190px; cursor: pointer;
@@ -700,15 +708,15 @@
     <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
         <div style="font-size: 80px; margin-bottom: 20px; animation: spin 3s infinite linear;">📱</div>
-        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; color: white;">Поверните устройство</h2>
-        <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
+        <h2 style="font-family: 'Forum', serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; color: white;">Поверните устройство</h2>
+        <p style="font-family: 'Forum', serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
     </div>
 
     <!-- ОВЕРЛЕЙ УСТАНОВКИ НА IOS (PWA) -->
     <div id="ios-pwa-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100%; background: #111; z-index: 100000; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px; box-sizing: border-box;">
         <div style="font-size: 60px; margin-bottom: 20px;">📲</div>
-        <h2 style="font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-bottom: 15px; font-size: 22px; color: #f1c40f; display: block;">Добавьте на экран</h2>
-        <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.5; max-width: 400px; margin-bottom: 30px;">Apple блокирует полный экран в браузере.<br><br>Откройте эту страницу в <b>Safari</b>, нажмите иконку <b>«Поделиться»</b> (квадрат со стрелочкой) и выберите <b>«На экран Домой»</b>.<br><br>Затем запустите игру с домашнего экрана — она откроется на весь экран!</p>
+        <h2 style="font-family: 'Forum', serif; text-transform: uppercase; margin-bottom: 15px; font-size: 22px; color: #f1c40f; display: block;">Добавьте на экран</h2>
+        <p style="font-family: 'Forum', serif; font-size: 16px; line-height: 1.5; max-width: 400px; margin-bottom: 30px;">Apple блокирует полный экран в браузере.<br><br>Откройте эту страницу в <b>Safari</b>, нажмите иконку <b>«Поделиться»</b> (квадрат со стрелочкой) и выберите <b>«На экран Домой»</b>.<br><br>Затем запустите игру с домашнего экрана — она откроется на весь экран!</p>
         <div style="font-size: 40px; animation: bounceDown 1.5s infinite;">👇</div>
     </div>
 
@@ -883,7 +891,7 @@
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
-                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 5000;">Пройти игру (Debug)</button>
+                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Forum', serif; transition: 0.2s; z-index: 5000;">Пройти игру (Debug)</button>
             </div>
 
             <!-- ТАРО МИНИ-ИГРА -->
@@ -903,7 +911,7 @@
             <div id="dialogueOverlay" class="screen-overlay">
                 <div class="dialogue-container" onclick="nextDialogue(event)">
                     <div id="dialogueText"></div>
-                    <div class="dialogue-hint">Нажми, чтобы продолжить ▼</div>
+                    <div class="dialogue-hint">Нажми, чтобы продолжить</div>
                     <button id="dialogueActionBtn" class="action-btn"></button>
                 </div>
             </div>
@@ -1020,11 +1028,12 @@
             'rune3': 'assets/images/runes/Rune_3.png',
             'rune4': 'assets/images/runes/Rune_4.png',
             'rune5': 'assets/images/runes/Rune_5.png',
-            'dialogTest': 'assets/images/dialogs/Dialog_TEST.png',
-            'dialogAlina': 'assets/images/dialogs/Alina.png',
-            'dialogLera': 'assets/images/dialogs/Lera.png',
-            'dialogFather': 'assets/images/dialogs/Father.png',
-            'dialogJulia': 'assets/images/dialogs/Julia.png',
+            'dialogTest': 'assets/images/dialogs/DIALOG_RED_ROSE.png',
+            'dialogAlina': 'assets/images/dialogs/DIALOG_LITTLE_JULIA_MOON_PRIEST.png',
+            'dialogLera': 'assets/images/dialogs/DIALOG_LERA.png',
+            'dialogFather': 'assets/images/dialogs/DIALOG_ARINA.png',
+            'dialogJulia': 'assets/images/dialogs/DIALOG_JULIA.png',
+            'dialogAika': 'assets/images/dialogs/DIALOG_AIKA.png',
             'arrow': 'assets/images/ui/Arrow.jpg',
             'fieldBg': 'assets/images/backgrounds/field_bg.jpg',
             'dnd_1': 'assets/images/dnd/dnd_1.jpg',
@@ -1609,7 +1618,7 @@
                 
                 let bgPromise = bgMusic.play();
                 if (bgPromise !== undefined) bgPromise.catch(()=>{});
-            }, { bgImage: imgSrc('dialogTest') });
+            }, { bgImage: imgSrc('dialogAika') });
         }
 
         function skipDndGame() {
@@ -1799,12 +1808,21 @@
             document.getElementById('dialogueText').innerText = "";
             
             const container = document.querySelector('.dialogue-container');
-            if (options.bgImage) {
-                container.style.backgroundImage = `url('${options.bgImage}')`;
+            const bgUrl = options.bgImage || imgSrc('dialogTest');
+            container.style.backgroundImage = `url('${bgUrl}')`;
+
+            // Контраст текста под цвет плашки картинки:
+            // светлые плашки (жёлтая/оранжевая/золотистая) → тёмный текст; тёмные (синие) → белый.
+            const lightPanels = ['DIALOG_JULIA', 'DIALOG_ARINA', 'DIALOG_RED_ROSE'];
+            const dText = document.getElementById('dialogueText');
+            if (lightPanels.some(n => bgUrl.includes(n))) {
+                dText.style.color = '#2a1d0e';
+                dText.style.textShadow = '0 1px 2px rgba(255,255,255,0.35)';
             } else {
-                container.style.backgroundImage = `url('${imgSrc('dialogTest')}')`;
+                dText.style.color = '#fff';
+                dText.style.textShadow = '0 2px 4px #000';
             }
-            
+
             document.getElementById('tracker').style.display = 'none';
             
             if (options.hideBossUI) {
@@ -1852,7 +1870,7 @@
                     isDialogueTyping = false;
                     try { typeSound.pause(); } catch(e) {}
                 }
-            }, 30);
+            }, 50);
         }
 
         function nextDialogue(e) {

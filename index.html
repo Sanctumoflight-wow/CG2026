@@ -612,17 +612,6 @@
             42%  { transform: translate(-50%,-50%) scale(1.0); opacity: 1; }
             100% { transform: translate(-50%,-78%) scale(1.0); opacity: 0; }
         }
-        .hit-minus {
-            position: absolute; pointer-events: none; z-index: 207;
-            color: #ff4d4d; font-family: 'Forum', serif; font-weight: 900; font-size: 34px;
-            text-shadow: 0 2px 6px #000, 0 0 10px #ff0000;
-            animation: minusFloat 0.9s ease-out forwards;
-        }
-        @keyframes minusFloat {
-            0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0; }
-            25%  { transform: translate(-50%,-60%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%,-140%) scale(1.0); opacity: 0; }
-        }
 
         /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
@@ -2488,7 +2477,7 @@
                     const playerImg = document.getElementById('arenaPlayer');
                     playerHp -= 1;
                     updateHearts();
-                    showMinusOne(endX, endY - 30);
+                    showCombatIcon('damageImg', endX, endY - 20, 120);
                     playerImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 20px red)';
                     
                     if (playerHp <= 0) {
@@ -2556,22 +2545,19 @@
             document.getElementById('finishHimOverlay').style.display = 'flex';
         }
 
-        // Всплывающее "-1" из персонажа при получении урона
-        function showMinusOne(x, y) {
-            const el = document.createElement('div');
-            el.className = 'hit-minus';
-            el.innerText = '-1';
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            document.getElementById('bossOverlay').appendChild(el);
-            setTimeout(() => el.remove(), 900);
-        }
-
-        // Боевая splash-иконка (DAMAGE/BLOCK/DODGE) в точке (x,y) базовых координат
-        function showCombatIcon(key, x, y) {
+        // Боевая splash-иконка (DAMAGE/BLOCK/DODGE) в точке (x,y) базовых координат.
+        // size — ширина в px (по умолч. 190; для игрока меньше). Клампится внутрь сцены 852×393.
+        function showCombatIcon(key, x, y, size = 190) {
             const el = document.createElement('img');
             el.src = imgSrc(key);
             el.className = 'combat-icon';
+            el.style.width = size + 'px';
+            // не даём иконке вылетать за рамку сверху/снизу (с запасом на всплывание вверх) и по бокам
+            const topLimit = size * 0.9;
+            const bottomLimit = 393 - size * 0.55;
+            const sideLimit = size * 0.55;
+            y = Math.max(topLimit, Math.min(y, bottomLimit));
+            x = Math.max(sideLimit, Math.min(x, 852 - sideLimit));
             el.style.left = x + 'px';
             el.style.top = y + 'px';
             document.getElementById('bossOverlay').appendChild(el);

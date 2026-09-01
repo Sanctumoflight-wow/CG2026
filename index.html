@@ -457,10 +457,16 @@
             display: none; z-index: 4000; background: rgba(0, 0, 0, 0.2); 
         }
         .dialogue-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: url('assets/images/dialogs/DIALOG_RED_ROSE.png') center/100% 100% no-repeat;
-            pointer-events: auto; cursor: pointer;
+            pointer-events: auto; cursor: pointer; z-index: 1;
             transition: background-image 0.3s ease;
+        }
+        /* Слои фона сцены за диалогом (интро Red Rose): _1 поверх _2, кроссфейд */
+        .dlg-scene {
+            position: absolute; inset: 0; z-index: 0; display: none; opacity: 0;
+            background-position: center; background-size: cover; background-repeat: no-repeat;
+            pointer-events: none; transition: opacity 0.25s ease;
         }
         #dialogueText {
             /* Ровно по синему блоку картинки Dialog (852x393): L335 T180 R826 B371 */
@@ -940,6 +946,8 @@
 
             <!-- СИСТЕМА ДИАЛОГОВ -->
             <div id="dialogueOverlay" class="screen-overlay">
+                <div id="dlgSceneBack" class="dlg-scene"></div>
+                <div id="dlgSceneFront" class="dlg-scene"></div>
                 <div class="dialogue-container" onclick="nextDialogue(event)">
                     <div id="dialogueText"></div>
                     <div class="dialogue-hint">Нажми, чтобы продолжить</div>
@@ -1463,6 +1471,9 @@
                 unlockVoice.then(() => { voiceAudio.pause(); voiceAudio.currentTime = 0; voiceAudio.muted = false; }).catch(()=>{});
             }
 
+            // Предзагрузка обоих фонов интро (чтобы кадры не мигали)
+            ['assets/images/RED_ROSE_BACKGROUND_1.png', 'assets/images/RED_ROSE_BACKGROUND_2.png'].forEach(s => { const im = new Image(); im.src = s; });
+
             let endingVid = document.getElementById('endingVideo');
             if (endingVid) {
                 endingVid.muted = true;
@@ -1487,12 +1498,69 @@
         });
 
         function playRedRoseIntro(onDone) {
-            const art = imgSrc('dialogTest'); // DIALOG_RED_ROSE.png
-            showDialogue("Кто тут у нас? Говорят, ты обыграла Джейн в прошлом году? Позволь представиться. Я — мисс Редроуз.", () => {
-                showDialogue("В этот раз тебя ждет дракон. Но ладно ладно я не оставлю тебя без шансов на победу, в начале собери артефакты у своих друзей. Удачи ", () => {
+            const overlay = document.getElementById('dialogueOverlay');
+            const container = document.querySelector('.dialogue-container');
+            const dText = document.getElementById('dialogueText');
+            const hint = document.querySelector('.dialogue-hint');
+            const actionBtn = document.getElementById('dialogueActionBtn');
+            const back = document.getElementById('dlgSceneBack');
+            const front = document.getElementById('dlgSceneFront');
+            const va = document.getElementById('voiceAudio');
+
+            const lines = [
+                { text: "Кто тут у нас? Говорят, ты обыграла Джейн в прошлом году? Позволь представиться. Я — мисс Редроуз.", voice: 'assets/images/voice/RED_ROSE_1.mp3' },
+                { text: "В этот раз тебя ждет дракон. Но ладно ладно я не оставлю тебя без шансов на победу, в начале собери артефакты у своих друзей. Удачи ", voice: 'assets/images/voice/RED_ROSE_2.mp3' }
+            ];
+
+            // окно интро (не закрывается между репликами)
+            overlay.style.display = 'flex';
+            overlay.style.background = '#000';
+            container.style.backgroundImage = `url('${imgSrc('dialogTest')}')`; // портрет Red Rose (прозрачный по краям)
+            document.getElementById('tracker').style.display = 'none';
+            hint.style.display = 'block';
+            actionBtn.style.display = 'none';
+            dText.style.color = '#2a1d0e'; // светлая плашка → тёмный текст
+            dText.style.textShadow = '0 1px 2px rgba(255,255,255,0.35)';
+
+            // два слоя фона: _2 снизу (уже готов), _1 сверху
+            back.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_2.png')";
+            front.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_1.png')";
+            back.style.display = 'block'; back.style.opacity = '1';
+            front.style.display = 'block'; front.style.opacity = '1';
+
+            let idx = 0, typing = false, typeInt = null, full = '', ci = 0;
+
+            function playVoice(src) {
+                try { va.pause(); va.currentTime = 0; } catch(e) {}
+                va.src = src; va.muted = false; va.play().catch(()=>{});
+            }
+            function typeLine(txt) {
+                dText.innerText = ''; full = txt; ci = 0; typing = true;
+                try { typeSound.currentTime = 0; typeSound.loop = true; typeSound.play().catch(()=>{}); } catch(e) {}
+                typeInt = setInterval(() => {
+                    dText.innerText += full.charAt(ci); ci++;
+                    if (ci >= full.length) { clearInterval(typeInt); typing = false; try { typeSound.pause(); } catch(e) {} }
+                }, 50);
+            }
+            function startLine(i) { playVoice(lines[i].voice); typeLine(lines[i].text); }
+            function advance() {
+                if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; try { typeSound.pause(); } catch(e) {} return; }
+                if (idx === 0) {
+                    front.style.opacity = '0';   // кроссфейд 0.25s → снизу проявляется готовый _2
+                    idx = 1; startLine(1);
+                } else {
+                    container.onclick = (e) => nextDialogue(e); // вернуть обычный обработчик
+                    overlay.onclick = null;
+                    overlay.style.display = 'none';
+                    overlay.style.background = 'rgba(0,0,0,0.2)';
+                    back.style.display = 'none'; front.style.display = 'none';
+                    back.style.opacity = '0'; front.style.opacity = '0';
+                    try { va.pause(); va.currentTime = 0; } catch(e) {}
                     onDone();
-                }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_2.mp3', sceneBg: 'assets/images/RED_ROSE_BACKGROUND_2.png' });
-            }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_1.mp3', sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png' });
+                }
+            }
+            container.onclick = advance; // на время интро тап ведёт в advance, не в nextDialogue
+            startLine(0);
         }
 
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {

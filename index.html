@@ -1050,6 +1050,8 @@
             'block_6': 'assets/images/blocks/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
             'player': 'assets/images/player/Julia.png',
             'playerHappy': 'assets/images/player/Julia_Happy.png',
+            'juliaStand': 'assets/images/player/JULIA_STAND.png',
+            'juliaWalk': 'assets/images/player/JULIA_WALK.png',
             'tarotCover': 'assets/images/tarot/TAROT_COVER.png',
             'tarot1': 'assets/images/tarot/TAROT_1.png',
             'tarot2': 'assets/images/tarot/TAROT_2.png',
@@ -1485,13 +1487,12 @@
         });
 
         function playRedRoseIntro(onDone) {
-            const sceneBg = 'assets/images/RED_ROSE_BACKGROUND.jpg';
             const art = imgSrc('dialogTest'); // DIALOG_RED_ROSE.png
             showDialogue("Кто тут у нас? Говорят, ты обыграла Джейн в прошлом году? Позволь представиться. Я — мисс Редроуз.", () => {
                 showDialogue("В этот раз тебя ждет дракон. Но ладно ладно я не оставлю тебя без шансов на победу, в начале собери артефакты у своих друзей. Удачи ", () => {
                     onDone();
-                }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_2.mp3', sceneBg: sceneBg });
-            }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_1.mp3', sceneBg: sceneBg });
+                }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_2.mp3', sceneBg: 'assets/images/RED_ROSE_BACKGROUND_2.png' });
+            }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_1.mp3', sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png' });
         }
 
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
@@ -2022,6 +2023,7 @@
         let teleportPrompted = false; 
 
         let particles = []; let targetMovePos = null; let moveTimer = 0;
+        let playerWalkTimer = 0; // >0 пока игрок шагает между клетками → спрайт WALK
         let isPlayerHappy = false;
 
         function toScreen(x, y) { return { x: (x - y) * (tileW / 2), y: (x + y) * (tileH / 2) }; }
@@ -2044,6 +2046,7 @@
             let nextX = player.x + dx; let nextY = player.y + dy;
             if (!isValidTile(nextX, nextY)) { targetMovePos = null; return; }
             prevPlayerPos = { x: player.x, y: player.y }; player.x = nextX; player.y = nextY;
+            playerWalkTimer = 14; // включаем спрайт ходьбы на время шага
             checkInteractions();
         }
 
@@ -2147,6 +2150,7 @@
             }
 
             if (shieldCollected && shieldObj.alpha > 0) { shieldObj.alpha -= 0.03; if (shieldObj.alpha <= 0) { shieldObj.alpha = 0; } }
+            if (playerWalkTimer > 0) playerWalkTimer--; // затухание состояния ходьбы → обратно в STAND
             if (targetMovePos && !isPaused) {
                 moveTimer++;
                 if (moveTimer > 8) { 
@@ -2305,11 +2309,13 @@
                         ctx.fill();
                         ctx.restore();
 
-                        let currentSprite = images['player'];
+                        // STAND в покое, WALK при шаге между клетками; happy (победа) поверх всего
+                        let currentSprite = playerWalkTimer > 0 ? images['juliaWalk'] : images['juliaStand'];
                         if (isPlayerHappy && images['playerHappy'] && images['playerHappy'].complete && images['playerHappy'].naturalWidth !== 0) {
                             currentSprite = images['playerHappy'];
-                        } else if (!images['player'] || !images['player'].complete || images['player'].naturalWidth === 0) {
-                            currentSprite = null; 
+                        }
+                        if (!currentSprite || !currentSprite.complete || currentSprite.naturalWidth === 0) {
+                            currentSprite = (images['player'] && images['player'].complete && images['player'].naturalWidth !== 0) ? images['player'] : null;
                         }
 
                         if (currentSprite) {

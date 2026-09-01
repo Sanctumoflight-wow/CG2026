@@ -601,7 +601,7 @@
         }
         /* Боевые splash-иконки (DAMAGE / BLOCK) вместо текста */
         .combat-icon {
-            position: absolute; width: 190px; height: 190px; pointer-events: none;
+            position: absolute; width: 190px; height: auto; pointer-events: none;
             z-index: 206; will-change: transform, opacity;
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
             animation: combatPop 0.9s ease-out forwards;
@@ -611,6 +611,17 @@
             22%  { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
             42%  { transform: translate(-50%,-50%) scale(1.0); opacity: 1; }
             100% { transform: translate(-50%,-78%) scale(1.0); opacity: 0; }
+        }
+        .hit-minus {
+            position: absolute; pointer-events: none; z-index: 207;
+            color: #ff4d4d; font-family: 'Forum', serif; font-weight: 900; font-size: 34px;
+            text-shadow: 0 2px 6px #000, 0 0 10px #ff0000;
+            animation: minusFloat 0.9s ease-out forwards;
+        }
+        @keyframes minusFloat {
+            0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0; }
+            25%  { transform: translate(-50%,-60%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%,-140%) scale(1.0); opacity: 0; }
         }
 
         /* --- АРЕНА ДЛЯ БОССА --- */
@@ -752,6 +763,7 @@
     <audio id="typeSound">
         <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=ui-click-43196.mp3" type="audio/mpeg">
     </audio>
+    <audio id="voiceAudio" preload="auto"></audio>
 
     <div id="game-container">
         <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
@@ -1084,7 +1096,8 @@
             'alch': 'assets/images/items/alch.png',
             'divineShield': 'assets/images/ui/Divine_Shield.jpg',
             'damageImg': 'assets/images/ui/DAMAGE.png',
-            'blockImg': 'assets/images/ui/BLOCK.png'
+            'blockImg': 'assets/images/ui/BLOCK.png',
+            'dodgeImg': 'assets/images/ui/DODGE.png'
         };
 
         const totalInitialAssets = Object.keys(initialAssets).length;
@@ -1450,6 +1463,15 @@
                 unlockBoss.then(() => { bossMusic.pause(); bossMusic.currentTime = 0; bossMusic.muted = false; }).catch(()=>{});
             }
 
+            // Разблокировка голосовой озвучки (Red Rose) для iOS
+            const voiceAudio = document.getElementById('voiceAudio');
+            voiceAudio.muted = true;
+            voiceAudio.src = 'assets/images/voice/RED_ROSE_1.mp3';
+            let unlockVoice = voiceAudio.play();
+            if (unlockVoice !== undefined) {
+                unlockVoice.then(() => { voiceAudio.pause(); voiceAudio.currentTime = 0; voiceAudio.muted = false; }).catch(()=>{});
+            }
+
             let endingVid = document.getElementById('endingVideo');
             if (endingVid) {
                 endingVid.muted = true;
@@ -1463,11 +1485,25 @@
             
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
-            document.getElementById('startScreen').style.display = 'flex';
-            
-            let bgPromise = bgMusic.play();
-            if (bgPromise !== undefined) bgPromise.catch(()=>{});
+
+            // Интро мисс Редроуз (2 реплики + озвучка + фон), затем стартовый экран
+            playRedRoseIntro(() => {
+                document.getElementById('tracker').style.display = 'none';
+                document.getElementById('startScreen').style.display = 'flex';
+                let bgPromise = bgMusic.play();
+                if (bgPromise !== undefined) bgPromise.catch(()=>{});
+            });
         });
+
+        function playRedRoseIntro(onDone) {
+            const sceneBg = 'assets/images/RED_ROSE_BACKGROUND.jpg';
+            const art = imgSrc('dialogTest'); // DIALOG_RED_ROSE.png
+            showDialogue("Кто тут у нас? Говорят, ты обыграла Джейн в прошлом году? Позволь представиться. Я — мисс Редроуз.", () => {
+                showDialogue("В этот раз тебя ждет дракон. Но ладно ладно я не оставлю тебя без шансов на победу, в начале собери артефакты у своих друзей. Удачи ", () => {
+                    onDone();
+                }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_2.mp3', sceneBg: sceneBg });
+            }, { bgImage: art, voice: 'assets/images/voice/RED_ROSE_1.mp3', sceneBg: sceneBg });
+        }
 
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -1841,9 +1877,26 @@
         }
 
         function showDialogue(text, callback, options = {}) {
-            document.getElementById('dialogueOverlay').style.display = 'flex';
+            const overlay = document.getElementById('dialogueOverlay');
+            overlay.style.display = 'flex';
             document.getElementById('dialogueText').innerText = "";
-            
+
+            // Фон сцены за диалогом (напр. Red Rose). Без sceneBg — обычный тёмный тинт.
+            if (options.sceneBg) {
+                overlay.style.background = `#000 url('${options.sceneBg}') center/cover no-repeat`;
+            } else {
+                overlay.style.background = 'rgba(0, 0, 0, 0.2)';
+            }
+
+            // Голосовая озвучка реплики
+            const voiceAudio = document.getElementById('voiceAudio');
+            try { voiceAudio.pause(); voiceAudio.currentTime = 0; } catch(e) {}
+            if (options.voice) {
+                voiceAudio.src = options.voice;
+                voiceAudio.muted = false;
+                voiceAudio.play().catch(()=>{});
+            }
+
             const container = document.querySelector('.dialogue-container');
             const bgUrl = options.bgImage || imgSrc('dialogTest');
             container.style.backgroundImage = `url('${bgUrl}')`;
@@ -1924,9 +1977,10 @@
                     return; 
                 }
                 document.getElementById('dialogueOverlay').style.display = 'none';
+                try { const va = document.getElementById('voiceAudio'); va.pause(); va.currentTime = 0; } catch(e) {}
                 if (onDialogueComplete) {
                     let cb = onDialogueComplete;
-                    onDialogueComplete = null; 
+                    onDialogueComplete = null;
                     cb();
                 }
             }
@@ -2434,6 +2488,7 @@
                     const playerImg = document.getElementById('arenaPlayer');
                     playerHp -= 1;
                     updateHearts();
+                    showMinusOne(endX, endY - 30);
                     playerImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 20px red)';
                     
                     if (playerHp <= 0) {
@@ -2501,7 +2556,18 @@
             document.getElementById('finishHimOverlay').style.display = 'flex';
         }
 
-        // Боевая splash-иконка (DAMAGE/BLOCK) в точке (x,y) базовых координат
+        // Всплывающее "-1" из персонажа при получении урона
+        function showMinusOne(x, y) {
+            const el = document.createElement('div');
+            el.className = 'hit-minus';
+            el.innerText = '-1';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.getElementById('bossOverlay').appendChild(el);
+            setTimeout(() => el.remove(), 900);
+        }
+
+        // Боевая splash-иконка (DAMAGE/BLOCK/DODGE) в точке (x,y) базовых координат
         function showCombatIcon(key, x, y) {
             const el = document.createElement('img');
             el.src = imgSrc(key);
@@ -2577,19 +2643,7 @@
                         document.getElementById('finishHimOverlay').style.display = 'flex';
                     }
                 } else {
-                    let missText = document.createElement('div');
-                    missText.innerText = "УВОРОТ!";
-                    missText.style.position = 'absolute';
-                    missText.style.left = endX + 'px';
-                    missText.style.top = (endY - 30) + 'px';
-                    missText.style.color = '#bdc3c7';
-                    missText.style.fontWeight = '900';
-                    missText.style.fontSize = '24px';
-                    missText.style.webkitTextStroke = '1px white';
-                    missText.style.textShadow = '0 0 10px rgba(255,255,255,0.8), 0 0 15px #bdc3c7';
-                    missText.style.zIndex = '205';
-                    document.getElementById('bossOverlay').appendChild(missText);
-                    setTimeout(() => missText.remove(), 800);
+                    showCombatIcon('dodgeImg', endX, endY - 20);
                 }
             }, 2000); 
         }

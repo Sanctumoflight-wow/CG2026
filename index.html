@@ -74,13 +74,15 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
+            background: #ffffff url('assets/images/ui/WARNING.jpg') center center / cover no-repeat;
             z-index: 99999;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-end;
             align-items: center;
             text-align: center;
-            color: white;
+            color: #2a2a2a;
+            padding-bottom: 6%;
+            box-sizing: border-box;
         }
 
         @media screen and (orientation: portrait) {
@@ -597,6 +599,19 @@
         .tarot-text {
             color: white; font-size: 22px; font-weight: 700; text-shadow: 0 2px 5px #000; animation: blink 1.5s infinite; margin-bottom: 20px;
         }
+        /* Боевые splash-иконки (DAMAGE / BLOCK) вместо текста */
+        .combat-icon {
+            position: absolute; width: 190px; height: 190px; pointer-events: none;
+            z-index: 206; will-change: transform, opacity;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+            animation: combatPop 0.9s ease-out forwards;
+        }
+        @keyframes combatPop {
+            0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+            22%  { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+            42%  { transform: translate(-50%,-50%) scale(1.0); opacity: 1; }
+            100% { transform: translate(-50%,-78%) scale(1.0); opacity: 0; }
+        }
 
         /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
@@ -714,9 +729,8 @@
 
     <!-- ОВЕРЛЕЙ ПРОСЬБЫ ПОВЕРНУТЬ ТЕЛЕФОН -->
     <div id="rotate-overlay">
-        <div style="font-size: 80px; margin-bottom: 20px; animation: spin 3s infinite linear;">📱</div>
-        <h2 style="font-family: 'Forum', serif; text-transform: uppercase; margin-bottom: 10px; font-size: 24px; color: white;">Поверните устройство</h2>
-        <p style="font-family: 'Forum', serif; font-size: 16px; max-width: 80%;">Для комфортной игры требуется горизонтальный режим экрана.</p>
+        <h2 style="font-family: 'Forum', serif; text-transform: uppercase; margin-bottom: 6px; font-size: 24px; color: #2a2a2a;">Поверните устройство</h2>
+        <p style="font-family: 'Forum', serif; font-size: 16px; max-width: 80%; color: #4a4a4a;">Для комфортной игры требуется горизонтальный режим экрана.</p>
     </div>
 
     <!-- ОВЕРЛЕЙ УСТАНОВКИ НА IOS (PWA) -->
@@ -1068,7 +1082,9 @@
             'juliaShield': 'assets/images/player/Julia_Shield.png',
             'juliaHit': 'assets/images/player/Julia_Hit.png',
             'alch': 'assets/images/items/alch.png',
-            'divineShield': 'assets/images/ui/Divine_Shield.jpg'
+            'divineShield': 'assets/images/ui/Divine_Shield.jpg',
+            'damageImg': 'assets/images/ui/DAMAGE.png',
+            'blockImg': 'assets/images/ui/BLOCK.png'
         };
 
         const totalInitialAssets = Object.keys(initialAssets).length;
@@ -2413,15 +2429,7 @@
                 if (bossHp <= 0 || playerHp <= 0 || isPaused) return; 
                 
                 if (isShieldActive) {
-                    let blockText = document.createElement('div');
-                    blockText.innerText = "БЛОК!";
-                    blockText.style.position = 'absolute'; blockText.style.left = endX + 'px'; blockText.style.top = (endY - 40) + 'px';
-                    blockText.style.color = '#3498db'; blockText.style.fontWeight = '900'; blockText.style.fontSize = '30px';
-                    blockText.style.webkitTextStroke = '1.5px white';
-                    blockText.style.textShadow = '0 0 10px rgba(255,255,255,0.8), 0 0 20px #3498db'; 
-                    blockText.style.zIndex = '205';
-                    document.getElementById('bossOverlay').appendChild(blockText);
-                    setTimeout(() => blockText.remove(), 600);
+                    showCombatIcon('blockImg', endX, endY - 20);
                 } else {
                     const playerImg = document.getElementById('arenaPlayer');
                     playerHp -= 1;
@@ -2493,6 +2501,17 @@
             document.getElementById('finishHimOverlay').style.display = 'flex';
         }
 
+        // Боевая splash-иконка (DAMAGE/BLOCK) в точке (x,y) базовых координат
+        function showCombatIcon(key, x, y) {
+            const el = document.createElement('img');
+            el.src = imgSrc(key);
+            el.className = 'combat-icon';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.getElementById('bossOverlay').appendChild(el);
+            setTimeout(() => el.remove(), 900);
+        }
+
         function damageBoss(e) {
             if (isPaused || bossHp <= 0 || playerHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
             canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
@@ -2543,9 +2562,10 @@
                 }
 
                 if (isHit) {
-                    bossHp -= 1; 
+                    bossHp -= 1;
                     updateBossSkulls();
-                    
+                    showCombatIcon('damageImg', aimX, aimY - 20);
+
                     const bossChar = document.getElementById('arenaBoss');
                     bossChar.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
                     bossChar.style.filter = 'brightness(2) drop-shadow(0 0 20px #fff)'; 

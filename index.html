@@ -482,9 +482,12 @@
         .dialogue-hint {
             position: absolute;
             top: 40%; right: 3%; bottom: auto;   /* над правым-верхним углом рамки */
-            text-align: right;
+            display: inline-block; text-align: right;
             font-size: 15px; color: #f1c40f; font-family: 'Forum', serif;
             opacity: 0.8; animation: blink 1.5s infinite; text-shadow: 0 2px 4px #000;
+            /* подложка как у туториала стрелок — читается на любом фоне */
+            background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
         }
         #dialogueActionBtn {
             position: absolute;
@@ -765,7 +768,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.39</div>
+            <div id="gameVersion">v1.40</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -2387,10 +2390,10 @@
                         }
 
                         if (currentSprite) {
-                            let pW = 120;
+                            let pW = 102; // −15% от 120 — персонаж чуть меньше, лучше сидит на поле
                             let aspect = currentSprite.naturalHeight / currentSprite.naturalWidth;
                             let pH = pW * aspect;
-                            ctx.drawImage(currentSprite, p.x - pW/2 - 3, p.y - pH + 15, pW, pH); 
+                            ctx.drawImage(currentSprite, p.x - pW/2 - 3, p.y - pH + 15, pW, pH);
                         } else {
                             ctx.fillStyle = '#e74c3c';
                             ctx.fillRect(p.x - 20, p.y - 100, 40, 100);

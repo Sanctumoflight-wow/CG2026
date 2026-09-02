@@ -295,25 +295,28 @@
         }
 
         /* --- КНОПКА ИГРАТЬ И СТАРТ --- */
+        /* Единый стиль кнопок под героиню: слоновая кость + золото + синий самоцветный отблеск */
         .start-btn {
-            background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
-            padding: 10px 40px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
-            box-shadow: 0 6px 0 #a04000, 0 10px 15px rgba(0,0,0,0.6); text-transform: uppercase;
-            transition: all 0.1s ease; font-family: 'Forum', serif; text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            background: linear-gradient(to bottom, #ffffff 0%, #ece5d3 100%);
+            color: #6b4e12; font-size: 30px; font-weight: 900;
+            padding: 10px 40px; border: 3px solid #c8a24a; border-radius: 15px; cursor: pointer;
+            box-shadow: 0 6px 0 #a8842f, 0 10px 16px rgba(0,0,0,0.5), 0 0 16px rgba(90,150,220,0.35), inset 0 1px 0 rgba(255,255,255,0.85);
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.1s ease; font-family: 'Forum', serif; text-shadow: 0 1px 1px rgba(255,255,255,0.6);
             z-index: 1;
         }
         .start-btn:active {
             transform: translateY(6px);
-            box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
+            box-shadow: 0 0 0 #a8842f, 0 5px 10px rgba(0,0,0,0.5), 0 0 12px rgba(90,150,220,0.3);
         }
-        #titlePlayBtn, #startFieldBtn {
+        #titlePlayBtn, #startFieldBtn, #victoryBtn {
             position: absolute;
-            bottom: 20px; 
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
         }
         #titlePlayBtn { display: none; }
-        #titlePlayBtn:active, #startFieldBtn:active {
+        #titlePlayBtn:active, #startFieldBtn:active, #victoryBtn:active {
             transform: translate(-50%, 6px) !important;
         }
 
@@ -416,22 +419,7 @@
         #victoryPanel:active { transform: scale(0.97); }
         .victory-title { font-size: 46px; font-weight: 900; color: #f1c40f; margin-bottom: 12px; font-family: 'Forum', serif; text-shadow: 0 3px 8px #000; letter-spacing: 2px; }
         #victoryCode { font-size: 16px; color: #fff; font-family: 'Forum', serif; text-shadow: 0 2px 4px #000; opacity: 0.95; }
-        /* Кнопка победы — royal violet→magenta pill с золотой обводкой (не как прежние) */
-        #victoryBtn {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 2; cursor: pointer;
-            padding: 12px 46px; font-size: 24px; font-weight: 900; text-transform: uppercase;
-            font-family: 'Forum', serif; color: #fff; letter-spacing: 1px;
-            background: linear-gradient(135deg, #7b2ff7 0%, #b91d73 100%);
-            border: 2px solid #f6d365; border-radius: 999px;
-            box-shadow: 0 0 18px rgba(246,211,101,0.55), 0 8px 20px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            transition: transform 0.12s ease, box-shadow 0.12s ease;
-        }
-        #victoryBtn:active {
-            transform: translate(-50%, 4px);
-            box-shadow: 0 0 12px rgba(246,211,101,0.4), 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
-        }
+        /* #victoryBtn использует общий .start-btn (стиль под героиню); позиция — в общем селекторе выше */
 
         /* --- ЭКРАН ВЫБОРА ПАСХАЛКИ --- */
         #easterEggPromptOverlay {
@@ -803,7 +791,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.44</div>
+            <div id="gameVersion">v1.45</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -844,7 +832,7 @@
                     <div class="victory-title">ПОБЕДА!</div>
                     <div id="victoryCode">Нажми на текст, чтобы скопировать: 14022026</div>
                 </div>
-                <button id="victoryBtn" onclick="resetGame()">Вернуться в начало</button>
+                <button id="victoryBtn" class="start-btn" onclick="resetGame()">Вернуться в начало</button>
             </div>
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->

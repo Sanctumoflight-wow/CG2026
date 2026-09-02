@@ -479,6 +479,17 @@
             font-family: 'Forum', serif; line-height: 1.35;
             text-align: center; overflow: hidden; white-space: pre-wrap;
         }
+        /* Текст интро Red Rose: подложка на всю ширину экрана (без портрет-рамки) */
+        #dialogueText.dialogue-text-intro {
+            top: auto; bottom: 9%;
+            left: 5%; right: 5%;
+            padding: 16px 26px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.20);
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+            font-size: 24px; line-height: 1.3;
+        }
         .dialogue-hint {
             position: absolute;
             bottom: 6%; right: 4%; top: auto;   /* правый-нижний угол, отступы от края экрана */
@@ -768,7 +779,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.41</div>
+            <div id="gameVersion">v1.42</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1521,12 +1532,13 @@
             // окно интро (не закрывается между репликами)
             overlay.style.display = 'flex';
             overlay.style.background = '#000';
-            container.style.backgroundImage = `url('${imgSrc('dialogTest')}')`; // портрет Red Rose (прозрачный по краям)
+            container.style.backgroundImage = 'none'; // без портрет-рамки — только фон сцены + подложка текста
             document.getElementById('tracker').style.display = 'none';
             hint.style.display = 'block';
             actionBtn.style.display = 'none';
-            dText.style.color = '#2a1d0e'; // светлая плашка → тёмный текст
-            dText.style.textShadow = '0 1px 2px rgba(255,255,255,0.35)';
+            dText.classList.add('dialogue-text-intro'); // текст на всю ширину экрана с подложкой
+            dText.style.color = '#fff';
+            dText.style.textShadow = '0 2px 4px #000';
 
             // два слоя фона: _2 снизу (уже готов), _1 сверху
             back.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_2.png')";
@@ -1559,6 +1571,7 @@
                     overlay.onclick = null;
                     overlay.style.display = 'none';
                     overlay.style.background = 'rgba(0,0,0,0.2)';
+                    dText.classList.remove('dialogue-text-intro'); // вернуть обычную геометрию текста
                     back.style.display = 'none'; front.style.display = 'none';
                     back.style.opacity = '0'; front.style.opacity = '0';
                     try { va.pause(); va.currentTime = 0; } catch(e) {}
@@ -2236,7 +2249,7 @@
                             }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
                         };
                     } else {
-                        showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
+                        showDialogue("Если ты готова, то давай посмотрим на твои навыки!", () => {
                             goToBoss();
                         }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
                     }

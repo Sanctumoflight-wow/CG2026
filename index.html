@@ -779,7 +779,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.42</div>
+            <div id="gameVersion">v1.43</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -2179,8 +2179,8 @@
                 }, { bgImage: imgSrc('dialogJulia') });
             }
 
-            // Возврат на 2 клетки к центру после короны (тайл 6,4) — Редроуз про таро, 1 раз
-            if (crownCollected && !rrCrownReturnPlayed && player.x === 6 && player.y === 4) {
+            // Первый шаг с клетки короны после её получения — Редроуз про таро, 1 раз
+            if (crownCollected && !rrCrownReturnPlayed && !(player.x === crown.x && player.y === crown.y)) {
                 rrCrownReturnPlayed = true;
                 isPaused = true; targetMovePos = null;
                 showDialogue("Забавно, да? Как люди ищут ответы в безделушках и обманщиках с картами таро. А к кому относишься ты?", () => {

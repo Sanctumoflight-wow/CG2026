@@ -406,8 +406,32 @@
         #endingVideo {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;
         }
-        .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; z-index: 1;}
-        .victory-text { font-size: 18px; margin-bottom: 20px; z-index: 1;}
+        #victoryPanel {
+            z-index: 1; cursor: pointer; text-align: center;
+            padding: 22px 44px; border-radius: 18px;
+            background: rgba(0,0,0,0.55); border: 2px solid rgba(246,211,101,0.6);
+            backdrop-filter: blur(4px); box-shadow: 0 0 26px rgba(0,0,0,0.55), inset 0 0 20px rgba(246,211,101,0.08);
+            transition: transform 0.1s ease;
+        }
+        #victoryPanel:active { transform: scale(0.97); }
+        .victory-title { font-size: 46px; font-weight: 900; color: #f1c40f; margin-bottom: 12px; font-family: 'Forum', serif; text-shadow: 0 3px 8px #000; letter-spacing: 2px; }
+        #victoryCode { font-size: 16px; color: #fff; font-family: 'Forum', serif; text-shadow: 0 2px 4px #000; opacity: 0.95; }
+        /* Кнопка победы — royal violet→magenta pill с золотой обводкой (не как прежние) */
+        #victoryBtn {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 2; cursor: pointer;
+            padding: 12px 46px; font-size: 24px; font-weight: 900; text-transform: uppercase;
+            font-family: 'Forum', serif; color: #fff; letter-spacing: 1px;
+            background: linear-gradient(135deg, #7b2ff7 0%, #b91d73 100%);
+            border: 2px solid #f6d365; border-radius: 999px;
+            box-shadow: 0 0 18px rgba(246,211,101,0.55), 0 8px 20px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        #victoryBtn:active {
+            transform: translate(-50%, 4px);
+            box-shadow: 0 0 12px rgba(246,211,101,0.4), 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+        }
 
         /* --- ЭКРАН ВЫБОРА ПАСХАЛКИ --- */
         #easterEggPromptOverlay {
@@ -779,7 +803,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.43</div>
+            <div id="gameVersion">v1.44</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -816,9 +840,11 @@
             <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
             <div id="victoryOverlay" class="screen-overlay">
                 <video id="endingVideo" src="assets/video/Ending.mp4" loop playsinline webkit-playsinline disablePictureInPicture></video>
-                <div class="victory-title">ПОБЕДА!</div>
-                <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
-                <button class="action-btn" onclick="resetGame()">Вернуться в начало</button>
+                <div id="victoryPanel" onclick="copyVictoryCode()">
+                    <div class="victory-title">ПОБЕДА!</div>
+                    <div id="victoryCode">Нажми на текст, чтобы скопировать: 14022026</div>
+                </div>
+                <button id="victoryBtn" onclick="resetGame()">Вернуться в начало</button>
             </div>
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
@@ -1580,6 +1606,34 @@
             }
             container.onclick = advance; // на время интро тап ведёт в advance, не в nextDialogue
             startLine(0);
+        }
+
+        // Копирование кода победы в буфер по тапу на подложку
+        function copyVictoryCode() {
+            const code = "14022026";
+            const el = document.getElementById('victoryCode');
+            const done = () => {
+                if (!el) return;
+                el.innerText = "Скопировано!";
+                setTimeout(() => { el.innerText = "Нажми на текст, чтобы скопировать: 14022026"; }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code).then(done).catch(() => fallbackCopy(code, done));
+            } else {
+                fallbackCopy(code, done);
+            }
+        }
+        function fallbackCopy(text, cb) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text; ta.readOnly = true;
+                ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus(); ta.setSelectionRange(0, text.length); ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                if (cb) cb();
+            } catch (e) {}
         }
 
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {

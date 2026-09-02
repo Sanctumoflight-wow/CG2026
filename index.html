@@ -269,19 +269,19 @@
             z-index: 2;
         }
         #loadingTip {
-            font-size: 14px;
-            color: #f8b700;
+            position: absolute; inset: 0; z-index: 2; pointer-events: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: #fff;
             font-family: 'Forum', serif;
-            text-shadow: 1px 1px 2px #000;
-            text-align: center;
-            margin-bottom: 5px;
+            text-shadow: 0 1px 3px #000, 0 0 4px #000;
+            white-space: nowrap; padding: 0 10px; overflow: hidden;
         }
         #loadingBarBg {
             width: 100%;
-            height: 24px;
+            height: 34px;
             background: #1a1a1a;
             border: 2px solid #000;
-            border-radius: 6px;
+            border-radius: 8px;
             box-shadow: 0 0 0 2px #4a3c2a, 0 5px 15px rgba(0,0,0,0.8);
             position: relative;
             overflow: hidden;
@@ -481,10 +481,10 @@
         }
         .dialogue-hint {
             position: absolute;
-            top: 40%; right: 3%; bottom: auto;   /* над правым-верхним углом рамки */
+            bottom: 6%; right: 4%; top: auto;   /* правый-нижний угол, отступы от края экрана */
             display: inline-block; text-align: right;
             font-size: 15px; color: #f1c40f; font-family: 'Forum', serif;
-            opacity: 0.8; animation: blink 1.5s infinite; text-shadow: 0 2px 4px #000;
+            opacity: 0.9; text-shadow: 0 2px 4px #000;  /* мигание убрано — не отвлекает */
             /* подложка как у туториала стрелок — читается на любом фоне */
             background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
@@ -768,7 +768,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.40</div>
+            <div id="gameVersion">v1.41</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -817,9 +817,9 @@
                 
                 <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
                 <div id="loadingContainer">
-                    <div id="loadingTip"><span style="color: #f1c40f; font-weight: 900;">Подсказка:</span> Для самого лучшего игрока!</div>
                     <div id="loadingBarBg">
                         <div id="loadingBarFill"></div>
+                        <div id="loadingTip"><span style="color: #f1c40f; font-weight: 900;">Подсказка:</span> Для самого лучшего игрока!</div>
                     </div>
                 </div>
 
@@ -1129,6 +1129,7 @@
         for (const [key, src] of Object.entries(initialAssets)) {
             const img = new Image();
             img.src = src;
+            if (img.decode) { img.decode().catch(()=>{}); } // форс-декод заранее — без подвисания при первой отрисовке
             preloadedImages.push(img);
             img.onload = () => {
                 images[key] = img;
@@ -1377,6 +1378,8 @@
             hammerCollected = false;
             easterEggRevealed = false;
             easterEggFound = false;
+            rrCrownReturnPlayed = false;
+            rrSecretPlayed = false;
             teleportPrompted = false;
             
             isWinTriggered = false; 
@@ -1657,7 +1660,7 @@
         }
 
         function winShoulders() {
-            showDialogue("Мощные наплечники!\nОни надежно защитят в бою.", () => {
+            showDialogue("Говорят, даже Атланты оценили качество этих плеч. А эта ящерица мисс Редроуз их даже не поцарапает!", () => {
                 shouldersCollected = true; 
                 addScore();
                 playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
@@ -1918,7 +1921,7 @@
                         playCollectSound();
                         spawnParticles(crown.x, crown.y, '#f1c40f');
                         isPaused = false; checkWin();
-                    }, { bgImage: imgSrc('dialogLera') });
+                    }, { bgImage: imgSrc('dialogLera'), voice: 'assets/images/voice/LERA_TAROT.mp3' });
                 };
             }
         }
@@ -2089,8 +2092,10 @@
         let shoulders = { x: 8, y: 7 }; let shouldersCollected = false;
         let hammer = { x: 8, y: 0 }; let hammerCollected = false;
         
-        let easterEggRevealed = false; 
+        let easterEggRevealed = false;
         let easterEggFound = false;
+        let rrCrownReturnPlayed = false; // Редроуз про таро (возврат от короны) — 1 раз
+        let rrSecretPlayed = false;      // Редроуз про невидимый путь — 1 раз
         let teleportPrompted = false; 
 
         let particles = []; let targetMovePos = null; let moveTimer = 0;
@@ -2150,7 +2155,7 @@
 
             if (easterEggRevealed && !easterEggFound && player.x === 1 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
-                showDialogue("Ха-ха, а ты гений!", () => {
+                showDialogue("Очень важно найти в себе силы, даже когда путь к ним кажется невидимым.", () => {
                     easterEggFound = true; 
                     let es = document.getElementById('easterScore');
                     es.innerText = "1 / 1";
@@ -2158,7 +2163,25 @@
                     playCollectSound(); 
                     spawnParticles(player.x, player.y, '#f1c40f');
                     isPaused = false; checkWin();
-                }, { bgImage: imgSrc('dialogJulia') }); 
+                }, { bgImage: imgSrc('dialogJulia') });
+            }
+
+            // Возврат на 2 клетки к центру после короны (тайл 6,4) — Редроуз про таро, 1 раз
+            if (crownCollected && !rrCrownReturnPlayed && player.x === 6 && player.y === 4) {
+                rrCrownReturnPlayed = true;
+                isPaused = true; targetMovePos = null;
+                showDialogue("Забавно, да? Как люди ищут ответы в безделушках и обманщиках с картами таро. А к кому относишься ты?", () => {
+                    isPaused = false;
+                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_4_TAROT.mp3' });
+            }
+
+            // 3-я невидимая плитка на пути к пасхалке (тайл 2,2) — Редроуз, 1 раз
+            if (easterEggRevealed && !easterEggFound && !rrSecretPlayed && player.x === 2 && player.y === 2) {
+                rrSecretPlayed = true;
+                isPaused = true; targetMovePos = null;
+                showDialogue("А ты удивляешь. Нашла невидимый путь. Хотя, знаешь, он в тебе не сомневался. Забавно, как вы, смертные, верите друг в друга.", () => {
+                    isPaused = false;
+                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_5.mp3' });
             }
 
             if (player.x === 12 && player.y === 4) {
@@ -2210,12 +2233,12 @@
                             document.getElementById('confirmBossOverlay').style.display = 'none';
                             showDialogue("Тогда вперед, к победе!\nУ нас достаточно сил, чтобы победить босса!", () => {
                                 goToBoss();
-                            }, { bgImage: imgSrc('dialogTest') });
+                            }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
                         };
                     } else {
                         showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
                             goToBoss();
-                        }, { bgImage: imgSrc('dialogTest') });
+                        }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
                     }
                 }
             }

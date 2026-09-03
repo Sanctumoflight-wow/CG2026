@@ -715,8 +715,7 @@
 
         #heartsBox { display: flex; gap: 5px; }
         .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
-        /* Бессмертие (найдена пасхалка): сердечки в такой же щит-обводке, как персонаж */
-        #heartsBox.hearts-shielded .heart { animation: arenaShieldPulse 0.8s ease-in-out infinite; }
+        .heart img { width: 26px; height: 26px; object-fit: contain; display: block; }
         
         #shieldContainer { position: absolute; bottom: 25px; left: 20px; display: flex; flex-direction: column; align-items: center; z-index: 205; }
         #shieldBtn {
@@ -805,7 +804,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.49</div>
+            <div id="gameVersion">v1.50</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -894,7 +893,7 @@
                         <span id="score" class="tracker-text">0 / 4</span>
                     </div>
                     <div class="tracker-row">
-                        <span class="tracker-icon"><img src="assets/images/items/HEART.png" alt="Heart" style="width: 18px; height: 18px; object-fit: contain;"></span>
+                        <span class="tracker-icon" id="easterIcon" style="color:#f1c40f; font-weight:900;">?</span>
                         <span id="easterScore" class="tracker-text">0 / 1</span>
                     </div>
                 </div>
@@ -1410,7 +1409,8 @@
             scoreElement.innerText = score + " / " + maxScore;
             scoreElement.style.color = "white"; 
             document.getElementById('easterScore').innerText = "0 / 1";
-            document.getElementById('easterScore').style.color = "white"; 
+            document.getElementById('easterScore').style.color = "white";
+            document.getElementById('easterIcon').innerHTML = "?";
             
             crownCollected = false;
             shieldCollected = false;
@@ -2226,10 +2226,11 @@
             if (easterEggRevealed && !easterEggFound && player.x === 1 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Очень важно найти в себе силы, даже когда путь к ним кажется невидимым.", () => {
-                    easterEggFound = true; 
+                    easterEggFound = true;
                     let es = document.getElementById('easterScore');
                     es.innerText = "1 / 1";
-                    es.style.color = '#f1c40f'; 
+                    es.style.color = '#f1c40f';
+                    document.getElementById('easterIcon').innerHTML = '<img src="assets/images/items/HEART.png" alt="Heart" style="width:18px;height:18px;object-fit:contain;">';
                     playCollectSound(); 
                     spawnParticles(player.x, player.y, '#f1c40f');
                     isPaused = false; checkWin();
@@ -2686,14 +2687,18 @@
             pImg.src = imgSrc('player');
             pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
             pImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))';
-            // Бессмертие при найденной пасхалке: персонаж и сердечки постоянно в щите
-            const heartsBox = document.getElementById('heartsBox');
-            if (easterEggFound) {
-                pImg.classList.add('arena-shielded');
-                heartsBox.classList.add('hearts-shielded');
-            } else {
-                heartsBox.classList.remove('hearts-shielded');
-            }
+            // Бессмертие при найденной пасхалке: персонаж в щите, а 3 красных сердца
+            // заменяются на наши нарисованные сердца (без свечения).
+            document.querySelectorAll('#heartsBox .heart').forEach(h => {
+                if (easterEggFound) {
+                    h.innerHTML = '<img src="assets/images/items/HEART.png" alt="HP">';
+                    h.style.filter = 'none';
+                } else {
+                    h.innerHTML = '❤️';
+                    h.style.filter = '';
+                }
+            });
+            if (easterEggFound) pImg.classList.add('arena-shielded');
             
             let btn = document.getElementById('shieldBtn'); 
             btn.disabled = false; 

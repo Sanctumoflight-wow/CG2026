@@ -575,7 +575,7 @@
         /* --- МИНИ-ИГРА АРИНЫ: РАСТОПИТЬ ЛЁД (RAW, фон дорисуем) --- */
         #shouldersGameOverlay {
             display: none; z-index: 4500;
-            background: radial-gradient(circle at 50% 42%, #1b3a4a, #0d1013);
+            background: radial-gradient(circle at 50% 42%, rgba(27,58,74,0.35), rgba(13,16,19,0.72)), url('assets/images/backgrounds/shoulders_bg.jpg') center/cover no-repeat;
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
         #iceMeltTitle {
@@ -804,7 +804,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.52</div>
+            <div id="gameVersion">v1.53</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1735,7 +1735,7 @@
                 addScore();
                 playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
                 isPaused = false; checkWin();
-            }, { bgImage: imgSrc('dialogFather') });
+            }, { bgImage: imgSrc('dialogFather'), voice: 'assets/images/voice/ARINA.mp3' });
         }
 
         function renderDndFrame(frame) {

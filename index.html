@@ -655,6 +655,18 @@
         #bossHintText { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         
         #arenaPlayer { position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+        /* Щит: тонкая золотая рамка по контуру + пульсирующее сине-сапфировое свечение */
+        #arenaPlayer.arena-shielded { animation: arenaShieldPulse 0.8s ease-in-out infinite; }
+        @keyframes arenaShieldPulse {
+            0%,100% { filter:
+                drop-shadow(1.5px 0 0 #f3dd94) drop-shadow(-1.5px 0 0 #f3dd94)
+                drop-shadow(0 1.5px 0 #f3dd94) drop-shadow(0 -1.5px 0 #f3dd94)
+                drop-shadow(0 0 8px rgba(96,165,255,.8)) drop-shadow(0 0 18px rgba(96,165,255,.5)); }
+            50% { filter:
+                drop-shadow(1.5px 0 0 #fff0bf) drop-shadow(-1.5px 0 0 #fff0bf)
+                drop-shadow(0 1.5px 0 #fff0bf) drop-shadow(0 -1.5px 0 #fff0bf)
+                drop-shadow(0 0 14px rgba(130,190,255,1)) drop-shadow(0 0 30px rgba(130,190,255,.7)); }
+        }
         
         /* ИСПРАВЛЕНИЕ БОССА: Движение вынесено в независимый контейнер */
         #bossContainer {
@@ -791,7 +803,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.45</div>
+            <div id="gameVersion">v1.47</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1085,7 +1097,7 @@
             'block_5': 'assets/images/blocks/block_5.png', // СТЕНА (непроходимый блок)
             'block_6': 'assets/images/blocks/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
             'player': 'assets/images/player/Julia.png',
-            'playerHappy': 'assets/images/player/Julia_Happy.png',
+            'playerHappy': 'assets/images/player/JULIA_WIN.png',
             'juliaStand': 'assets/images/player/JULIA_STAND.png',
             'juliaWalk': 'assets/images/player/JULIA_WALK.png',
             'tarotCover': 'assets/images/tarot/TAROT_COVER.png',
@@ -1118,8 +1130,8 @@
         const bossAssets = {
             'boss': 'assets/images/boss/boss.png?v=3',
             'bossBg': 'assets/images/backgrounds/boss_bg.png?v=2',
-            'juliaShield': 'assets/images/player/Julia_Shield.png',
-            'juliaHit': 'assets/images/player/Julia_Hit.png',
+            'juliaShield': 'assets/images/player/JULIA_BLOCK.png',
+            'juliaHit': 'assets/images/player/JULIA_ATTAK.png',
             'alch': 'assets/images/items/alch.png',
             'divineShield': 'assets/images/ui/Divine_Shield.jpg',
             'damageImg': 'assets/images/ui/DAMAGE.png',
@@ -2536,7 +2548,8 @@
             
             const playerImg = document.getElementById('arenaPlayer');
             playerImg.src = imgSrc('juliaShield');
-            
+            playerImg.classList.add('arena-shielded');
+
             const btn = document.getElementById('shieldBtn');
             const barBg = document.getElementById('shieldBarBg');
             const bar = document.getElementById('shieldBar');
@@ -2551,8 +2564,9 @@
             
             setTimeout(() => {
                 isShieldActive = false;
+                playerImg.classList.remove('arena-shielded');
                 if (playerHp > 0) playerImg.src = imgSrc('player');
-                barBg.style.display = 'none'; 
+                barBg.style.display = 'none';
                 btn.classList.remove('shield-active');
                 btn.innerText = "⏳"; 
                 btn.style.fontSize = "38px"; 
@@ -2661,6 +2675,7 @@
             isPaused = false;
             
             let pImg = document.getElementById('arenaPlayer');
+            pImg.classList.remove('arena-shielded');
             pImg.src = imgSrc('player');
             pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
             pImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))';

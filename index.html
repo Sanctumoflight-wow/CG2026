@@ -804,7 +804,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.51</div>
+            <div id="gameVersion">v1.52</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -870,8 +870,8 @@
                     <div class="start-items-row">
                         <div class="img-block"><img src="assets/images/items/Crown.png" alt="Корона"></div>
                         <div class="img-block"><img src="assets/images/items/Shoulders.png" alt="Наплечники"></div>
-                        <div class="img-block"><img src="assets/images/items/Shield.png" alt="Щит"></div>
-                        <div class="img-block"><img src="assets/images/items/Hammer.png" alt="Молот"></div>
+                        <div class="img-block"><img src="assets/images/items/SHIELD_HD.png" alt="Щит"></div>
+                        <div class="img-block"><img src="assets/images/items/HAMMER_HD.png" alt="Молот"></div>
                         <div class="img-block secret-item">
                             <span style="font-size: 40px; color: #f1c40f; font-weight: 900; text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);">?</span>
                         </div>
@@ -1088,8 +1088,8 @@
             'itemsBg': 'assets/images/backgrounds/items_bg.jpg',
             'crown': 'assets/images/items/Crown.png',
             'shoulders': 'assets/images/items/Shoulders.png',
-            'shield': 'assets/images/items/Shield.png',
-            'hammer': 'assets/images/items/Hammer.png',
+            'shield': 'assets/images/items/SHIELD_HD.png',
+            'hammer': 'assets/images/items/HAMMER_HD.png',
             'block': 'assets/images/blocks/block.png',
             'block_1': 'assets/images/blocks/block_1.png',
             'block_2': 'assets/images/blocks/block_2.png',
@@ -2335,6 +2335,23 @@
         // ОБНОВЛЕННАЯ ФУНКЦИЯ ОТРИСОВКИ:
         // Все сущности и блоки теперь рисуются в едином Z-цикле для идеального 3D эффекта.
         // Высокие блоки (Вулканы) теперь будут правильно перекрывать или находиться за персонажем!
+        // Золотая обводка по силуэту предмета — как у персонажа на уровне с боссом
+        // (.arena-shielded), но БЕЗ мигания: только ровная золотая кромка, без пульсации.
+        function drawItemOutline(img, dx, dy, w, h) {
+            ctx.save();
+            ctx.shadowColor = '#f3dd94';
+            ctx.shadowBlur = 0;
+            const o = 1.5;
+            const offs = [[o, 0], [-o, 0], [0, o], [0, -o]];
+            for (let i = 0; i < offs.length; i++) {
+                ctx.shadowOffsetX = offs[i][0];
+                ctx.shadowOffsetY = offs[i][1];
+                ctx.drawImage(img, dx, dy, w, h);
+            }
+            ctx.restore();
+            ctx.drawImage(img, dx, dy, w, h);
+        }
+
         function drawGame() {
             ctx.clearRect(0, 0, 852, 393);
             
@@ -2427,19 +2444,19 @@
                     
                     if (x === hammer.x && y === hammer.y && !hammerCollected) { 
                         if(images['hammer'] && images['hammer'].complete && images['hammer'].naturalWidth !== 0) {
-                            ctx.drawImage(images['hammer'], p.x - 32, p.y - 60, 64, 64);
+                            drawItemOutline(images['hammer'], p.x - 32, p.y - 60, 64, 64);
                         }
                     }
 
                     if (x === crown.x && y === crown.y && !crownCollected) {
-                        if (images['crown'] && images['crown'].complete && images['crown'].naturalWidth !== 0) ctx.drawImage(images['crown'], p.x - 32, p.y - 60, 64, 64);
+                        if (images['crown'] && images['crown'].complete && images['crown'].naturalWidth !== 0) drawItemOutline(images['crown'], p.x - 32, p.y - 60, 64, 64);
                     }
                     
                     if (x === shieldObj.x && y === shieldObj.y && shieldObj.alpha > 0) { 
                         ctx.save(); 
                         ctx.globalAlpha = shieldObj.alpha * alpha; 
                         if(images['shield'] && images['shield'].complete && images['shield'].naturalWidth !== 0) {
-                            ctx.drawImage(images['shield'], p.x - 32, p.y - 60, 64, 64);
+                            drawItemOutline(images['shield'], p.x - 32, p.y - 60, 64, 64);
                         } else {
                             ctx.fillStyle = "#3498db"; ctx.beginPath(); ctx.arc(p.x, p.y + 20, 15, 0, Math.PI * 2); ctx.fill(); 
                         }
@@ -2448,7 +2465,7 @@
                     
                     if (x === shoulders.x && y === shoulders.y && !shouldersCollected) {
                         if(images['shoulders'] && images['shoulders'].complete && images['shoulders'].naturalWidth !== 0) {
-                            ctx.drawImage(images['shoulders'], p.x - 32, p.y - 60, 64, 64);
+                            drawItemOutline(images['shoulders'], p.x - 32, p.y - 60, 64, 64);
                         }
                     }
 

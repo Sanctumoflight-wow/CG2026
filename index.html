@@ -827,7 +827,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.75</div>
+            <div id="gameVersion">v1.76</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1750,7 +1750,7 @@
             showDialogue("Говорят, даже Атланты оценили качество этих плеч. А эта ящерица мисс Редроуз их даже не поцарапает!", () => {
                 shouldersCollected = true; 
                 addScore();
-                playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); flyItemToTracker('assets/images/items/Shoulders.png'); 
+                playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); flashTracker(); 
                 isPaused = false; checkWin();
             }, { bgImage: imgSrc('dialogFather'), voice: 'assets/images/voice/ARINA.mp3' });
         }
@@ -1830,8 +1830,8 @@
             showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
                 hammerCollected = true; 
                 addScore();
-                playCollectSound(); 
-                spawnParticles(hammer.x, hammer.y, '#95a5a6'); flyItemToTracker('assets/images/items/HAMMER_HD.png'); 
+                playHammerCollect();
+                spawnParticles(hammer.x, hammer.y, '#95a5a6'); flashTracker();
                 isPaused = false; 
                 checkWin();
                 
@@ -1861,8 +1861,8 @@
                 showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                     shieldCollected = true; 
                     addScore();
-                    playCollectSound(); 
-                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flyItemToTracker('assets/images/items/SHIELD_HD.png'); 
+                    playShieldCollect();
+                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                     
                     isPaused = false; checkWin();
                 }, { bgImage: imgSrc('dialogAlina') });
@@ -1940,8 +1940,8 @@
                         showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                             shieldCollected = true; 
                             addScore();
-                            playCollectSound(); 
-                            spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flyItemToTracker('assets/images/items/SHIELD_HD.png'); 
+                            playShieldCollect();
+                            spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                             
                             isPaused = false; checkWin();
                         }, { bgImage: imgSrc('dialogAlina') });
@@ -2025,6 +2025,62 @@
             });
         }
 
+        // Мягкий колокольный движок: играет последовательность нот с 2-й гармоникой,
+        // плавная атака/спад — звук приятный, не резкий. Основа для звуков подбора.
+        function playBells(freqs, opts = {}) {
+            const ctx = getSfxCtx(); if (!ctx) return;
+            const t = ctx.currentTime;
+            const master = ctx.createGain(); master.gain.value = opts.vol || 0.2; master.connect(ctx.destination);
+            const type = opts.type || 'sine';
+            const step = opts.step != null ? opts.step : 0.09;
+            const dur = opts.dur || 0.75;
+            freqs.forEach((f, i) => {
+                const st = t + i * step;
+                const o = ctx.createOscillator(); o.type = type; o.frequency.value = f;
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(0.0001, st);
+                g.gain.exponentialRampToValueAtTime(0.6, st + 0.015);         // мягкая атака
+                g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+                const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = f * 2; // октава-обертон = колокол
+                const g2 = ctx.createGain();
+                g2.gain.setValueAtTime(0.0001, st);
+                g2.gain.exponentialRampToValueAtTime(0.18, st + 0.015);
+                g2.gain.exponentialRampToValueAtTime(0.0001, st + dur * 0.6);
+                o.connect(g); g.connect(master); o2.connect(g2); g2.connect(master);
+                o.start(st); o.stop(st + dur + 0.02); o2.start(st); o2.stop(st + dur * 0.6 + 0.02);
+            });
+        }
+        // 3 НОВЫХ звука подбора (у плечей остаётся старый playCollectSound):
+        function playCrownCollect()  { playBells([523.25, 659.25, 783.99, 1046.50], { type: 'sine',     step: 0.075, dur: 0.85, vol: 0.20 }); } // C-E-G-C — светлый мажор
+        function playHammerCollect() { playBells([392.00, 587.33],                 { type: 'triangle', step: 0.10,  dur: 0.70, vol: 0.22 }); } // тёплое «та-да» (кварта)
+        function playShieldCollect() { playBells([659.25, 987.77, 1318.51],        { type: 'sine',     step: 0.055, dur: 0.95, vol: 0.18 }); } // воздушный шиммер вверх
+
+        // Стильный телепорт: мягкий warp-свип вверх (sine+детюн) под lowpass + искры-хвост.
+        function playTeleportSound() {
+            const ctx = getSfxCtx(); if (!ctx) return;
+            const t = ctx.currentTime;
+            const master = ctx.createGain(); master.gain.value = 0.22; master.connect(ctx.destination);
+            const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; lp.connect(master); // срезаем резкость
+            [['sine', 330, 1200, 1.0], ['triangle', 334, 1206, 0.5]].forEach(([tp, f0, f1, amp]) => {
+                const o = ctx.createOscillator(); o.type = tp;
+                o.frequency.setValueAtTime(f0, t);
+                o.frequency.exponentialRampToValueAtTime(f1, t + 0.4);
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(0.6 * amp, t + 0.04);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+                o.connect(g); g.connect(lp); o.start(t); o.stop(t + 0.55);
+            });
+            [1568, 2093].forEach((f, i) => { // искры-хвост после свипа
+                const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+                const g = ctx.createGain(); const st = t + 0.28 + i * 0.05;
+                g.gain.setValueAtTime(0.0001, st);
+                g.gain.exponentialRampToValueAtTime(0.25, st + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.0001, st + 0.45);
+                o.connect(g); g.connect(lp); o.start(st); o.stop(st + 0.5);
+            });
+        }
+
         async function flipTarot(i) {
             if (tarotOpened[i]) return;        // уже открыта — игнор
             if (tarotOpened.every(v => v)) return;
@@ -2050,8 +2106,8 @@
                     showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
                         crownCollected = true;
                         addScore();
-                        playCollectSound();
-                        spawnParticles(crown.x, crown.y, '#f1c40f'); flyItemToTracker('assets/images/items/Crown.png');
+                        playCrownCollect();
+                        spawnParticles(crown.x, crown.y, '#f1c40f'); flashTracker();
                         isPaused = false; checkWin();
                     }, { bgImage: imgSrc('dialogLera'), voice: 'assets/images/voice/LERA_TAROT.mp3' });
                 };
@@ -2262,32 +2318,12 @@
             rings.push({ x: ox, y: oy, r: 6, life: 1.0 });
         }
 
-        // A: подобранный предмет «улетает» в трекер (иконка уже загружена — 0 новой памяти).
-        function flyItemToTracker(url) {
-            try {
-                const canvas = document.getElementById('gameCanvas');
-                const tracker = document.getElementById('tracker');
-                if (!canvas || !tracker) return;
-                const c = canvas.getBoundingClientRect(), t = tracker.getBoundingClientRect();
-                const sx = c.left + c.width / 2, sy = c.top + c.height * 0.5;   // ~где игрок
-                const ex = t.left + t.width / 2, ey = t.top + t.height / 2;      // трекер
-                const img = document.createElement('img');
-                img.src = url;
-                img.style.cssText = 'position:fixed;left:0;top:0;width:52px;height:52px;object-fit:contain;'
-                    + 'z-index:6000;pointer-events:none;filter:drop-shadow(0 0 8px rgba(241,196,15,0.9));'
-                    + 'transition:transform 0.55s cubic-bezier(0.5,0,0.7,1),opacity 0.55s ease;'
-                    + 'transform:translate(' + (sx - 26) + 'px,' + (sy - 26) + 'px) scale(1);opacity:1;';
-                document.body.appendChild(img);
-                requestAnimationFrame(() => {
-                    img.style.transform = 'translate(' + (ex - 26) + 'px,' + (ey - 26) + 'px) scale(0.3)';
-                    img.style.opacity = '0.35';
-                });
-                setTimeout(() => {
-                    img.remove();
-                    tracker.classList.add('tracker-pop');
-                    setTimeout(() => tracker.classList.remove('tracker-pop'), 400);
-                }, 580);
-            } catch (e) {}
+        // Вспышка трекера при засчёте предмета (перелёт предмета убрали — достаточно мигания).
+        function flashTracker() {
+            const tracker = document.getElementById('tracker');
+            if (!tracker) return;
+            tracker.classList.add('tracker-pop');
+            setTimeout(() => tracker.classList.remove('tracker-pop'), 400);
         }
 
         function movePlayer(dx, dy) {
@@ -2371,14 +2407,14 @@
                 if (!teleportPrompted) {
                     isPaused = true; targetMovePos = null;
                     document.getElementById('teleportOverlay').style.display = 'flex';
-                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 18; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
+                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 18; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playTeleportSound(); };
                     document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
                 }
             } else if (player.x === 18 && player.y === 4) {
                 if (!teleportPrompted) {
                     isPaused = true; targetMovePos = null;
                     document.getElementById('teleportOverlay').style.display = 'flex';
-                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 12; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
+                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 12; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playTeleportSound(); };
                     document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
                 }
             } else {

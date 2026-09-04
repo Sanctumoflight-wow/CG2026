@@ -672,6 +672,9 @@
         #bossContainer {
             position: absolute; bottom: 12%; right: 5%; height: 45%; width: auto; z-index: 202;
             transition: bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in;
+            /* Лёгкая белая обводка по силуэту дракона — чтобы читался на фоне арены.
+               На контейнере (не на #arenaBoss), чтобы вспышка при попадании её не сбрасывала. */
+            filter: drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 4px rgba(255,255,255,0.6));
         }
         #arenaBoss { 
             height: 100%; width: auto; 
@@ -679,7 +682,7 @@
             transition: transform 0.1s, filter 0.1s; cursor: crosshair; 
         }
         
-        .player-projectile { position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201; transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f); animation: spin 1s linear infinite; }
+        .player-projectile { position: absolute; width: 34px; height: 34px; object-fit: contain; z-index: 201; transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f); animation: spin 0.6s linear infinite; }
         /* Свечение в точке нажатия (тап для выстрела) */
         .tap-glow {
             position: absolute; width: 64px; height: 64px; margin-left: -32px; margin-top: -32px;
@@ -804,7 +807,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.54</div>
+            <div id="gameVersion">v1.55</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1134,7 +1137,7 @@
             'bossBg': 'assets/images/backgrounds/boss_bg.png?v=2',
             'juliaShield': 'assets/images/player/JULIA_BLOCK.png',
             'juliaHit': 'assets/images/player/JULIA_ATTAK.png',
-            'alch': 'assets/images/items/JULIA_ORB.png',
+            'alch': 'assets/images/items/HAMMER_HD_ATTAK.png',
             'divineShield': 'assets/images/ui/Divine_Shield.jpg',
             'damageImg': 'assets/images/ui/DAMAGE.png',
             'blockImg': 'assets/images/ui/BLOCK.png',
@@ -2816,11 +2819,19 @@
             
             const localClick = getLocalCoords(e.clientX, e.clientY);
             const aimX = localClick.x, aimY = localClick.y; // точка прицела — куда игрок ткнул
-            const endX = aimX - 12;
-            const endY = aimY - 12;
-            
-            const startX = 118; 
-            const startY = 193; 
+            const half = 17; // половина размера снаряда (34px) — центрируем и по прицелу, и по вылету
+            const endX = aimX - half;
+            const endY = aimY - half;
+
+            // Точка вылета молота — из руки/плеча, а не из центра тела.
+            // Считаем от реального спрайта персонажа: ~15% вниз от верхней границы (уровень плеча)
+            // и ~8% вправо от центральной оси (к вытянутой руке / в сторону босса).
+            const pr = playerImg.getBoundingClientRect();
+            const tl = getLocalCoords(pr.left, pr.top);
+            const br = getLocalCoords(pr.right, pr.bottom);
+            const imgW = br.x - tl.x, imgH = br.y - tl.y;
+            const startX = tl.x + imgW * 0.58 - half; // центр (0.5) + 8% к руке
+            const startY = tl.y + imgH * 0.15 - half; // 15% от верхней границы = плечо
 
             projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';
             document.getElementById('bossOverlay').appendChild(projectile);

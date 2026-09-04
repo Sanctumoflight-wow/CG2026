@@ -550,7 +550,7 @@
             /* Без подложки — только текст и кнопки прямо на ПРАВОЙ (пустой) странице книги.
                Страницы одинаковые, поэтому положение фиксированное для всех кадров. */
             position: absolute;
-            left: 55%; right: 7%; top: 14%; bottom: 12%;
+            left: 52.5%; right: 9.5%; top: 14%; bottom: 12%;
             padding: 6px 10px;
             text-align: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -567,8 +567,11 @@
             font-family: 'Forum', serif; text-shadow: 0 1px 0 rgba(255,252,240,0.5);
             box-shadow: 0 3px 0 rgba(107,74,42,0.55), 0 4px 8px rgba(40,25,10,0.3), inset 0 1px 0 rgba(255,252,240,0.7);
             width: 100%; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* без синей вспышки тапа на iOS */
         }
-        .dnd-btn:hover, .dnd-btn:active {
+        /* Эффект нажатия — ТОЛЬКО при реальном нажатии (:active). :hover убран: на тач-экране
+           он «залипал» и подсвечивал кнопку без выбора. :focus тоже не красим. */
+        .dnd-btn:active {
             background: linear-gradient(180deg, #efe0bd 0%, #d9c193 100%);
             border-color: #8a5a2f; color: #2a1c0d;
             transform: translateY(2px);
@@ -819,7 +822,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.78</div>
+            <div id="gameVersion">v1.79</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">

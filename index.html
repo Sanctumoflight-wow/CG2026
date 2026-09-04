@@ -521,8 +521,8 @@
            те же левый/правый края, что у #dialogueText (L 39.32% .. R 2.93%). */
         #dialogueActionBtn {
             position: absolute;
-            top: 5%;
-            left: 39.32%; right: 2.93%;   /* совпадает с колонкой текстового блока */
+            top: auto; bottom: 58%;        /* прямо НАД текстовым блоком (он с 45.8%), небольшой отступ */
+            left: 39.32%; right: 2.93%;    /* та же колонка, что и текстовый блок */
             transform: none;
             display: none;
             z-index: 4010;
@@ -824,7 +824,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.72</div>
+            <div id="gameVersion">v1.73</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">

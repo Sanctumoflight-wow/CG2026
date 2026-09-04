@@ -512,16 +512,20 @@
             background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
         }
-        /* Кнопка действия в диалоге — стиль .start-btn (как «ИГРАТЬ»), растянута по ширине окна диалога */
+        /* Кнопка действия в диалоге — стиль .start-btn (как «ИГРАТЬ»).
+           Выровнена ровно по колонке текстового блока (над ним), НЕ поверх портрета:
+           те же левый/правый края, что у #dialogueText (L 39.32% .. R 2.93%). */
         #dialogueActionBtn {
             position: absolute;
-            top: 6%;
-            left: 5%; right: 5%;    /* тянется почти на всю ширину окна диалога */
+            top: 5%;
+            left: 39.32%; right: 2.93%;   /* совпадает с колонкой текстового блока */
             transform: none;
             display: none;
             z-index: 4010;
             text-align: center;
             white-space: nowrap;
+            font-size: 28px;
+            padding: 10px 20px;
         }
         #dialogueActionBtn:active { transform: translateY(6px); }
 
@@ -809,7 +813,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.56</div>
+            <div id="gameVersion">v1.57</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">

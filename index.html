@@ -808,10 +808,10 @@
 
     <!-- АУДИО -->
     <audio id="bgMusic" loop>
-        <source src="assets/audio/Geometry_of_the_Hidden_Temple.mp3" type="audio/mpeg">
+        <source src="assets/audio/Geometry_of_the_Hidden_Temple.mp3?v=2" type="audio/mpeg">
     </audio>
     <audio id="bossMusic" loop>
-        <source src="assets/audio/Crown_of_Stone_and_Sea.mp3" type="audio/mpeg">
+        <source src="assets/audio/Crown_of_Stone_and_Sea.mp3?v=2" type="audio/mpeg">
     </audio>
     <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
     <audio id="typeSound">
@@ -824,7 +824,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.68</div>
+            <div id="gameVersion">v1.70</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1506,9 +1506,8 @@
             // Версию показываем только на загрузочном экране — при старте игры прячем.
             document.getElementById('gameVersion').style.display = 'none';
 
-            bgMusic.volume = MUSIC_BG_VOL;
-            bossMusic.volume = MUSIC_BOSS_VOL;
-            
+            // Громкость музыки НЕ задаём из JS: iOS Safari игнорирует audio.volume,
+            // баланс vs голоса запечён в сами mp3 (bg −18 / boss −14 LUFS, см. assets/audio).
             typeSound.muted = true;
             collectSound.muted = true;
             bossMusic.muted = true;
@@ -2068,11 +2067,6 @@
         let dialogueTypingInterval;
         let isDialogueTyping = false;
         let onDialogueComplete = null;
-
-        // Громкость музыки — фиксированная, без глушилки (голос реплик = 1.0).
-        // Игрок выставляет громкость устройства под голос, музыка приятно играет фоном.
-        const MUSIC_BG_VOL = 0.65;    // фон поля/меню — ~35% ниже голоса реплик
-        const MUSIC_BOSS_VOL = 1.0;   // музыка боя — вровень с голосом реплик
 
         function toggleBossUI(show) {
             const display = show ? 'flex' : 'none';

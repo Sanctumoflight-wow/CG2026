@@ -827,7 +827,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.76</div>
+            <div id="gameVersion">v1.77</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1135,10 +1135,10 @@
             'dialogAika': 'assets/images/dialogs/DIALOG_AIKA.png',
             'arrow': 'assets/images/ui/Arrow.jpg',
             'fieldBg': 'assets/images/backgrounds/field_bg.jpg',
-            'dnd_1': 'assets/images/dnd/dnd_1.jpg',
-            'dnd_2': 'assets/images/dnd/dnd_2.jpg',
-            'dnd_3': 'assets/images/dnd/dnd_3.jpg',
-            'dnd_death': 'assets/images/dnd/dnd_death.jpg',
+            'dnd_1': 'assets/images/dnd/dnd_1.jpg?v=2',
+            'dnd_2': 'assets/images/dnd/dnd_2.jpg?v=2',
+            'dnd_3': 'assets/images/dnd/dnd_3.jpg?v=2',
+            'dnd_death': 'assets/images/dnd/dnd_death.jpg?v=2',
             'portal': 'assets/images/blocks/PORTAL.png',
             'chest': 'assets/images/ui/CHEST_HD.png',
             'pauseIcon': 'assets/images/ui/BUTTON_PAUSE_HD.jpg'
@@ -1750,7 +1750,7 @@
             showDialogue("Говорят, даже Атланты оценили качество этих плеч. А эта ящерица мисс Редроуз их даже не поцарапает!", () => {
                 shouldersCollected = true; 
                 addScore();
-                playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); flashTracker(); 
+                playCrownCollect(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); flashTracker(); 
                 isPaused = false; checkWin();
             }, { bgImage: imgSrc('dialogFather'), voice: 'assets/images/voice/ARINA.mp3' });
         }
@@ -1830,7 +1830,7 @@
             showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
                 hammerCollected = true; 
                 addScore();
-                playHammerCollect();
+                playCrownCollect();
                 spawnParticles(hammer.x, hammer.y, '#95a5a6'); flashTracker();
                 isPaused = false; 
                 checkWin();
@@ -1861,7 +1861,7 @@
                 showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                     shieldCollected = true; 
                     addScore();
-                    playShieldCollect();
+                    playCrownCollect();
                     spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                     
                     isPaused = false; checkWin();
@@ -1940,7 +1940,7 @@
                         showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
                             shieldCollected = true; 
                             addScore();
-                            playShieldCollect();
+                            playCrownCollect();
                             spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                             
                             isPaused = false; checkWin();

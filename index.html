@@ -804,7 +804,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.53</div>
+            <div id="gameVersion">v1.54</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1560,6 +1560,7 @@
 
             // окно интро (не закрывается между репликами)
             overlay.style.display = 'flex';
+            fadeMusicTo(MUSIC_DUCK_VOL); // приглушить музыку под интро-озвучку
             overlay.style.background = '#000';
             container.style.backgroundImage = 'none'; // без портрет-рамки — только фон сцены + подложка текста
             document.getElementById('tracker').style.display = 'none';
@@ -1600,6 +1601,7 @@
                     overlay.onclick = null;
                     overlay.style.display = 'none';
                     overlay.style.background = 'rgba(0,0,0,0.2)';
+                    fadeMusicTo(MUSIC_BASE_VOL); // вернуть музыку после интро
                     dText.classList.remove('dialogue-text-intro'); // вернуть обычную геометрию текста
                     back.style.display = 'none'; front.style.display = 'none';
                     back.style.opacity = '0'; front.style.opacity = '0';
@@ -2002,6 +2004,25 @@
         let isDialogueTyping = false;
         let onDialogueComplete = null;
 
+        // Приглушение (дакинг) фоновой музыки во время диалогов, чтобы озвучка звучала чисто.
+        // База музыки = 0.3; на время реплики уводим к ~0.15 (15%), после закрытия возвращаем.
+        const MUSIC_BASE_VOL = 0.3;
+        const MUSIC_DUCK_VOL = 0.15;
+        let musicFadeRAF = null;
+        function fadeMusicTo(target, duration = 300) {
+            const tracks = [bgMusic, bossMusic];
+            if (musicFadeRAF) cancelAnimationFrame(musicFadeRAF);
+            const starts = tracks.map(t => t.volume);
+            const t0 = performance.now();
+            function step(now) {
+                const k = Math.min(1, (now - t0) / duration);
+                tracks.forEach((t, i) => { t.volume = starts[i] + (target - starts[i]) * k; });
+                if (k < 1) { musicFadeRAF = requestAnimationFrame(step); }
+                else { musicFadeRAF = null; }
+            }
+            musicFadeRAF = requestAnimationFrame(step);
+        }
+
         function toggleBossUI(show) {
             const display = show ? 'flex' : 'none';
             document.getElementById('playerHpContainer').style.display = display;
@@ -2014,6 +2035,10 @@
             const overlay = document.getElementById('dialogueOverlay');
             overlay.style.display = 'flex';
             document.getElementById('dialogueText').innerText = "";
+
+            // Приглушаем фоновую музыку на время диалога (плавно). Цепочки реплик
+            // держат музыку приглушённой без скачков — новый fade отменяет возврат.
+            fadeMusicTo(MUSIC_DUCK_VOL);
 
             // Фон сцены за диалогом (напр. Red Rose). Без sceneBg — обычный тёмный тинт.
             if (options.sceneBg) {
@@ -2112,6 +2137,9 @@
                 }
                 document.getElementById('dialogueOverlay').style.display = 'none';
                 try { const va = document.getElementById('voiceAudio'); va.pause(); va.currentTime = 0; } catch(e) {}
+                // Возвращаем музыку к базовой громкости (если следом откроется новая
+                // реплика — её fadeMusicTo(DUCK) отменит этот возврат, скачка не будет).
+                fadeMusicTo(MUSIC_BASE_VOL);
                 if (onDialogueComplete) {
                     let cb = onDialogueComplete;
                     onDialogueComplete = null;

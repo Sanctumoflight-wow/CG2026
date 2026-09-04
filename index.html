@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/app_icon.png">
 
     <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ДЛЯ ИСКЛЮЧЕНИЯ СЕРЫХ ЭКРАНОВ -->
-    <link rel="preload" href="assets/images/backgrounds/items_bg.jpg" as="image">
+    <link rel="preload" href="assets/images/backgrounds/items_bg.jpg?v=2" as="image">
 
     <title>Calliope Game 2</title>
     <style>
@@ -158,6 +158,7 @@
 
         /* ИНДИКАТОР ЗАГРУЗКИ БОССА В ДЕБАГ МЕНЮ */
         #debugBossLoad {
+            display: none !important; /* Кружок загрузки файлов убран (Misha) */
             position: fixed;
             bottom: max(20px, var(--sab));
             right: max(140px, calc(var(--sar) + 120px));
@@ -219,6 +220,19 @@
             position: absolute;
             top: 12px;
             left: 15px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            font-family: 'Forum', serif;
+            z-index: 10000;
+            pointer-events: none;
+            font-weight: 700;
+            line-height: 1;
+        }
+        /* Авторская подпись — так же прозрачно, как версия, справа снизу экрана загрузки */
+        #authorCredit {
+            position: absolute;
+            bottom: 12px;
+            right: 15px;
             color: rgba(255, 255, 255, 0.3);
             font-size: 14px;
             font-family: 'Forum', serif;
@@ -323,7 +337,7 @@
         /* --- СТАРТОВЫЙ ЭКРАН --- */
         #startScreen {
             display: none; 
-            background: url('assets/images/backgrounds/items_bg.jpg') center/cover no-repeat, linear-gradient(135deg, #1a252f, #2c3e50);
+            background: url('assets/images/backgrounds/items_bg.jpg?v=2') center/cover no-repeat, linear-gradient(135deg, #1a252f, #2c3e50);
             flex-direction: column; justify-content: center; align-items: center; z-index: 100;
         }
         .start-items-row {
@@ -502,6 +516,20 @@
             backdrop-filter: blur(4px);
             font-size: 24px; line-height: 1.3;
         }
+        /* Плашка имени персонажа — снизу портретной карточки (левая часть арта), непрозрачная. */
+        #dialogueName {
+            position: absolute;
+            left: 20%; transform: translateX(-50%);
+            bottom: 6.5%;
+            padding: 3px 16px;
+            background: linear-gradient(180deg, #f4e8cb 0%, #e2ce9f 100%);
+            border: 2px solid #6b4a2a; border-radius: 10px;
+            color: #3a2817; font-family: 'Forum', serif; font-weight: 700; font-size: 16px;
+            text-align: center; white-space: nowrap; letter-spacing: 0.5px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,252,240,0.6);
+            z-index: 4011; pointer-events: none;
+            display: none; /* показываем только если у портрета есть имя */
+        }
         .dialogue-hint {
             position: absolute;
             top: 39%; right: 2.93%; bottom: auto;   /* над текстовым блоком, по правому краю его колонки */
@@ -659,7 +687,7 @@
 
         /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
-            display: none; background: url('assets/images/backgrounds/boss_bg.png?v=2') center/cover no-repeat;
+            display: none; background: url('assets/images/backgrounds/boss_bg.jpg') center/cover no-repeat;
             z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
         }
         .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
@@ -686,7 +714,9 @@
             transition: bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in;
             /* Лёгкая белая обводка по силуэту дракона — чтобы читался на фоне арены.
                На контейнере (не на #arenaBoss), чтобы вспышка при попадании её не сбрасывала. */
-            filter: drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 4px rgba(255,255,255,0.6));
+            /* Лёгкая белая ОБВОДКА по силуэту (тонкая кромка, как у персонажа), а не большое
+               свечение — иначе засвечивает текстуры. Смещённые тени = ровный контур. */
+            filter: drop-shadow(1px 0 0 rgba(255,255,255,0.5)) drop-shadow(-1px 0 0 rgba(255,255,255,0.5)) drop-shadow(0 1px 0 rgba(255,255,255,0.5)) drop-shadow(0 -1px 0 rgba(255,255,255,0.5));
         }
         #arenaBoss { 
             height: 100%; width: auto; 
@@ -822,7 +852,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.79</div>
+            <div id="gameVersion">v1.80</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -875,11 +905,12 @@
                 <div id="loadingContainer">
                     <div id="loadingBarBg">
                         <div id="loadingBarFill"></div>
-                        <div id="loadingTip"><span style="color: #f1c40f; font-weight: 900;">Подсказка:</span> Для самого лучшего игрока!</div>
+                        <div id="loadingTip"><span style="color: #f1c40f; font-weight: 900; margin-right: 6px;">Подсказка:</span>Для самого лучшего игрока!</div>
                     </div>
                 </div>
 
                 <button id="titlePlayBtn" class="start-btn">ИГРАТЬ</button>
+                <div id="authorCredit">© 2026 Nevaknight</div>
             </div>
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
@@ -1000,6 +1031,7 @@
                 <div id="dlgSceneBack" class="dlg-scene"></div>
                 <div id="dlgSceneFront" class="dlg-scene"></div>
                 <div class="dialogue-container" onclick="nextDialogue(event)">
+                    <div id="dialogueName"></div>
                     <div id="dialogueText"></div>
                     <div class="dialogue-hint">Нажми, чтобы продолжить</div>
                     <button id="dialogueActionBtn" class="start-btn"></button>
@@ -1047,7 +1079,6 @@
             <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО -->
             <div id="videoOverlay" class="screen-overlay">
                 <button id="skipVideoBtn">Пропустить</button>
-                <video id="hammerVideo" class="cutscene-video" src="assets/video/Hammer.mp4" playsinline webkit-playsinline></video>
                 <video id="ultimateVideo" class="cutscene-video" src="assets/video/ultimate.mp4" playsinline webkit-playsinline></video>
             </div>
 
@@ -1095,7 +1126,7 @@
 
         // ЭТАП 1: МГНОВЕННАЯ ЗАГРУЗКА
         const initialAssets = {
-            'itemsBg': 'assets/images/backgrounds/items_bg.jpg',
+            'itemsBg': 'assets/images/backgrounds/items_bg.jpg?v=2',
             'shouldersBg': 'assets/images/backgrounds/shoulders_bg.jpg?v=2', // фон мини-игры плечей — предзагрузка (был только в CSS → грузился лениво)
             'crown': 'assets/images/items/Crown.png',
             'shoulders': 'assets/images/items/Shoulders.png',
@@ -1129,7 +1160,7 @@
             'dialogJulia': 'assets/images/dialogs/DIALOG_JULIA.png',
             'dialogAika': 'assets/images/dialogs/DIALOG_AIKA.png',
             'arrow': 'assets/images/ui/Arrow.jpg',
-            'fieldBg': 'assets/images/backgrounds/field_bg.jpg',
+            'fieldBg': 'assets/images/backgrounds/field_bg.jpg?v=2',
             'dnd_1': 'assets/images/dnd/dnd_1.jpg?v=2',
             'dnd_2': 'assets/images/dnd/dnd_2.jpg?v=2',
             'dnd_3': 'assets/images/dnd/dnd_3.jpg?v=2',
@@ -1142,7 +1173,7 @@
         // ЭТАП 2: ФОНОВАЯ ЗАГРУЗКА БОССА
         const bossAssets = {
             'boss': 'assets/images/boss/boss.png?v=3',
-            'bossBg': 'assets/images/backgrounds/boss_bg.png?v=2',
+            'bossBg': 'assets/images/backgrounds/boss_bg.jpg',
             'juliaShield': 'assets/images/player/JULIA_BLOCK.png',
             'juliaHit': 'assets/images/player/JULIA_ATTAK.png',
             'alch': 'assets/images/items/HAMMER_HD_ATTAK.png',
@@ -1361,7 +1392,6 @@
 
         function playCutscene(videoId, callback) {
             document.getElementById('videoOverlay').style.display = 'block';
-            document.getElementById('hammerVideo').style.display = 'none';
             document.getElementById('ultimateVideo').style.display = 'none';
             
             activeVideo = document.getElementById(videoId);
@@ -1398,7 +1428,6 @@
             endCutscene();
         });
 
-        document.getElementById('hammerVideo').addEventListener('ended', endCutscene);
         document.getElementById('ultimateVideo').addEventListener('ended', endCutscene);
 
         function resetGame() {
@@ -1575,6 +1604,7 @@
             document.getElementById('tracker').style.display = 'none';
             hint.style.display = 'block';
             hint.classList.add('dlg-hint-intro'); // подсказку — в верхний-правый угол на время интро
+            document.getElementById('dialogueName').style.display = 'none'; // в интро имени нет
             actionBtn.style.display = 'none';
             dText.classList.add('dialogue-text-intro'); // текст на всю ширину экрана с подложкой
             dText.style.color = '#fff';
@@ -1784,7 +1814,7 @@
                 textEl.innerText = "Гоблины крепко спят. Ты аккуратно забираешь свой молот!";
                 addDndChoice("Забрать молот", () => {
                     document.getElementById('dndGameOverlay').style.display = 'none';
-                    playCutscene('hammerVideo', winDndGame); 
+                    winDndGame(); 
                 });
             }
         }
@@ -1832,7 +1862,7 @@
         function skipDndGame() {
             document.getElementById('dndGameOverlay').style.display = 'none';
             if (currentDndType === 'hammer') {
-                playCutscene('hammerVideo', winDndGame);
+                winDndGame();
             } else if (currentDndType === 'shoulders') {
                 winShoulders();
             }
@@ -1854,7 +1884,7 @@
                     spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                     
                     isPaused = false; checkWin();
-                }, { bgImage: imgSrc('dialogAlina') });
+                }, { bgImage: imgSrc('dialogAlina'), voice: 'assets/images/voice/LITTLE_JILIA.mp3' });
             }
         }
 
@@ -1933,7 +1963,7 @@
                             spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                             
                             isPaused = false; checkWin();
-                        }, { bgImage: imgSrc('dialogAlina') });
+                        }, { bgImage: imgSrc('dialogAlina'), voice: 'assets/images/voice/LITTLE_JILIA.mp3' });
                     }
                 }
             } else {
@@ -2148,6 +2178,20 @@
             const container = document.querySelector('.dialogue-container');
             const bgUrl = options.bgImage || imgSrc('dialogTest');
             container.style.backgroundImage = `url('${bgUrl}')`;
+
+            // Имя персонажа по портрету (плашка снизу карточки). У системных кнопок-реплик не показываем.
+            const nameEl = document.getElementById('dialogueName');
+            const nameMap = {
+                'DIALOG_LITTLE_JULIA_MOON_PRIEST': 'Лилджул',
+                'DIALOG_RED_ROSE': 'Редроуз',
+                'DIALOG_AIKA': 'Эланте',
+                'DIALOG_LERA': 'Принцесса Таро',
+                'DIALOG_ARINA': 'Азула'
+            };
+            let dispName = '';
+            for (const k in nameMap) { if (bgUrl.includes(k)) { dispName = nameMap[k]; break; } }
+            if (dispName && !options.buttonText) { nameEl.innerText = dispName; nameEl.style.display = 'block'; }
+            else { nameEl.style.display = 'none'; }
 
             // Контраст текста под цвет плашки картинки:
             // светлые плашки (жёлтая/оранжевая/золотистая) → тёмный текст; тёмные (синие) → белый.

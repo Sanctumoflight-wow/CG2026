@@ -769,6 +769,9 @@
         .action-btn:hover { transform: scale(1.05); }
 
         @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        /* Вспышка трекера при засчёте предмета (только filter — не трогает раскладку) */
+        #tracker.tracker-pop { animation: trackerPop 0.4s ease; }
+        @keyframes trackerPop { 0%, 100% { filter: none; } 40% { filter: drop-shadow(0 0 8px #f1c40f) brightness(1.25); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes pulseRed { 0% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } 50% { transform: scale(1.1); box-shadow: 0 0 50px #e74c3c; } 100% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } }
         @keyframes pulseRune { 0% { transform: scale(1); filter: drop-shadow(0 0 5px #fff); } 100% { transform: scale(1.1); filter: drop-shadow(0 0 20px #f1c40f); } }
@@ -824,7 +827,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.74</div>
+            <div id="gameVersion">v1.75</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1450,7 +1453,7 @@
             player = { x: 8, y: 4 };
             prevPlayerPos = { x: 8, y: 4 };
             targetMovePos = null;
-            particles = [];
+            particles = []; rings = [];
             isPlayerHappy = false;
             
             bossHp = 10;
@@ -1747,7 +1750,7 @@
             showDialogue("Говорят, даже Атланты оценили качество этих плеч. А эта ящерица мисс Редроуз их даже не поцарапает!", () => {
                 shouldersCollected = true; 
                 addScore();
-                playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); 
+                playCollectSound(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); flyItemToTracker('assets/images/items/Shoulders.png'); 
                 isPaused = false; checkWin();
             }, { bgImage: imgSrc('dialogFather'), voice: 'assets/images/voice/ARINA.mp3' });
         }
@@ -1828,7 +1831,7 @@
                 hammerCollected = true; 
                 addScore();
                 playCollectSound(); 
-                spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
+                spawnParticles(hammer.x, hammer.y, '#95a5a6'); flyItemToTracker('assets/images/items/HAMMER_HD.png'); 
                 isPaused = false; 
                 checkWin();
                 
@@ -1859,7 +1862,7 @@
                     shieldCollected = true; 
                     addScore();
                     playCollectSound(); 
-                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
+                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flyItemToTracker('assets/images/items/SHIELD_HD.png'); 
                     
                     isPaused = false; checkWin();
                 }, { bgImage: imgSrc('dialogAlina') });
@@ -1938,7 +1941,7 @@
                             shieldCollected = true; 
                             addScore();
                             playCollectSound(); 
-                            spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
+                            spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flyItemToTracker('assets/images/items/SHIELD_HD.png'); 
                             
                             isPaused = false; checkWin();
                         }, { bgImage: imgSrc('dialogAlina') });
@@ -2048,7 +2051,7 @@
                         crownCollected = true;
                         addScore();
                         playCollectSound();
-                        spawnParticles(crown.x, crown.y, '#f1c40f');
+                        spawnParticles(crown.x, crown.y, '#f1c40f'); flyItemToTracker('assets/images/items/Crown.png');
                         isPaused = false; checkWin();
                     }, { bgImage: imgSrc('dialogLera'), voice: 'assets/images/voice/LERA_TAROT.mp3' });
                 };
@@ -2235,14 +2238,56 @@
         let rrSecretPlayed = false;      // Редроуз про невидимый путь — 1 раз
         let teleportPrompted = false; 
 
-        let particles = []; let targetMovePos = null; let moveTimer = 0;
+        let particles = []; let rings = []; let targetMovePos = null; let moveTimer = 0;
         let playerWalkTimer = 0; // >0 пока игрок шагает между клетками → спрайт WALK
         let isPlayerHappy = false;
 
         function toScreen(x, y) { return { x: (x - y) * (tileW / 2), y: (x + y) * (tileH / 2) }; }
         function spawnParticles(gridX, gridY, color) {
             const p = toScreen(gridX, gridY);
-            for(let i = 0; i < 60; i++) particles.push({ x: p.x, y: p.y - 40, vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 1) * 12, life: 1.0, decay: Math.random() * 0.002 + 0.003, color: color, size: Math.random() * 6 + 4 });
+            const ox = p.x, oy = p.y - 40;
+            // B: 35 частиц (было 60 — легче), палитра золото+белые искры+цвет предмета,
+            // разный размер, мерцание (tw), ~30% — вращающиеся звёздочки-искры.
+            const palette = ['#f1c40f', '#ffffff', '#ffe9a8', color];
+            for (let i = 0; i < 35; i++) particles.push({
+                x: ox, y: oy,
+                vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 1) * 12,
+                life: 1.0, decay: Math.random() * 0.002 + 0.003,
+                color: palette[(Math.random() * palette.length) | 0],
+                size: Math.random() * 5 + 3,
+                tw: Math.random() * 6.28, star: Math.random() < 0.3,
+                rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4
+            });
+            // C: кольцо-вспышка в точке подбора
+            rings.push({ x: ox, y: oy, r: 6, life: 1.0 });
+        }
+
+        // A: подобранный предмет «улетает» в трекер (иконка уже загружена — 0 новой памяти).
+        function flyItemToTracker(url) {
+            try {
+                const canvas = document.getElementById('gameCanvas');
+                const tracker = document.getElementById('tracker');
+                if (!canvas || !tracker) return;
+                const c = canvas.getBoundingClientRect(), t = tracker.getBoundingClientRect();
+                const sx = c.left + c.width / 2, sy = c.top + c.height * 0.5;   // ~где игрок
+                const ex = t.left + t.width / 2, ey = t.top + t.height / 2;      // трекер
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.cssText = 'position:fixed;left:0;top:0;width:52px;height:52px;object-fit:contain;'
+                    + 'z-index:6000;pointer-events:none;filter:drop-shadow(0 0 8px rgba(241,196,15,0.9));'
+                    + 'transition:transform 0.55s cubic-bezier(0.5,0,0.7,1),opacity 0.55s ease;'
+                    + 'transform:translate(' + (sx - 26) + 'px,' + (sy - 26) + 'px) scale(1);opacity:1;';
+                document.body.appendChild(img);
+                requestAnimationFrame(() => {
+                    img.style.transform = 'translate(' + (ex - 26) + 'px,' + (ey - 26) + 'px) scale(0.3)';
+                    img.style.opacity = '0.35';
+                });
+                setTimeout(() => {
+                    img.remove();
+                    tracker.classList.add('tracker-pop');
+                    setTimeout(() => tracker.classList.remove('tracker-pop'), 400);
+                }, 580);
+            } catch (e) {}
         }
 
         function movePlayer(dx, dy) {
@@ -2394,8 +2439,13 @@
                 }
             }
             for (let i = particles.length - 1; i >= 0; i--) {
-                let p = particles[i]; p.x += p.vx; p.y += p.vy; p.vx *= 0.95; p.vy *= 0.95; p.vy += 0.15; p.life -= p.decay; 
-                if (p.life <= 0) particles.splice(i, 1); 
+                let p = particles[i]; p.x += p.vx; p.y += p.vy; p.vx *= 0.95; p.vy *= 0.95; p.vy += 0.15; p.life -= p.decay;
+                p.tw += 0.3; p.rot += p.vr; // мерцание + вращение искр
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+            for (let i = rings.length - 1; i >= 0; i--) {
+                let r = rings[i]; r.r += 3.5; r.life -= 0.05; // кольцо растёт и гаснет
+                if (r.life <= 0) rings.splice(i, 1);
             }
         }
 
@@ -2587,7 +2637,27 @@
             }
 
             // Эффекты рисуются самыми последними поверх всего
-            particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
+            // C: кольца-вспышки (тонкий штрих, гаснет)
+            rings.forEach(r => {
+                ctx.globalAlpha = Math.max(0, r.life) * 0.6; ctx.strokeStyle = '#ffe9a8';
+                ctx.lineWidth = Math.max(1, 4 * r.life);
+                ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.stroke();
+            });
+            // B: частицы — мерцание (tw) + часть как вращающиеся звёздочки-искры
+            particles.forEach(p => {
+                ctx.globalAlpha = Math.max(0, p.life) * (0.7 + 0.3 * Math.sin(p.tw));
+                ctx.fillStyle = p.color;
+                if (p.star) {
+                    const s = p.size * 1.6;
+                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -s); ctx.lineTo(s * 0.28, -s * 0.28); ctx.lineTo(s, 0); ctx.lineTo(s * 0.28, s * 0.28);
+                    ctx.lineTo(0, s); ctx.lineTo(-s * 0.28, s * 0.28); ctx.lineTo(-s, 0); ctx.lineTo(-s * 0.28, -s * 0.28);
+                    ctx.closePath(); ctx.fill(); ctx.restore();
+                } else {
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                }
+            });
             ctx.globalAlpha = 1.0; ctx.restore(); 
         }
 

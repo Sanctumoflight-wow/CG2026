@@ -512,16 +512,18 @@
             background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
         }
+        /* Кнопка действия в диалоге — стиль .start-btn (как «ИГРАТЬ»), растянута по ширине окна диалога */
         #dialogueActionBtn {
             position: absolute;
-            top: 24%;               /* над синим блоком (блок начинается с 45.8%) */
-            right: 4%; left: auto;  /* прижата к правому краю блока */
+            top: 6%;
+            left: 5%; right: 5%;    /* тянется почти на всю ширину окна диалога */
             transform: none;
             display: none;
             z-index: 4010;
+            text-align: center;
             white-space: nowrap;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
+        #dialogueActionBtn:active { transform: translateY(6px); }
 
         /* --- ДНД МИНИ-ИГРА (МОЛОТ И ТЕСТ ПЛЕЧЕЙ) --- */
         #dndGameOverlay {
@@ -700,7 +702,7 @@
         
         #pauseBtn {
             width: 56px; height: 56px; border-radius: 12px; 
-            background: url('assets/images/ui/IMG_4299.png') center/cover no-repeat;
+            background: url('assets/images/ui/BUTTON_PAUSE_HD.jpg') center/cover no-repeat;
             border: 2px solid #fff; cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(0,0,0, 0.5);
             padding: 0; position: relative; z-index: 205;
@@ -722,7 +724,7 @@
         
         #shieldContainer { position: absolute; bottom: 25px; left: 20px; display: flex; flex-direction: column; align-items: center; z-index: 205; }
         #shieldBtn {
-            width: 56px; height: 56px; border-radius: 12px; background: url('assets/images/ui/Divine_Shield.jpg') center/cover no-repeat;
+            width: 56px; height: 56px; border-radius: 12px; background: url('assets/images/ui/BUTTON_BLOCK_HD.jpg') center/cover no-repeat;
             color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000; cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5); display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px; position: relative;
         }
@@ -807,7 +809,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.55</div>
+            <div id="gameVersion">v1.56</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -892,7 +894,7 @@
                 <!-- ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ -->
                 <div id="tracker">
                     <div class="tracker-row">
-                        <span class="tracker-icon"><img src="assets/images/ui/IMG_4300.png" alt="Chest" style="width: 18px; height: 18px; object-fit: contain;"></span>
+                        <span class="tracker-icon"><img src="assets/images/ui/CHEST_HD.png" alt="Chest" style="width: 18px; height: 18px; object-fit: contain;"></span>
                         <span id="score" class="tracker-text">0 / 4</span>
                     </div>
                     <div class="tracker-row">
@@ -995,7 +997,7 @@
                 <div class="dialogue-container" onclick="nextDialogue(event)">
                     <div id="dialogueText"></div>
                     <div class="dialogue-hint">Нажми, чтобы продолжить</div>
-                    <button id="dialogueActionBtn" class="action-btn"></button>
+                    <button id="dialogueActionBtn" class="start-btn"></button>
                 </div>
             </div>
 
@@ -1127,8 +1129,8 @@
             'dnd_3': 'assets/images/dnd/dnd_3.jpg',
             'dnd_death': 'assets/images/dnd/dnd_death.jpg',
             'portal': 'assets/images/blocks/PORTAL.png',
-            'chest': 'assets/images/ui/IMG_4300.png',
-            'pauseIcon': 'assets/images/ui/IMG_4299.png'
+            'chest': 'assets/images/ui/CHEST_HD.png',
+            'pauseIcon': 'assets/images/ui/BUTTON_PAUSE_HD.jpg'
         };
 
         // ЭТАП 2: ФОНОВАЯ ЗАГРУЗКА БОССА
@@ -1138,7 +1140,7 @@
             'juliaShield': 'assets/images/player/JULIA_BLOCK.png',
             'juliaHit': 'assets/images/player/JULIA_ATTAK.png',
             'alch': 'assets/images/items/HAMMER_HD_ATTAK.png',
-            'divineShield': 'assets/images/ui/Divine_Shield.jpg',
+            'divineShield': 'assets/images/ui/BUTTON_BLOCK_HD.jpg',
             'damageImg': 'assets/images/ui/DAMAGE.png',
             'blockImg': 'assets/images/ui/BLOCK.png',
             'dodgeImg': 'assets/images/ui/DODGE.png'
@@ -2830,7 +2832,7 @@
             const tl = getLocalCoords(pr.left, pr.top);
             const br = getLocalCoords(pr.right, pr.bottom);
             const imgW = br.x - tl.x, imgH = br.y - tl.y;
-            const startX = tl.x + imgW * 0.58 - half; // центр (0.5) + 8% к руке
+            const startX = tl.x + imgW * 0.83 - half; // центр (0.5) + ~1/3 к вытянутой руке
             const startY = tl.y + imgH * 0.15 - half; // 15% от верхней границы = плечо
 
             projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';

@@ -824,7 +824,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.65</div>
+            <div id="gameVersion">v1.67</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1506,8 +1506,8 @@
             // Версию показываем только на загрузочном экране — при старте игры прячем.
             document.getElementById('gameVersion').style.display = 'none';
 
-            bgMusic.volume = 0.3;
-            bossMusic.volume = 0.3;
+            bgMusic.volume = MUSIC_BG_BASE;
+            bossMusic.volume = MUSIC_BOSS_BASE;
             
             typeSound.muted = true;
             collectSound.muted = true;
@@ -1580,7 +1580,7 @@
 
             // окно интро (не закрывается между репликами)
             overlay.style.display = 'flex';
-            fadeMusicTo(MUSIC_DUCK_VOL); // приглушить музыку под интро-озвучку
+            fadeMusicDuck(true); // приглушить музыку под интро-озвучку
             overlay.style.background = '#000';
             container.style.backgroundImage = 'none'; // без портрет-рамки — только фон сцены + подложка текста
             document.getElementById('tracker').style.display = 'none';
@@ -1622,7 +1622,7 @@
                     overlay.onclick = null;
                     overlay.style.display = 'none';
                     overlay.style.background = 'rgba(0,0,0,0.2)';
-                    fadeMusicTo(MUSIC_BASE_VOL); // вернуть музыку после интро
+                    fadeMusicDuck(false); // вернуть музыку после интро
                     dText.classList.remove('dialogue-text-intro'); // вернуть обычную геометрию текста
                 hint.classList.remove('dlg-hint-intro'); // вернуть подсказку в обычное место
                     back.style.display = 'none'; front.style.display = 'none';
@@ -1988,17 +1988,62 @@
             }
         }
 
+        // === Процедурные звуки (Web Audio) — без файлов, без нагрузки на память iOS ===
+        let sfxCtx = null;
+        function getSfxCtx() {
+            try {
+                if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (sfxCtx.state === 'suspended') sfxCtx.resume().catch(()=>{});
+                return sfxCtx;
+            } catch(e) { return null; }
+        }
+        // Мягкий «swish» — взмах карты при перевороте
+        function playCardSwish() {
+            const ctx = getSfxCtx(); if (!ctx) return;
+            const t = ctx.currentTime, dur = 0.22;
+            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1; // белый шум
+            const src = ctx.createBufferSource(); src.buffer = buf;
+            const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.8;
+            bp.frequency.setValueAtTime(1900, t);
+            bp.frequency.exponentialRampToValueAtTime(500, t + dur); // сметает вниз = взмах
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+            src.start(t); src.stop(t + dur);
+        }
+        // Тихий мистический шиммер/колокольчик — когда карта легла лицом
+        function playCardShimmer() {
+            const ctx = getSfxCtx(); if (!ctx) return;
+            const t = ctx.currentTime;
+            const master = ctx.createGain(); master.gain.value = 0.2; master.connect(ctx.destination);
+            [880, 1320, 1760, 2640].forEach((f, i) => { // A5 + гармоники = переливы
+                const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+                const g = ctx.createGain();
+                const st = t + i * 0.045, dur = 0.9 - i * 0.12; // лёгкая «росыпь» вверх
+                g.gain.setValueAtTime(0.0001, st);
+                g.gain.exponentialRampToValueAtTime(0.5 / (i + 1), st + 0.015);
+                g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+                o.connect(g); g.connect(master);
+                o.start(st); o.stop(st + dur + 0.02);
+            });
+        }
+
         async function flipTarot(i) {
             if (tarotOpened[i]) return;        // уже открыта — игнор
             if (tarotOpened.every(v => v)) return;
             tarotOpened[i] = true;
             const card = document.getElementById('tarotCard' + i);
             card.style.transform = 'scale(1.1) rotateY(90deg)';
-            try { typeSound.currentTime = 0; typeSound.play().catch(()=>{}); } catch(e) {}
+            playCardSwish(); // взмах карты (было: печатающий typeSound — инородный)
             await new Promise(r => setTimeout(r, 220));
             card.src = imgSrc('tarot' + (i + 1));
             card.style.transform = 'scale(1) rotateY(0deg)';
             card.style.cursor = 'default';
+            playCardShimmer(); // карта легла лицом — мистический переливной шиммер
             document.getElementById('tarotCap' + i).style.opacity = '1';   // подпись проявляется
 
             if (tarotOpened.every(v => v)) {
@@ -2026,20 +2071,23 @@
         let isDialogueTyping = false;
         let onDialogueComplete = null;
 
-        // Приглушение (дакинг) фоновой музыки во время диалогов, чтобы озвучка звучала чисто.
-        // База музыки = 0.3; на время реплики уводим к ~0.15 (15%), после закрытия возвращаем.
-        const MUSIC_BASE_VOL = 0.3;
-        const MUSIC_DUCK_VOL = 0.15;
+        // Громкость фоновой музыки. Фон поля/меню держим ОЧЕНЬ тихо (почти неслышно) —
+        // по просьбе Misha, чтобы не мешал. У каждой дорожки своя база: бой не трогаем.
+        // Во время диалога приглушаем ещё (×фактор), после — возвращаем к базе.
+        const MUSIC_BG_BASE = 0.06;     // bgMusic (поле/меню) — почти неслышно
+        const MUSIC_BOSS_BASE = 0.30;   // bossMusic (бой) — прежняя громкость
+        const MUSIC_DUCK_FACTOR = 0.4;  // на время реплики → 40% от базы
         let musicFadeRAF = null;
-        function fadeMusicTo(target, duration = 300) {
-            const tracks = [bgMusic, bossMusic];
+        function fadeMusicDuck(ducked, duration = 300) {
+            const k = ducked ? MUSIC_DUCK_FACTOR : 1;
+            const targets = [[bgMusic, MUSIC_BG_BASE * k], [bossMusic, MUSIC_BOSS_BASE * k]];
             if (musicFadeRAF) cancelAnimationFrame(musicFadeRAF);
-            const starts = tracks.map(t => t.volume);
+            const starts = targets.map(t => t[0].volume);
             const t0 = performance.now();
             function step(now) {
-                const k = Math.min(1, (now - t0) / duration);
-                tracks.forEach((t, i) => { t.volume = starts[i] + (target - starts[i]) * k; });
-                if (k < 1) { musicFadeRAF = requestAnimationFrame(step); }
+                const p = Math.min(1, (now - t0) / duration);
+                targets.forEach((t, i) => { t[0].volume = starts[i] + (t[1] - starts[i]) * p; });
+                if (p < 1) { musicFadeRAF = requestAnimationFrame(step); }
                 else { musicFadeRAF = null; }
             }
             musicFadeRAF = requestAnimationFrame(step);
@@ -2060,7 +2108,7 @@
 
             // Приглушаем фоновую музыку на время диалога (плавно). Цепочки реплик
             // держат музыку приглушённой без скачков — новый fade отменяет возврат.
-            fadeMusicTo(MUSIC_DUCK_VOL);
+            fadeMusicDuck(true);
 
             // Фон сцены за диалогом (напр. Red Rose). Без sceneBg — обычный тёмный тинт.
             if (options.sceneBg) {
@@ -2160,8 +2208,8 @@
                 document.getElementById('dialogueOverlay').style.display = 'none';
                 try { const va = document.getElementById('voiceAudio'); va.pause(); va.currentTime = 0; } catch(e) {}
                 // Возвращаем музыку к базовой громкости (если следом откроется новая
-                // реплика — её fadeMusicTo(DUCK) отменит этот возврат, скачка не будет).
-                fadeMusicTo(MUSIC_BASE_VOL);
+                // реплика — её fadeMusicDuck(true) отменит этот возврат, скачка не будет).
+                fadeMusicDuck(false);
                 if (onDialogueComplete) {
                     let cb = onDialogueComplete;
                     onDialogueComplete = null;

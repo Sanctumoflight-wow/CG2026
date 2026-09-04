@@ -547,22 +547,14 @@
             transition: background-image 0.3s ease;
         }
         .dnd-content-box {
+            /* Без подложки — только текст и кнопки прямо на ПРАВОЙ (пустой) странице книги.
+               Страницы одинаковые, поэтому положение фиксированное для всех кадров. */
             position: absolute;
-            right: 38px; 
-            top: 40px;
-            width: 350px; 
-            height: 313px;
-            
-            /* Состаренная бумага/чернила — под книжную эстетику ДнД */
-            background: linear-gradient(180deg, rgba(245,234,206,0.96) 0%, rgba(226,206,166,0.96) 100%);
-            border: 2px solid #6b4a2a;
-            border-radius: 10px;
-            padding: 20px 25px;
-            box-shadow: 0 10px 30px rgba(40,25,10,0.55), inset 0 0 0 1px rgba(120,80,40,0.35), inset 0 2px 14px rgba(120,80,40,0.18);
+            left: 55%; right: 7%; top: 14%; bottom: 12%;
+            padding: 6px 10px;
             text-align: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             box-sizing: border-box;
-            transition: all 0.3s ease;
         }
         .dnd-text {
             font-size: 17px; font-family: 'Forum', serif; margin-bottom: 20px; line-height: 1.4; color: #3a2817; text-shadow: 0 1px 0 rgba(255,250,235,0.45);
@@ -827,7 +819,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.77</div>
+            <div id="gameVersion">v1.78</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1760,26 +1752,20 @@
             const textEl = document.getElementById('dndText');
             const choicesEl = document.getElementById('dndChoices');
             const bgEl = document.getElementById('dndBookBg'); 
-            const boxEl = document.getElementById('dndContentBox');
-            choicesEl.innerHTML = ''; 
-
-            boxEl.style.left = 'auto';
-            boxEl.style.right = '38px';
-            boxEl.style.top = '40px';
-            boxEl.style.transform = 'none';
+            choicesEl.innerHTML = '';
 
             if (frame === 1) {
                 bgEl.style.backgroundImage = `url('${imgSrc('dnd_1')}')`; 
                 textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
-                addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
-                addDndChoice("2. Подойти не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
-                addDndChoice("3. Развернуться и уйти", () => failDndGame("Ты решила не рисковать и отступила."));
+                addDndChoice("Подойти к кустам не торопясь", () => renderDndFrame(2));
+                addDndChoice("Подойти не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
+                addDndChoice("Развернуться и уйти", () => failDndGame("Ты решила не рисковать и отступила."));
             } else if (frame === 2) {
                 bgEl.style.backgroundImage = `url('${imgSrc('dnd_2')}')`;
                 textEl.innerText = "Ты подходишь не торопясь к кустам и видишь лагерь гоблинов. На горе золота красуется твой молот. Что ты будешь делать?";
-                addDndChoice("1. Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death'));
-                addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
-                addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
+                addDndChoice("Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death'));
+                addDndChoice("Дождаться пока гоблины уснут", () => renderDndFrame(3));
+                addDndChoice("Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
             } else if (frame === 'death') {
                 bgEl.style.backgroundImage = `url('${imgSrc('dnd_death')}')`;
                 textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Придется отступить...";

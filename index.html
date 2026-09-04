@@ -824,7 +824,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.67</div>
+            <div id="gameVersion">v1.68</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1506,8 +1506,8 @@
             // Версию показываем только на загрузочном экране — при старте игры прячем.
             document.getElementById('gameVersion').style.display = 'none';
 
-            bgMusic.volume = MUSIC_BG_BASE;
-            bossMusic.volume = MUSIC_BOSS_BASE;
+            bgMusic.volume = MUSIC_BG_VOL;
+            bossMusic.volume = MUSIC_BOSS_VOL;
             
             typeSound.muted = true;
             collectSound.muted = true;
@@ -1580,7 +1580,6 @@
 
             // окно интро (не закрывается между репликами)
             overlay.style.display = 'flex';
-            fadeMusicDuck(true); // приглушить музыку под интро-озвучку
             overlay.style.background = '#000';
             container.style.backgroundImage = 'none'; // без портрет-рамки — только фон сцены + подложка текста
             document.getElementById('tracker').style.display = 'none';
@@ -1622,7 +1621,6 @@
                     overlay.onclick = null;
                     overlay.style.display = 'none';
                     overlay.style.background = 'rgba(0,0,0,0.2)';
-                    fadeMusicDuck(false); // вернуть музыку после интро
                     dText.classList.remove('dialogue-text-intro'); // вернуть обычную геометрию текста
                 hint.classList.remove('dlg-hint-intro'); // вернуть подсказку в обычное место
                     back.style.display = 'none'; front.style.display = 'none';
@@ -2071,27 +2069,10 @@
         let isDialogueTyping = false;
         let onDialogueComplete = null;
 
-        // Громкость фоновой музыки. Фон поля/меню держим ОЧЕНЬ тихо (почти неслышно) —
-        // по просьбе Misha, чтобы не мешал. У каждой дорожки своя база: бой не трогаем.
-        // Во время диалога приглушаем ещё (×фактор), после — возвращаем к базе.
-        const MUSIC_BG_BASE = 0.06;     // bgMusic (поле/меню) — почти неслышно
-        const MUSIC_BOSS_BASE = 0.30;   // bossMusic (бой) — прежняя громкость
-        const MUSIC_DUCK_FACTOR = 0.4;  // на время реплики → 40% от базы
-        let musicFadeRAF = null;
-        function fadeMusicDuck(ducked, duration = 300) {
-            const k = ducked ? MUSIC_DUCK_FACTOR : 1;
-            const targets = [[bgMusic, MUSIC_BG_BASE * k], [bossMusic, MUSIC_BOSS_BASE * k]];
-            if (musicFadeRAF) cancelAnimationFrame(musicFadeRAF);
-            const starts = targets.map(t => t[0].volume);
-            const t0 = performance.now();
-            function step(now) {
-                const p = Math.min(1, (now - t0) / duration);
-                targets.forEach((t, i) => { t[0].volume = starts[i] + (t[1] - starts[i]) * p; });
-                if (p < 1) { musicFadeRAF = requestAnimationFrame(step); }
-                else { musicFadeRAF = null; }
-            }
-            musicFadeRAF = requestAnimationFrame(step);
-        }
+        // Громкость музыки — фиксированная, без глушилки (голос реплик = 1.0).
+        // Игрок выставляет громкость устройства под голос, музыка приятно играет фоном.
+        const MUSIC_BG_VOL = 0.65;    // фон поля/меню — ~35% ниже голоса реплик
+        const MUSIC_BOSS_VOL = 1.0;   // музыка боя — вровень с голосом реплик
 
         function toggleBossUI(show) {
             const display = show ? 'flex' : 'none';
@@ -2105,10 +2086,6 @@
             const overlay = document.getElementById('dialogueOverlay');
             overlay.style.display = 'flex';
             document.getElementById('dialogueText').innerText = "";
-
-            // Приглушаем фоновую музыку на время диалога (плавно). Цепочки реплик
-            // держат музыку приглушённой без скачков — новый fade отменяет возврат.
-            fadeMusicDuck(true);
 
             // Фон сцены за диалогом (напр. Red Rose). Без sceneBg — обычный тёмный тинт.
             if (options.sceneBg) {
@@ -2207,9 +2184,6 @@
                 }
                 document.getElementById('dialogueOverlay').style.display = 'none';
                 try { const va = document.getElementById('voiceAudio'); va.pause(); va.currentTime = 0; } catch(e) {}
-                // Возвращаем музыку к базовой громкости (если следом откроется новая
-                // реплика — её fadeMusicDuck(true) отменит этот возврат, скачка не будет).
-                fadeMusicDuck(false);
                 if (onDialogueComplete) {
                     let cb = onDialogueComplete;
                     onDialogueComplete = null;

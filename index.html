@@ -469,6 +469,9 @@
         .cutscene-video {
             width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0;
         }
+        /* Ролик книги растягивается 1:1 как фон книги (background-size:100% 100%), чтобы разворот
+           совпал по кадру; финальный стык всё равно сглаживается кроссфейдом finishBookVideo(). */
+        #bookVideo { object-fit: fill; }
         #skipVideoBtn {
             position: absolute; top: 20px; right: 20px; z-index: 6010;
             background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); color: #fff;
@@ -717,8 +720,8 @@
                чейнятся (каждая следующая отбрасывает тень от предыдущей), поэтому 8 направлений
                компаундились в широкое белое «облако». 4 креста = тонкая чёткая кромка, как у героя. */
             filter:
-                drop-shadow(1.5px 0 0 #ffffff) drop-shadow(-1.5px 0 0 #ffffff)
-                drop-shadow(0 1.5px 0 #ffffff) drop-shadow(0 -1.5px 0 #ffffff);
+                drop-shadow(0.75px 0 0 #ffffff) drop-shadow(-0.75px 0 0 #ffffff)
+                drop-shadow(0 0.75px 0 #ffffff) drop-shadow(0 -0.75px 0 #ffffff);
         }
         #arenaBoss { 
             height: 100%; width: auto; 
@@ -854,7 +857,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.80</div>
+            <div id="gameVersion">v1.81</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1428,7 +1431,9 @@
 
         document.getElementById('skipVideoBtn').addEventListener('pointerdown', (e) => {
             e.preventDefault();
-            endCutscene();
+            // Ролик книги завершаем кроссфейдом (плавный переход в книгу), остальные — обычным cut.
+            if (activeVideo && activeVideo.id === 'bookVideo') finishBookVideo();
+            else endCutscene();
         });
 
         document.getElementById('ultimateVideo').addEventListener('ended', endCutscene);
@@ -1451,9 +1456,26 @@
             bookVid.volume = 1.0;
             bookVid.currentTime = 0;
             let p = bookVid.play();
-            if (p !== undefined) p.catch(() => endCutscene());
+            if (p !== undefined) p.catch(() => finishBookVideo());
         }
-        document.getElementById('bookVideo').addEventListener('ended', endCutscene);
+        // Плавный переход ролик → книга: сперва показываем живую книгу ПОД видео (callback),
+        // затем гасим оверлей видео кроссфейдом. Арт ролика и dnd_1 чуть разные — dissolve прячет стык.
+        function finishBookVideo() {
+            const overlay = document.getElementById('videoOverlay');
+            const bookVid = document.getElementById('bookVideo');
+            if (videoEndedCallback) { const cb = videoEndedCallback; videoEndedCallback = null; cb(); }
+            overlay.style.transition = 'opacity 0.45s ease';
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                try { bookVid.pause(); } catch(e) {}
+                bookVid.style.display = 'none';
+                overlay.style.display = 'none';
+                overlay.style.transition = '';
+                overlay.style.opacity = '1';
+                activeVideo = null;
+            }, 480);
+        }
+        document.getElementById('bookVideo').addEventListener('ended', finishBookVideo);
 
         function resetGame() {
             document.getElementById('victoryOverlay').style.display = 'none';

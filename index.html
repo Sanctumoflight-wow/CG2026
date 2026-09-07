@@ -712,15 +712,13 @@
         #bossContainer {
             position: absolute; bottom: 12%; right: 5%; height: 45%; width: auto; z-index: 202;
             transition: bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in;
-            /* Белая ОБВОДКА ПО КОНТУРУ — та же техника, что у предметов (drawItemOutline)
-               и щита персонажа: смещённые тени БЕЗ размытия (blur 0). Ровно 1.5px, 8 направлений
-               (крест + диагонали) = сплошная чёткая кромка по силуэту, а НЕ мягкое свечение.
-               Ключ: непрозрачный чёткий контур, без blur и без полупрозрачности «дымки». */
+            /* Белая ОБВОДКА ПО КОНТУРУ — ТОЧНО как у персонажа (.arena-shielded): РОВНО 4
+               смещённые тени (крест), 1.5px, blur 0, непрозрачный белый. ВАЖНО: CSS drop-shadow
+               чейнятся (каждая следующая отбрасывает тень от предыдущей), поэтому 8 направлений
+               компаундились в широкое белое «облако». 4 креста = тонкая чёткая кромка, как у героя. */
             filter:
                 drop-shadow(1.5px 0 0 #ffffff) drop-shadow(-1.5px 0 0 #ffffff)
-                drop-shadow(0 1.5px 0 #ffffff) drop-shadow(0 -1.5px 0 #ffffff)
-                drop-shadow(1px 1px 0 #ffffff) drop-shadow(-1px 1px 0 #ffffff)
-                drop-shadow(1px -1px 0 #ffffff) drop-shadow(-1px -1px 0 #ffffff);
+                drop-shadow(0 1.5px 0 #ffffff) drop-shadow(0 -1.5px 0 #ffffff);
         }
         #arenaBoss { 
             height: 100%; width: auto; 
@@ -1084,7 +1082,7 @@
             <div id="videoOverlay" class="screen-overlay">
                 <button id="skipVideoBtn">Пропустить</button>
                 <video id="ultimateVideo" class="cutscene-video" src="assets/video/ultimate.mp4" playsinline webkit-playsinline></video>
-                <video id="bookVideo" class="cutscene-video" src="assets/video/GAME_BOOK_FULL.mp4?v=1" muted playsinline webkit-playsinline></video>
+                <video id="bookVideo" class="cutscene-video" src="assets/video/GAME_BOOK_INTRO.mp4?v=2" playsinline webkit-playsinline></video>
             </div>
 
         </div>
@@ -1435,17 +1433,22 @@
 
         document.getElementById('ultimateVideo').addEventListener('ended', endCutscene);
 
-        // Ролик книги перед мини-игрой ДнД. Музыка НЕ прекращается — видео беззвучное (muted),
-        // поэтому bgMusic не ставим на паузу (в отличие от playCutscene).
+        // Ролик книги перед мини-игрой ДнД. Музыка НЕ прекращается (bgMusic не ставим на паузу,
+        // в отличие от playCutscene) — звук ролика (эффект) накладывается поверх музыки.
+        // Ролик заканчивается на кадре, идентичном dnd_1 (первая картинка книги), поэтому переход
+        // в мини-игру бесшовный: заранее подставляем dnd_1 в фон книги.
         function playBookVideo(callback) {
             const overlay = document.getElementById('videoOverlay');
             const bookVid = document.getElementById('bookVideo');
+            // Подготовим фон книги = финальный кадр ролика, чтобы стык был незаметным.
+            try { document.getElementById('dndBookBg').style.backgroundImage = `url('${imgSrc('dnd_1')}')`; } catch(e) {}
             overlay.style.display = 'block';
             document.getElementById('ultimateVideo').style.display = 'none';
             activeVideo = bookVid;
             videoEndedCallback = callback;
             bookVid.style.display = 'block';
-            bookVid.muted = true;               // музыка продолжает играть
+            bookVid.muted = false;              // звук ролика играет ПОВЕРХ музыки
+            bookVid.volume = 1.0;
             bookVid.currentTime = 0;
             let p = bookVid.play();
             if (p !== undefined) p.catch(() => endCutscene());

@@ -535,10 +535,10 @@
         }
         .dialogue-hint {
             position: absolute;
-            /* Прижата к ПРАВОМУ-ВЕРХНЕМУ углу текстовой панели с небольшим отступом (как в макете
-               Misha, скрин 2): текст-панель начинается с 45.8%, поэтому подсказка чуть выше неё и
-               по правому краю колонки — не залезает на портрет (он слева до 39.32%). */
-            top: 41%; right: 2.93%; bottom: auto;
+            /* НАД текстовой панелью с ЧЁТКИМ отступом (панель начинается с 45.8%, поэтому держим
+               подсказку заметно выше — её нижний край должен быть выше 45.8%, иначе наезжает).
+               По правому краю колонки; на портрет (слева до 39.32%) не залезает. */
+            top: 33%; right: 2.93%; bottom: auto;
             display: inline-block; text-align: right;
             font-size: 15px; color: #f1c40f; font-family: 'Forum', serif;
             opacity: 0.9; text-shadow: 0 2px 4px #000;  /* мигание убрано — не отвлекает */
@@ -634,6 +634,8 @@
             position: absolute; top: 12px; right: 12px; z-index: 3900; display: none;
             background: rgba(0,0,0,0.55); border: 2px solid rgba(246,211,101,0.6);
             color: #f1c40f; font-family: 'Forum', serif; font-weight: 700; font-size: 14px;
+            /* в 2 раза шире + текст по центру */
+            min-width: 160px; text-align: center;
             padding: 8px 16px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(5px);
             box-shadow: 0 3px 8px rgba(0,0,0,0.5); -webkit-tap-highlight-color: transparent;
         }
@@ -881,7 +883,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.82</div>
+            <div id="gameVersion">v1.83</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -894,7 +896,7 @@
             </div>
 
             <!-- КНОПКА ВЕРНУТЬ МЕНЮ «искать / к боссу» (чтобы игрок не застрял во время поиска) -->
-            <button id="reopenMenuBtn">Меню</button>
+            <button id="reopenMenuBtn">К боссу!</button>
 
             <!-- МИНИ-ОКНО ПЕРЕСПРОСА ДЛЯ ПАСХАЛКИ (больше не используется — оставлено скрытым) -->
             <div id="confirmBossOverlay" class="screen-overlay">
@@ -1694,7 +1696,7 @@
             let idx = 0, typing = false, typeInt = null, full = '', ci = 0;
             let introCanAdvance = false; // пока идёт озвучка реплики — дальше нельзя, подсказки нет
 
-            function revealHint() { introCanAdvance = true; hint.style.display = 'block'; }
+            function revealHint() { introCanAdvance = true; setMusicMuted(false); hint.style.display = 'block'; }
             function playVoice(src) {
                 try { va.pause(); va.currentTime = 0; } catch(e) {}
                 va.onended = revealHint; va.onerror = revealHint;
@@ -1708,7 +1710,7 @@
                     if (ci >= full.length) { clearInterval(typeInt); typing = false; try { typeSound.pause(); } catch(e) {} }
                 }, 50);
             }
-            function startLine(i) { introCanAdvance = false; hint.style.display = 'none'; playVoice(lines[i].voice); typeLine(lines[i].text); }
+            function startLine(i) { introCanAdvance = false; setMusicMuted(true); hint.style.display = 'none'; playVoice(lines[i].voice); typeLine(lines[i].text); }
             function advance() {
                 if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; try { typeSound.pause(); } catch(e) {} return; }
                 if (!introCanAdvance) return; // озвучка ещё играет — проход заблокирован
@@ -2223,14 +2225,18 @@
         let dialogueButtonMode = false;   // диалог с кнопкой действия (options.buttonText)
         let dialogueCanAdvance = false;    // можно ли пройти дальше (озвучка закончилась / её нет)
 
-        // МУЗЫКА ВО ВРЕМЯ ДИАЛОГА НЕ ГЛУШИТСЯ (по просьбе Misha) — играет под голосом.
-        // Функция оставлена как no-op, чтобы не трогать возможные вызовы в другом коде.
-        function setMusicMuted(m) { /* намеренно ничего не делаем: музыка продолжает играть */ }
+        // Музыка ГЛУШИТСЯ, пока персонаж говорит (озвучка идёт), и ВКЛЮЧАЕТСЯ обратно ровно в
+        // момент, когда появляется кнопка «продолжить» (см. revealDialogueContinue). iOS уважает muted.
+        function setMusicMuted(m) {
+            try { bgMusic.muted = m; bossMusic.muted = m; } catch(e) {}
+        }
 
         // Показать подсказку/кнопку «продолжить» — ТОЛЬКО когда игрок реально может пройти дальше
-        // (озвучка доиграла). Пока звук идёт — affordance скрыт и тап дальше не пускает.
+        // (озвучка доиграла). В ЭТОТ ЖЕ момент возвращаем музыку. Пока звук идёт — affordance скрыт,
+        // музыка молчит, тап дальше не пускает.
         function revealDialogueContinue() {
             dialogueCanAdvance = true;
+            setMusicMuted(false); // персонаж договорил → музыка снова играет
             const hint = document.querySelector('.dialogue-hint');
             const actionBtn = document.getElementById('dialogueActionBtn');
             if (dialogueButtonMode) { actionBtn.style.display = 'block'; hint.style.display = 'none'; }
@@ -2249,7 +2255,7 @@
             const overlay = document.getElementById('dialogueOverlay');
             overlay.style.display = 'flex';
             document.getElementById('dialogueText').innerText = "";
-            // музыка НЕ глушится — продолжает играть под голосом
+            setMusicMuted(true); // пока персонаж говорит — музыку в ноль; вернём при показе кнопки
 
             // Фон сцены за диалогом (напр. Red Rose). Без sceneBg — обычный тёмный тинт.
             if (options.sceneBg) {
@@ -2285,7 +2291,16 @@
 
             const container = document.querySelector('.dialogue-container');
             const bgUrl = options.bgImage || imgSrc('dialogTest');
-            container.style.backgroundImage = `url('${bgUrl}')`;
+            const _dText = document.getElementById('dialogueText');
+            _dText.classList.remove('dialogue-text-intro'); // сброс на обычную геометрию текста
+            if (options.fullscreenText) {
+                // Экран «во весь фон» (как интро Редроуз): фон-сцена через options.sceneBg, БЕЗ
+                // портрет-рамки, текст с собственной уникальной подложкой (.dialogue-text-intro).
+                container.style.backgroundImage = 'none';
+                _dText.classList.add('dialogue-text-intro');
+            } else {
+                container.style.backgroundImage = `url('${bgUrl}')`;
+            }
 
             // Имя персонажа по портрету (плашка снизу карточки). У системных кнопок-реплик не показываем.
             const nameEl = document.getElementById('dialogueName');
@@ -2298,14 +2313,18 @@
             };
             let dispName = '';
             for (const k in nameMap) { if (bgUrl.includes(k)) { dispName = nameMap[k]; break; } }
-            if (dispName && !options.buttonText) { nameEl.innerText = dispName; nameEl.style.display = 'block'; }
+            if (dispName && !options.buttonText && !options.fullscreenText) { nameEl.innerText = dispName; nameEl.style.display = 'block'; }
             else { nameEl.style.display = 'none'; }
 
             // Контраст текста под цвет плашки картинки:
             // светлые плашки (жёлтая/оранжевая/золотистая) → тёмный текст; тёмные (синие) → белый.
             const lightPanels = ['DIALOG_JULIA', 'DIALOG_ARINA', 'DIALOG_RED_ROSE'];
             const dText = document.getElementById('dialogueText');
-            if (lightPanels.some(n => bgUrl.includes(n))) {
+            if (options.fullscreenText) {
+                // на тёмной подложке .dialogue-text-intro — белый текст
+                dText.style.color = '#fff';
+                dText.style.textShadow = '0 2px 4px #000';
+            } else if (lightPanels.some(n => bgUrl.includes(n))) {
                 dText.style.color = '#2a1d0e';
                 dText.style.textShadow = '0 1px 2px rgba(255,255,255,0.35)';
             } else {
@@ -2576,7 +2595,7 @@
             document.getElementById('btnEasterNo').onclick = () => {    // НЕТ, К БОССУ — сразу, без второго переспроса
                 ov.style.display = 'none';
                 document.getElementById('reopenMenuBtn').style.display = 'none';
-                showDialogue("Тогда вперед, к победе!\nУ нас достаточно сил, чтобы победить босса!", () => {
+                showDialogue("Если ты готова, то давай посмотрим на твои навыки!", () => {
                     goToBoss();
                 }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
             };
@@ -3224,14 +3243,19 @@
             }
 
             playCutscene('ultimateVideo', () => {
-                // Финальные слова Редроуз ПЕРЕД экраном победы (пока заглушка-текст).
+                // Экран боссовой арены игроку больше не нужен — полностью выключаем.
+                document.getElementById('bossOverlay').style.display = 'none';
+                toggleBossUI(false);
+                isBossFight = false;
+                // Финальные слова Редроуз ПЕРЕД экраном победы: фон RED_ROSE_BACKGROUND_1 во весь экран
+                // + уникальная подложка под текст (как в интро). Текст — пока заглушка.
                 showDialogue("ТУТ БУДУТ ФИНАЛЬНЫЕ СЛОВА РЕДРОУЗ", () => {
                     document.getElementById('victoryOverlay').style.display = 'flex';
                     if(endingVid) {
                         endingVid.currentTime = 0;
                         endingVid.play().catch(()=>{});
                     }
-                }, { bgImage: imgSrc('dialogTest') });
+                }, { sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png', fullscreenText: true });
             });
         });
     </script>

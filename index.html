@@ -541,7 +541,8 @@
             top: 33%; right: 2.93%; bottom: auto;
             display: inline-block; text-align: right;
             font-size: 15px; color: #f1c40f; font-family: 'Forum', serif;
-            opacity: 0.9; text-shadow: 0 2px 4px #000;  /* мигание убрано — не отвлекает */
+            text-shadow: 0 2px 4px #000;
+            animation: blink 1.2s infinite;  /* мигает, чтобы привлечь внимание игрока (по просьбе Misha) */
             /* подложка как у туториала стрелок — читается на любом фоне */
             background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
@@ -671,6 +672,20 @@
         }
         #meltBarFill { height: 100%; width: 0%; background: linear-gradient(to right, #5dade2, #aef0ff); transition: width 0.1s; }
         #meltHint { color: #aef0ff; font-size: 15px; margin-top: 12px; font-weight: 700; animation: blink 1.5s infinite; }
+        /* Огонь Азулы — искры/огонёчки, растапливающие лёд (спавнятся по тапу в meltIceTap). */
+        .fire-ember {
+            position: absolute; pointer-events: none; border-radius: 50%;
+            background: radial-gradient(circle, #fff6c0 0%, #ffcf4d 38%, #ff7a1e 68%, rgba(255,70,0,0) 100%);
+            filter: blur(0.4px); will-change: transform, opacity; z-index: 3;
+            animation: emberRise 0.65s ease-out forwards;
+        }
+        @keyframes emberRise {
+            0%   { transform: translate(0, 0) scale(1);   opacity: 1; }
+            70%  { opacity: 0.9; }
+            100% { transform: translate(var(--dx, 0), -78px) scale(0.25); opacity: 0; }
+        }
+        /* Тёплая вспышка глыбы льда в момент удара огнём. */
+        #iceBlock.melt-hit { box-shadow: 0 0 34px rgba(255,140,40,0.75), inset 0 0 20px rgba(255,90,20,0.35); }
 
         /* --- РУНЫ И ТАРО --- */
         #runeGameOverlay {
@@ -883,7 +898,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.83</div>
+            <div id="gameVersion">v1.84</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1697,9 +1712,21 @@
             let introCanAdvance = false; // пока идёт озвучка реплики — дальше нельзя, подсказки нет
 
             function revealHint() { introCanAdvance = true; setMusicMuted(false); hint.style.display = 'block'; }
+            // Первая реплика договорила → плавно и АВТОМАТИЧЕСКИ ко второй (без тапа).
+            // Вторая договорила → мигающая подсказка, игрок тапает сам.
+            function onVoiceEnd() {
+                if (idx === 0) {
+                    if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; try { typeSound.pause(); } catch(e) {} }
+                    front.style.opacity = '0';   // кроссфейд фона 0.25s
+                    idx = 1; startLine(1);
+                } else {
+                    revealHint();
+                }
+            }
             function playVoice(src) {
                 try { va.pause(); va.currentTime = 0; } catch(e) {}
-                va.onended = revealHint; va.onerror = revealHint;
+                va.onended = onVoiceEnd;          // штатное завершение → авто-переход / подсказка
+                va.onerror = revealHint;          // не смогла проиграть → даём тап-подсказку
                 va.src = src; va.muted = false; va.play().catch(() => { revealHint(); });
             }
             function typeLine(txt) {
@@ -1829,7 +1856,29 @@
             const block = document.getElementById('iceBlock');
             block.style.transform = 'scale(0.94)';
             setTimeout(() => { block.style.transform = 'scale(1)'; }, 70);
+            spawnFireEmbers(block);            // огонь Азулы растапливает лёд
             if (meltProgress >= 100) finishMelt();
+        }
+
+        // Огонёчки-искры Азулы: несколько язычков пламени взлетают от глыбы по каждому тапу.
+        function spawnFireEmbers(block) {
+            // тёплая вспышка глыбы
+            block.classList.add('melt-hit');
+            setTimeout(() => block.classList.remove('melt-hit'), 120);
+            const n = 4 + (Math.random() * 3 | 0); // 4–6 искр
+            for (let i = 0; i < n; i++) {
+                const e = document.createElement('div');
+                e.className = 'fire-ember';
+                const size = 8 + Math.random() * 10;           // 8–18px
+                e.style.width = size + 'px';
+                e.style.height = size + 'px';
+                e.style.left = (12 + Math.random() * 66) + '%'; // по ширине глыбы
+                e.style.bottom = (6 + Math.random() * 30) + '%';
+                e.style.setProperty('--dx', ((Math.random() - 0.5) * 46).toFixed(0) + 'px'); // боковой снос
+                e.style.animationDuration = (0.5 + Math.random() * 0.35).toFixed(2) + 's';
+                block.appendChild(e);
+                setTimeout(() => e.remove(), 950);
+            }
         }
 
         function updateMeltVisual() {
@@ -1961,7 +2010,7 @@
             if (!shieldCollected) {
                 document.getElementById('runeGameOverlay').style.display = 'none';
                 isRuneAnimating = false; 
-                showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
+                showDialogue("Твоя память безупречна! Но главное помнить, что не нужно хранить в ней беды и печали... Их нужно отпустить и освободить место для новых радостных моментов!", () => {
                     shieldCollected = true; 
                     addScore();
                     playCrownCollect();
@@ -2040,7 +2089,7 @@
                         playRuneRound();
                     } else {
                         document.getElementById('runeGameOverlay').style.display = 'none';
-                        showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
+                        showDialogue("Твоя память безупречна! Но главное помнить, что не нужно хранить в ней беды и печали... Их нужно отпустить и освободить место для новых радостных моментов!", () => {
                             shieldCollected = true; 
                             addScore();
                             playCrownCollect();

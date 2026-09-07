@@ -535,7 +535,10 @@
         }
         .dialogue-hint {
             position: absolute;
-            top: 39%; right: 2.93%; bottom: auto;   /* над текстовым блоком, по правому краю его колонки */
+            /* Прижата к ПРАВОМУ-ВЕРХНЕМУ углу текстовой панели с небольшим отступом (как в макете
+               Misha, скрин 2): текст-панель начинается с 45.8%, поэтому подсказка чуть выше неё и
+               по правому краю колонки — не залезает на портрет (он слева до 39.32%). */
+            top: 41%; right: 2.93%; bottom: auto;
             display: inline-block; text-align: right;
             font-size: 15px; color: #f1c40f; font-family: 'Forum', serif;
             opacity: 0.9; text-shadow: 0 2px 4px #000;  /* мигание убрано — не отвлекает */
@@ -606,7 +609,19 @@
             background: linear-gradient(180deg, #efe0bd 0%, #d9c193 100%);
             border-color: #8a5a2f; color: #2a1c0d;
             transform: translateY(2px);
-            box-shadow: 0 1px 0 rgba(107,74,42,0.55), 0 2px 4px rgba(40,25,10,0.3), inset 0 1px 0 rgba(255,252,240,0.6);
+            /* + микро-выделение на тапе (тонкое золотое кольцо) — приятная отдача на телефоне */
+            box-shadow: 0 1px 0 rgba(107,74,42,0.55), 0 2px 4px rgba(40,25,10,0.3), 0 0 0 2px rgba(246,211,101,0.5), inset 0 1px 0 rgba(255,252,240,0.6);
+        }
+        /* Подсветка под курсором ТОЛЬКО на устройствах с настоящим hover (десктоп) —
+           на тач-экранах @media hover:hover не срабатывает, поэтому подсветка не «залипает». */
+        @media (hover: hover) {
+            .dnd-btn:hover {
+                background: linear-gradient(180deg, #fbf3dd 0%, #ecdcb4 100%);
+                border-color: #8a5a2f;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 0 rgba(107,74,42,0.55), 0 7px 14px rgba(40,25,10,0.35), 0 0 0 2px rgba(246,211,101,0.45), inset 0 1px 0 rgba(255,252,240,0.85);
+            }
+            .dnd-btn { transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s; }
         }
         .dnd-skip {
             position: absolute; top: 15px; right: 15px; background: rgba(60,40,20,0.6); border: 1px solid rgba(200,160,90,0.5);
@@ -614,6 +629,15 @@
             font-family: 'Forum', serif; transition: 0.2s; z-index: 4505; font-size: 11px; backdrop-filter: blur(4px);
         }
         .dnd-skip:active { transform: scale(0.9); }
+        /* Кнопка возврата меню «искать / к боссу» — верх-право с отступом, под диалогами (z<4000). */
+        #reopenMenuBtn {
+            position: absolute; top: 12px; right: 12px; z-index: 3900; display: none;
+            background: rgba(0,0,0,0.55); border: 2px solid rgba(246,211,101,0.6);
+            color: #f1c40f; font-family: 'Forum', serif; font-weight: 700; font-size: 14px;
+            padding: 8px 16px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(5px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.5); -webkit-tap-highlight-color: transparent;
+        }
+        #reopenMenuBtn:active { transform: scale(0.92); }
 
         /* --- МИНИ-ИГРА АРИНЫ: РАСТОПИТЬ ЛЁД (RAW, фон дорисуем) --- */
         #shouldersGameOverlay {
@@ -857,7 +881,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.81</div>
+            <div id="gameVersion">v1.82</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -869,7 +893,10 @@
                 </div>
             </div>
 
-            <!-- МИНИ-ОКНО ПЕРЕСПРОСА ДЛЯ ПАСХАЛКИ -->
+            <!-- КНОПКА ВЕРНУТЬ МЕНЮ «искать / к боссу» (чтобы игрок не застрял во время поиска) -->
+            <button id="reopenMenuBtn">Меню</button>
+
+            <!-- МИНИ-ОКНО ПЕРЕСПРОСА ДЛЯ ПАСХАЛКИ (больше не используется — оставлено скрытым) -->
             <div id="confirmBossOverlay" class="screen-overlay">
                 <div class="confirm-box">
                     <div class="confirm-title">ТЫ УВЕРЕНА?</div>
@@ -1489,6 +1516,7 @@
             document.getElementById('debugBossLoad').style.display = 'none';
             document.getElementById('easterEggPromptOverlay').style.display = 'none';
             document.getElementById('confirmBossOverlay').style.display = 'none';
+            document.getElementById('reopenMenuBtn').style.display = 'none';
             document.getElementById('titleScreen').style.display = 'flex';
             document.getElementById('gameVersion').style.display = 'block'; // версия снова видна на загрузочном экране
 
@@ -1649,7 +1677,7 @@
             overlay.style.background = '#000';
             container.style.backgroundImage = 'none'; // без портрет-рамки — только фон сцены + подложка текста
             document.getElementById('tracker').style.display = 'none';
-            hint.style.display = 'block';
+            hint.style.display = 'none'; // появится, когда озвучка реплики доиграет
             hint.classList.add('dlg-hint-intro'); // подсказку — в верхний-правый угол на время интро
             document.getElementById('dialogueName').style.display = 'none'; // в интро имени нет
             actionBtn.style.display = 'none';
@@ -1664,10 +1692,13 @@
             front.style.display = 'block'; front.style.opacity = '1';
 
             let idx = 0, typing = false, typeInt = null, full = '', ci = 0;
+            let introCanAdvance = false; // пока идёт озвучка реплики — дальше нельзя, подсказки нет
 
+            function revealHint() { introCanAdvance = true; hint.style.display = 'block'; }
             function playVoice(src) {
                 try { va.pause(); va.currentTime = 0; } catch(e) {}
-                va.src = src; va.muted = false; va.play().catch(()=>{});
+                va.onended = revealHint; va.onerror = revealHint;
+                va.src = src; va.muted = false; va.play().catch(() => { revealHint(); });
             }
             function typeLine(txt) {
                 dText.innerText = ''; full = txt; ci = 0; typing = true;
@@ -1677,9 +1708,10 @@
                     if (ci >= full.length) { clearInterval(typeInt); typing = false; try { typeSound.pause(); } catch(e) {} }
                 }, 50);
             }
-            function startLine(i) { playVoice(lines[i].voice); typeLine(lines[i].text); }
+            function startLine(i) { introCanAdvance = false; hint.style.display = 'none'; playVoice(lines[i].voice); typeLine(lines[i].text); }
             function advance() {
                 if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; try { typeSound.pause(); } catch(e) {} return; }
+                if (!introCanAdvance) return; // озвучка ещё играет — проход заблокирован
                 if (idx === 0) {
                     front.style.opacity = '0';   // кроссфейд 0.25s → снизу проявляется готовый _2
                     idx = 1; startLine(1);
@@ -2188,11 +2220,21 @@
         let dialogueTypingInterval;
         let isDialogueTyping = false;
         let onDialogueComplete = null;
+        let dialogueButtonMode = false;   // диалог с кнопкой действия (options.buttonText)
+        let dialogueCanAdvance = false;    // можно ли пройти дальше (озвучка закончилась / её нет)
 
-        // Во время диалогов музыку глушим в НОЛЬ через muted (iOS уважает muted, в отличие
-        // от volume — поэтому здесь работает то, что не работало через громкость).
-        function setMusicMuted(m) {
-            try { bgMusic.muted = m; bossMusic.muted = m; } catch(e) {}
+        // МУЗЫКА ВО ВРЕМЯ ДИАЛОГА НЕ ГЛУШИТСЯ (по просьбе Misha) — играет под голосом.
+        // Функция оставлена как no-op, чтобы не трогать возможные вызовы в другом коде.
+        function setMusicMuted(m) { /* намеренно ничего не делаем: музыка продолжает играть */ }
+
+        // Показать подсказку/кнопку «продолжить» — ТОЛЬКО когда игрок реально может пройти дальше
+        // (озвучка доиграла). Пока звук идёт — affordance скрыт и тап дальше не пускает.
+        function revealDialogueContinue() {
+            dialogueCanAdvance = true;
+            const hint = document.querySelector('.dialogue-hint');
+            const actionBtn = document.getElementById('dialogueActionBtn');
+            if (dialogueButtonMode) { actionBtn.style.display = 'block'; hint.style.display = 'none'; }
+            else { hint.style.display = 'block'; actionBtn.style.display = 'none'; }
         }
 
         function toggleBossUI(show) {
@@ -2207,7 +2249,7 @@
             const overlay = document.getElementById('dialogueOverlay');
             overlay.style.display = 'flex';
             document.getElementById('dialogueText').innerText = "";
-            setMusicMuted(true); // на время реплики музыку полностью в ноль — голос чистый
+            // музыка НЕ глушится — продолжает играть под голосом
 
             // Фон сцены за диалогом (напр. Red Rose). Без sceneBg — обычный тёмный тинт.
             if (options.sceneBg) {
@@ -2216,13 +2258,29 @@
                 overlay.style.background = 'rgba(0, 0, 0, 0.2)';
             }
 
-            // Голосовая озвучка реплики
+            // Режим affordance + блокировка «дальше»: настраиваем ДО запуска озвучки, чтобы
+            // отложенный .catch/onended не увидел устаревших флагов.
+            dialogueButtonMode = !!options.buttonText;
+            dialogueCanAdvance = false;
+            document.querySelector('.dialogue-hint').style.display = 'none';
+            const _ab = document.getElementById('dialogueActionBtn');
+            _ab.style.display = 'none';
+            if (dialogueButtonMode) _ab.innerText = options.buttonText;
+
+            // Голосовая озвучка реплики. Пока она играет — «продолжить» скрыто и заблокировано;
+            // как только доиграла (или не смогла проиграть) — открываем проход дальше.
             const voiceAudio = document.getElementById('voiceAudio');
             try { voiceAudio.pause(); voiceAudio.currentTime = 0; } catch(e) {}
+            voiceAudio.onended = null;
             if (options.voice) {
                 voiceAudio.src = options.voice;
                 voiceAudio.muted = false;
-                voiceAudio.play().catch(()=>{});
+                voiceAudio.onended = revealDialogueContinue;
+                voiceAudio.onerror = revealDialogueContinue;
+                voiceAudio.play().catch(() => { revealDialogueContinue(); });
+            } else {
+                // нет озвучки — проходить можно сразу (кнопка появится ниже после настройки печати)
+                setTimeout(revealDialogueContinue, 0);
             }
 
             const container = document.querySelector('.dialogue-container');
@@ -2261,18 +2319,7 @@
                 toggleBossUI(false);
             }
 
-            const hint = document.querySelector('.dialogue-hint');
-            const actionBtn = document.getElementById('dialogueActionBtn');
-
-            if (options.buttonText) {
-                hint.style.display = 'none';
-                actionBtn.style.display = 'block';
-                actionBtn.innerText = options.buttonText;
-            } else {
-                hint.style.display = 'block';
-                actionBtn.style.display = 'none';
-            }
-            
+            // affordance (подсказка/кнопка) уже скрыта выше; покажется через revealDialogueContinue()
             dialogueFullText = text;
             dialogueCurrentIndex = 0;
             isDialogueTyping = true;
@@ -2310,17 +2357,19 @@
             const isButtonMode = actionBtn.style.display === 'block';
 
             if (isDialogueTyping) {
+                // Ускорить печать можно ВСЕГДА (даже пока играет озвучка) — мгновенно дописываем текст.
                 clearInterval(dialogueTypingInterval);
                 document.getElementById('dialogueText').innerText = dialogueFullText;
                 isDialogueTyping = false;
                 try { typeSound.pause(); } catch(e) {}
             } else {
+                // Пока идёт озвучка — дальше НЕ пускаем (сколько бы тапов ни было).
+                if (!dialogueCanAdvance) return;
                 if (isButtonMode && e && e.target.id !== 'dialogueActionBtn') {
-                    return; 
+                    return;
                 }
                 document.getElementById('dialogueOverlay').style.display = 'none';
-                try { const va = document.getElementById('voiceAudio'); va.pause(); va.currentTime = 0; } catch(e) {}
-                setMusicMuted(false); // реплика закрыта — вернуть музыку
+                try { const va = document.getElementById('voiceAudio'); va.pause(); va.currentTime = 0; va.onended = null; } catch(e) {}
                 if (onDialogueComplete) {
                     let cb = onDialogueComplete;
                     onDialogueComplete = null;
@@ -2458,6 +2507,7 @@
                 isPaused = true; targetMovePos = null;
                 showDialogue("Очень важно найти в себе силы, даже когда путь к ним кажется невидимым.", () => {
                     easterEggFound = true;
+                    document.getElementById('reopenMenuBtn').style.display = 'none'; // пасхалка найдена — меню поиска больше не нужно
                     let es = document.getElementById('easterScore');
                     es.innerText = "1 / 1";
                     es.style.color = '#f1c40f';
@@ -2505,38 +2555,39 @@
             }
         }
 
+        // Меню выбора после сбора 4 предметов: «искать пасхалку» или «к боссу».
+        // Вызывается и по таймеру победы, и кнопкой «Меню» (reopenMenuBtn), чтобы игрок,
+        // выбравший «искать», мог в любой момент вернуть это меню и не застрять.
+        function showEndChoiceMenu() {
+            isPaused = true; targetMovePos = null;
+            document.getElementById('reopenMenuBtn').style.display = 'none';
+            const ov = document.getElementById('easterEggPromptOverlay');
+            ov.style.display = 'flex';
+
+            document.getElementById('btnEasterYes').onclick = () => {   // ДА, ИСКАТЬ
+                ov.style.display = 'none';
+                isWinTriggered = false;
+                isPaused = false;
+                isPlayerHappy = false;
+                // чтобы игрок не застрял — постоянная кнопка снова вызвать это меню
+                document.getElementById('reopenMenuBtn').style.display = 'block';
+            };
+
+            document.getElementById('btnEasterNo').onclick = () => {    // НЕТ, К БОССУ — сразу, без второго переспроса
+                ov.style.display = 'none';
+                document.getElementById('reopenMenuBtn').style.display = 'none';
+                showDialogue("Тогда вперед, к победе!\nУ нас достаточно сил, чтобы победить босса!", () => {
+                    goToBoss();
+                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
+            };
+        }
+
         function update() {
             if (isWinTriggered && winTimer > 0) {
                 winTimer--;
                 if (winTimer <= 0) {
                     if (!easterEggFound) {
-                        document.getElementById('easterEggPromptOverlay').style.display = 'flex';
-                        
-                        document.getElementById('btnEasterYes').onclick = () => {
-                            document.getElementById('easterEggPromptOverlay').style.display = 'none';
-                            isWinTriggered = false; 
-                            isPaused = false;
-                            isPlayerHappy = false;
-                        };
-                        
-                        document.getElementById('btnEasterNo').onclick = () => {
-                            document.getElementById('easterEggPromptOverlay').style.display = 'none';
-                            document.getElementById('confirmBossOverlay').style.display = 'flex';
-                        };
-
-                        document.getElementById('btnConfirmNo').onclick = () => {
-                            document.getElementById('confirmBossOverlay').style.display = 'none';
-                            isWinTriggered = false; 
-                            isPaused = false;
-                            isPlayerHappy = false;
-                        };
-
-                        document.getElementById('btnConfirmYes').onclick = () => {
-                            document.getElementById('confirmBossOverlay').style.display = 'none';
-                            showDialogue("Тогда вперед, к победе!\nУ нас достаточно сил, чтобы победить босса!", () => {
-                                goToBoss();
-                            }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
-                        };
+                        showEndChoiceMenu();
                     } else {
                         showDialogue("Если ты готова, то давай посмотрим на твои навыки!", () => {
                             goToBoss();
@@ -2870,7 +2921,8 @@
                 return;
             }
 
-            isBossFight = true; 
+            isBossFight = true;
+            document.getElementById('reopenMenuBtn').style.display = 'none'; // на арене меню поиска не нужно
             document.getElementById('gameUI').style.display = 'none';
             document.getElementById('bossOverlay').style.display = 'flex';
             
@@ -3124,6 +3176,8 @@
             damageBoss(e);
         });
 
+        document.getElementById('reopenMenuBtn').addEventListener('click', () => { showEndChoiceMenu(); });
+
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
         document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });
         document.getElementById('btnLeft').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(-1, 0); });
@@ -3170,11 +3224,14 @@
             }
 
             playCutscene('ultimateVideo', () => {
-                document.getElementById('victoryOverlay').style.display = 'flex';
-                if(endingVid) {
-                    endingVid.currentTime = 0;
-                    endingVid.play().catch(()=>{});
-                }
+                // Финальные слова Редроуз ПЕРЕД экраном победы (пока заглушка-текст).
+                showDialogue("ТУТ БУДУТ ФИНАЛЬНЫЕ СЛОВА РЕДРОУЗ", () => {
+                    document.getElementById('victoryOverlay').style.display = 'flex';
+                    if(endingVid) {
+                        endingVid.currentTime = 0;
+                        endingVid.play().catch(()=>{});
+                    }
+                }, { bgImage: imgSrc('dialogTest') });
             });
         });
     </script>

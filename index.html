@@ -376,11 +376,9 @@
 
         /* --- ЭКРАН ПОБЕДЫ --- */
         #victoryOverlay { 
-            display: none; background: rgba(0, 0, 0, 0.6); z-index: 5000; flex-direction: column; 
-            justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(3px); position: relative;
-        }
-        #endingVideo {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;
+            display: none; z-index: 5000; flex-direction: column;
+            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), #0b0710 url('assets/images/RED_ROSE_BACKGROUND_1.png?v=2') center / cover no-repeat;
+            justify-content: center; align-items: center; text-align: center; position: relative;
         }
         #victoryPanel {
             z-index: 1; cursor: pointer; text-align: center;
@@ -842,7 +840,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.85</div>
+            <div id="gameVersion">v1.86</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -879,9 +877,8 @@
                 </div>
             </div>
 
-            <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
+            <!-- ЭКРАН ПОБЕДЫ (фон — RED_ROSE_BACKGROUND_1, без видео) -->
             <div id="victoryOverlay" class="screen-overlay">
-                <video id="endingVideo" src="assets/video/Ending.mp4?v=2" loop playsinline webkit-playsinline disablePictureInPicture></video>
                 <div id="victoryPanel" onclick="copyVictoryCode()">
                     <div class="victory-title">ПОБЕДА!</div>
                     <div id="victoryCode">Нажми на текст, чтобы скопировать: 14022026</div>
@@ -1012,7 +1009,7 @@
                     </div>
                 </div>
                 <div style="flex: 1; display: flex; align-items: flex-end;">
-                    <p class="tarot-text" id="tarotText" style="display: none;">Нажми, чтобы продолжить...</p>
+                    <p class="tarot-text" id="tarotText" style="visibility: hidden;">Нажми, чтобы продолжить...</p>
                 </div>
             </div>
 
@@ -1068,7 +1065,6 @@
 
             <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО -->
             <div id="videoOverlay" class="screen-overlay">
-                <video id="ultimateVideo" class="cutscene-video" src="assets/video/ultimate.mp4?v=2" playsinline webkit-playsinline></video>
                 <video id="bookVideo" class="cutscene-video" src="assets/video/GAME_BOOK_INTRO.mp4?v=2" playsinline webkit-playsinline></video>
             </div>
 
@@ -1382,7 +1378,6 @@
 
         function playCutscene(videoId, callback) {
             document.getElementById('videoOverlay').style.display = 'block';
-            document.getElementById('ultimateVideo').style.display = 'none';
             
             activeVideo = document.getElementById(videoId);
             activeVideo.style.display = 'block';
@@ -1414,7 +1409,6 @@
         }
 
 
-        document.getElementById('ultimateVideo').addEventListener('ended', endCutscene);
 
         // Ролик книги перед мини-игрой ДнД. Музыка НЕ прекращается (bgMusic не ставим на паузу,
         // в отличие от playCutscene) — звук ролика (эффект) накладывается поверх музыки.
@@ -1426,7 +1420,6 @@
             // Подготовим фон книги = финальный кадр ролика, чтобы стык был незаметным.
             try { document.getElementById('dndBookBg').style.backgroundImage = `url('${imgSrc('dnd_1')}')`; } catch(e) {}
             overlay.style.display = 'block';
-            document.getElementById('ultimateVideo').style.display = 'none';
             activeVideo = bookVid;
             videoEndedCallback = callback;
             bookVid.style.display = 'block';
@@ -1519,8 +1512,7 @@
             bossMusic.currentTime = 0;
             
             if(activeVideo) endCutscene();
-            const eVid = document.getElementById('endingVideo');
-            if(eVid) { eVid.pause(); eVid.currentTime = 0; }
+            dndBookIntroSeen = false;
             
             gameStarted = false;
             isPaused = false;
@@ -1572,14 +1564,6 @@
             // Предзагрузка обоих фонов интро (чтобы кадры не мигали)
             ['assets/images/RED_ROSE_BACKGROUND_1.png?v=2', 'assets/images/RED_ROSE_BACKGROUND_2.png?v=2'].forEach(s => { const im = new Image(); im.src = s; });
 
-            let endingVid = document.getElementById('endingVideo');
-            if (endingVid) {
-                endingVid.muted = true;
-                let ep = endingVid.play();
-                if (ep !== undefined) {
-                    ep.then(() => { endingVid.pause(); endingVid.currentTime = 0; endingVid.muted = false; }).catch(()=>{});
-                }
-            }
 
             if (!isIOS) enterFullscreen();
             
@@ -1741,13 +1725,18 @@
 
         let currentDndFrame = 1;
 
+        let dndBookIntroSeen = false; // ролик книги показываем 1 раз за игру (сброс в resetGame)
         function startDndGame() {
             currentDndType = 'hammer';
-            // Сначала ролик книги (без звука, музыка играет), затем — развёрнутая книга с выбором.
-            playBookVideo(() => {
+            const openBook = () => {
                 document.getElementById('dndGameOverlay').style.display = 'flex';
                 renderDndFrame(1);
-            });
+            };
+            // Повторный заход (проигрыш гоблинам / «вернуться назад») — сразу книга, без ролика.
+            if (dndBookIntroSeen) { openBook(); return; }
+            dndBookIntroSeen = true;
+            // Первый заход: ролик книги (музыка играет), затем — развёрнутая книга с выбором.
+            playBookVideo(openBook);
         }
 
         // === МИНИ-ИГРА АРИНЫ — «Растопи лёд» (тап-кликер, RAW-версия) ===
@@ -2014,7 +2003,7 @@
             ov.style.display = 'flex';
             ov.onclick = null;                 // тап-«продолжить» включим только после 3 карт
             tarotOpened = [false, false, false];
-            document.getElementById('tarotText').style.display = 'none';
+            document.getElementById('tarotText').style.visibility = 'hidden'; // место под подсказку занято всегда — карты не прыгают
             for (let i = 0; i < 3; i++) {
                 const card = document.getElementById('tarotCard' + i);
                 card.src = imgSrc('tarotCover');
@@ -2140,7 +2129,7 @@
 
             if (tarotOpened.every(v => v)) {
                 await new Promise(r => setTimeout(r, 450));
-                document.getElementById('tarotText').style.display = 'block';
+                document.getElementById('tarotText').style.visibility = 'visible';
                 const ov = document.getElementById('tarotGameOverlay');
                 ov.onclick = () => {
                     ov.style.display = 'none';
@@ -3165,16 +3154,10 @@
             bossContainer.style.transform = 'translateY(100vh) rotate(90deg)'; 
             bossContainer.style.opacity = '0';
 
-            let endingVid = document.getElementById('endingVideo');
-            if (endingVid) {
-                endingVid.muted = true;
-                let ep = endingVid.play();
-                if (ep !== undefined) {
-                    ep.then(() => { endingVid.pause(); endingVid.currentTime = 0; endingVid.muted = false; }).catch(()=>{});
-                }
-            }
 
-            playCutscene('ultimateVideo', () => {
+            bgMusic.pause();
+            // Видео ульты убрано: даём боссу 1 с упасть, затем сразу финальные слова Редроуз.
+            setTimeout(() => {
                 // Экран боссовой арены игроку больше не нужен — полностью выключаем.
                 document.getElementById('bossOverlay').style.display = 'none';
                 toggleBossUI(false);
@@ -3183,12 +3166,8 @@
                 // + уникальная подложка под текст (как в интро). Текст — пока заглушка.
                 showDialogue("ТУТ БУДУТ ФИНАЛЬНЫЕ СЛОВА РЕДРОУЗ", () => {
                     document.getElementById('victoryOverlay').style.display = 'flex';
-                    if(endingVid) {
-                        endingVid.currentTime = 0;
-                        endingVid.play().catch(()=>{});
-                    }
                 }, { sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png?v=2', fullscreenText: true });
-            });
+            }, 1000);
         });
     </script>
 </body>

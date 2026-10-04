@@ -377,7 +377,7 @@
         /* --- ЭКРАН ПОБЕДЫ --- */
         #victoryOverlay { 
             display: none; z-index: 5000; flex-direction: column;
-            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), #0b0710 url('assets/images/RED_ROSE_BACKGROUND_1.png?v=2') center / cover no-repeat;
+            background: #2a1a10 url('assets/images/backgrounds/victory_table.jpg?v=1') center / cover no-repeat;
             justify-content: center; align-items: center; text-align: center; position: relative;
         }
         #victoryPanel {
@@ -700,17 +700,10 @@
         #bossContainer {
             position: absolute; bottom: 12%; right: 5%; height: 45%; width: auto; z-index: 202;
             transition: bottom 0.8s ease-in-out, transform 1s ease-in, opacity 1s ease-in;
-            /* Белая ОБВОДКА ПО КОНТУРУ — ТОЧНО как у персонажа (.arena-shielded): РОВНО 4
-               смещённые тени (крест), 1.5px, blur 0, непрозрачный белый. ВАЖНО: CSS drop-shadow
-               чейнятся (каждая следующая отбрасывает тень от предыдущей), поэтому 8 направлений
-               компаундились в широкое белое «облако». 4 креста = тонкая чёткая кромка, как у героя. */
-            filter:
-                drop-shadow(0.75px 0 0 #ffffff) drop-shadow(-0.75px 0 0 #ffffff)
-                drop-shadow(0 0.75px 0 #ffffff) drop-shadow(0 -0.75px 0 #ffffff);
+            /* Без обводки и свечения (Миша, v1.87): дракон рисуется «чистым». */
         }
         #arenaBoss { 
             height: 100%; width: auto; 
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); 
             transition: transform 0.1s, filter 0.1s; cursor: crosshair; 
         }
         
@@ -840,7 +833,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.86</div>
+            <div id="gameVersion">v1.87</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -877,7 +870,7 @@
                 </div>
             </div>
 
-            <!-- ЭКРАН ПОБЕДЫ (фон — RED_ROSE_BACKGROUND_1, без видео) -->
+            <!-- ЭКРАН ПОБЕДЫ (фон — деревянный стол victory_table.jpg) -->
             <div id="victoryOverlay" class="screen-overlay">
                 <div id="victoryPanel" onclick="copyVictoryCode()">
                     <div class="victory-title">ПОБЕДА!</div>
@@ -888,7 +881,7 @@
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
-                <video id="menuVideo" src="assets/video/Menu.mp4?v=5" poster="assets/images/menu_poster.jpg?v=4" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
+                <video id="menuVideo" src="assets/video/Menu.mp4?v=6" poster="assets/images/menu_poster.jpg?v=4" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">КАЛЛИОПА<br>#1</div>
                 
                 <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
@@ -1881,7 +1874,7 @@
         }
 
         function winDndGame() {
-            showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
+            showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве! Кхм и не только в ней хих", () => {
                 hammerCollected = true; 
                 addScore();
                 playCrownCollect();
@@ -1891,7 +1884,7 @@
                 
                 let bgPromise = bgMusic.play();
                 if (bgPromise !== undefined) bgPromise.catch(()=>{});
-            }, { bgImage: imgSrc('dialogAika') });
+            }, { bgImage: imgSrc('dialogAika'), voice: 'assets/images/voice/AIKA.mp3?v=2' });
         }
 
 
@@ -3083,8 +3076,8 @@
 
                     const bossChar = document.getElementById('arenaBoss');
                     bossChar.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
-                    bossChar.style.filter = 'brightness(2) drop-shadow(0 0 20px #fff)'; 
-                    setTimeout(() => { bossChar.style.transform = 'scale(1) rotate(0deg)'; bossChar.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.8))'; }, 100);
+                    bossChar.style.filter = 'brightness(1.8)'; 
+                    setTimeout(() => { bossChar.style.transform = 'scale(1) rotate(0deg)'; bossChar.style.filter = ''; }, 100);
 
                     if (bossHp <= 0) {
                         clearInterval(bossInterval); 
@@ -3156,17 +3149,14 @@
 
 
             bgMusic.pause();
-            // Видео ульты убрано: даём боссу 1 с упасть, затем сразу финальные слова Редроуз.
+            // Видео ульты убрано: даём боссу 1 с упасть, затем сразу экран победы.
             setTimeout(() => {
                 // Экран боссовой арены игроку больше не нужен — полностью выключаем.
                 document.getElementById('bossOverlay').style.display = 'none';
                 toggleBossUI(false);
                 isBossFight = false;
-                // Финальные слова Редроуз ПЕРЕД экраном победы: фон RED_ROSE_BACKGROUND_1 во весь экран
-                // + уникальная подложка под текст (как в интро). Текст — пока заглушка.
-                showDialogue("ТУТ БУДУТ ФИНАЛЬНЫЕ СЛОВА РЕДРОУЗ", () => {
-                    document.getElementById('victoryOverlay').style.display = 'flex';
-                }, { sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png?v=2', fullscreenText: true });
+                // Финальные слова Редроуз убраны (Миша, v1.87) — сразу экран победы на столе.
+                document.getElementById('victoryOverlay').style.display = 'flex';
             }, 1000);
         });
     </script>

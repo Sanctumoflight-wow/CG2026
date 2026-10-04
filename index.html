@@ -822,10 +822,6 @@
     <audio id="bossMusic" loop>
         <source src="assets/audio/Crown_of_Stone_and_Sea.mp3?v=4" type="audio/mpeg">
     </audio>
-    <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
-    <audio id="typeSound">
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=ui-click-43196.mp3" type="audio/mpeg">
-    </audio>
     <audio id="voiceAudio" preload="auto"></audio>
 
     <div id="game-container">
@@ -833,7 +829,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.88</div>
+            <div id="gameVersion">v1.89</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -1303,16 +1299,8 @@
 
         const bgMusic = document.getElementById('bgMusic');
         const bossMusic = document.getElementById('bossMusic');
-        const collectSound = document.getElementById('collectSound');
-        const typeSound = document.getElementById('typeSound');
-        
-        function playCollectSound() { 
-            collectSound.currentTime = 0; 
-            let cpPromise = collectSound.play();
-            if (cpPromise !== undefined) {
-                cpPromise.catch(()=>{});
-            }
-        }
+        // Звук подбора — «ледяной перезвон» (Web Audio, без файлов). Функция ниже, у playBells.
+        function playCollectSound() { playIceChime(); }
 
         function enterFullscreen() {
             const doc = document.documentElement;
@@ -1526,19 +1514,8 @@
 
             // Громкость музыки НЕ задаём из JS: iOS Safari игнорирует audio.volume,
             // баланс vs голоса запечён в сами mp3 (bg −18 / boss −14 LUFS, см. assets/audio).
-            typeSound.muted = true;
-            collectSound.muted = true;
             bossMusic.muted = true;
-
-            let unlockType = typeSound.play();
-            if (unlockType !== undefined) {
-                unlockType.then(() => { typeSound.pause(); typeSound.currentTime = 0; typeSound.muted = false; }).catch(()=>{});
-            }
-            
-            let unlockCollect = collectSound.play();
-            if (unlockCollect !== undefined) {
-                unlockCollect.then(() => { collectSound.pause(); collectSound.currentTime = 0; collectSound.muted = false; }).catch(()=>{});
-            }
+            getSfxCtx(); // разблокировать Web Audio на iOS прямо в жесте «Играть»
 
             let unlockBoss = bossMusic.play();
             if (unlockBoss !== undefined) {
@@ -1614,7 +1591,7 @@
             // Вторая договорила → мигающая подсказка, игрок тапает сам.
             function onVoiceEnd() {
                 if (idx === 0) {
-                    if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; try { typeSound.pause(); } catch(e) {} }
+                    if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; }
                     front.style.opacity = '0';   // кроссфейд фона 0.25s
                     idx = 1; startLine(1);
                 } else {
@@ -1629,15 +1606,14 @@
             }
             function typeLine(txt) {
                 dText.innerText = ''; full = txt; ci = 0; typing = true;
-                try { typeSound.currentTime = 0; typeSound.loop = true; typeSound.play().catch(()=>{}); } catch(e) {}
                 typeInt = setInterval(() => {
                     dText.innerText += full.charAt(ci); ci++;
-                    if (ci >= full.length) { clearInterval(typeInt); typing = false; try { typeSound.pause(); } catch(e) {} }
+                    if (ci >= full.length) { clearInterval(typeInt); typing = false; }
                 }, 50);
             }
             function startLine(i) { introCanAdvance = false; setMusicMuted(true); hint.style.display = 'none'; playVoice(lines[i].voice); typeLine(lines[i].text); }
             function advance() {
-                if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; try { typeSound.pause(); } catch(e) {} return; }
+                if (typing) { clearInterval(typeInt); dText.innerText = full; typing = false; return; }
                 if (!introCanAdvance) return; // озвучка ещё играет — проход заблокирован
                 if (idx === 0) {
                     front.style.opacity = '0';   // кроссфейд 0.25s → снизу проявляется готовый _2
@@ -2075,10 +2051,12 @@
                 o.start(st); o.stop(st + dur + 0.02); o2.start(st); o2.stop(st + dur * 0.6 + 0.02);
             });
         }
-        // 3 НОВЫХ звука подбора (у плечей остаётся старый playCollectSound):
-        function playCrownCollect()  { playBells([523.25, 659.25, 783.99, 1046.50], { type: 'sine',     step: 0.075, dur: 0.85, vol: 0.20 }); } // C-E-G-C — светлый мажор
-        function playHammerCollect() { playBells([392.00, 587.33],                 { type: 'triangle', step: 0.10,  dur: 0.70, vol: 0.22 }); } // тёплое «та-да» (кварта)
-        function playShieldCollect() { playBells([659.25, 987.77, 1318.51],        { type: 'sine',     step: 0.055, dur: 0.95, vol: 0.18 }); } // воздушный шиммер вверх
+        // Звук подбора ВСЕХ предметов — «ледяной перезвон» (Миша, v1.89): быстрая россыпь вверх + мерцающий хвост.
+        // Старые варианты (корона/молот/щит, печать текста) — в архиве OLD_PROJECTS\...\CALLIOPE_GAME_01\SFX_ARCHIVE.html.
+        function playIceChime() { playBells([783.99, 1046.50, 1318.51, 1567.98, 2093.00], { type: 'sine', step: 0.05, dur: 1.0, vol: 0.16 }); }
+        function playCrownCollect()  { playIceChime(); }
+        function playHammerCollect() { playIceChime(); }
+        function playShieldCollect() { playIceChime(); }
 
         // Стильный телепорт: мягкий warp-свип вверх (sine+детюн) под lowpass + искры-хвост.
         function playTeleportSound() {
@@ -2112,7 +2090,7 @@
             tarotOpened[i] = true;
             const card = document.getElementById('tarotCard' + i);
             card.style.transform = 'scale(1.1) rotateY(90deg)';
-            playCardSwish(); // взмах карты (было: печатающий typeSound — инородный)
+            playCardSwish(); // взмах карты
             await new Promise(r => setTimeout(r, 220));
             card.src = imgSrc('tarot' + (i + 1));
             card.style.transform = 'scale(1) rotateY(0deg)';
@@ -2273,22 +2251,12 @@
                 if (callback) callback();
             };
 
-            try {
-                typeSound.currentTime = 0;
-                typeSound.loop = true;
-                let tpPromise = typeSound.play();
-                if (tpPromise !== undefined) {
-                    tpPromise.catch(()=>{});
-                }
-            } catch(e) {}
-
             dialogueTypingInterval = setInterval(() => {
                 document.getElementById('dialogueText').innerText += dialogueFullText.charAt(dialogueCurrentIndex);
                 dialogueCurrentIndex++;
                 if (dialogueCurrentIndex >= dialogueFullText.length) {
                     clearInterval(dialogueTypingInterval);
                     isDialogueTyping = false;
-                    try { typeSound.pause(); } catch(e) {}
                 }
             }, 50);
         }
@@ -2302,7 +2270,6 @@
                 clearInterval(dialogueTypingInterval);
                 document.getElementById('dialogueText').innerText = dialogueFullText;
                 isDialogueTyping = false;
-                try { typeSound.pause(); } catch(e) {}
             } else {
                 // Пока идёт озвучка — дальше НЕ пускаем (сколько бы тапов ни было).
                 if (!dialogueCanAdvance) return;

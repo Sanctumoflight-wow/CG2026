@@ -2,7 +2,7 @@
 <html lang="ru" style="background-color: #000000;">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="assets/images/items/Crown.png" type="image/png">
+    <link rel="icon" href="assets/images/items/Crown.png?v=2" type="image/png">
     <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
@@ -15,8 +15,8 @@
     <meta name="color-scheme" content="dark">
 
     <!-- ИКОНКА НА ДОМАШНИЙ ЭКРАН (для запуска игры как приложения) -->
-    <link rel="apple-touch-icon" href="assets/icons/app_icon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/app_icon.png">
+    <link rel="apple-touch-icon" href="assets/icons/app_icon.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/app_icon.png?v=2">
 
     <!-- АППАРАТНАЯ ПРЕДЗАГРУЗКА ДЛЯ ИСКЛЮЧЕНИЯ СЕРЫХ ЭКРАНОВ -->
     <link rel="preload" href="assets/images/backgrounds/items_bg.jpg?v=2" as="image">
@@ -74,7 +74,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff url('assets/images/ui/WARNING.jpg') center center / cover no-repeat;
+            background: #ffffff url('assets/images/ui/WARNING.jpg?v=2') center center / cover no-repeat;
             z-index: 99999;
             flex-direction: column;
             justify-content: flex-end;
@@ -113,48 +113,7 @@
         }
         #fullscreenToggleBtn:hover { background: #f1c40f; color: #000; }
 
-        /* --- ОТЛАДОЧНЫЕ КНОПКИ В ПРАВОМ НИЖНЕМ УГЛУ --- */
-        #debugRestartBtn {
-            position: fixed;
-            bottom: max(20px, var(--sab));
-            right: max(20px, var(--sar));
-            width: 50px; 
-            height: 50px; 
-            background: rgba(0, 0, 0, 0.6); 
-            border: 2px solid rgba(255, 255, 255, 0.3); 
-            border-radius: 50%;
-            color: white; 
-            font-size: 26px; 
-            cursor: pointer; 
-            display: none;
-            justify-content: center; 
-            align-items: center;
-            z-index: 9999; 
-            backdrop-filter: blur(5px);
-            transition: 0.2s;
-        }
-        #debugRestartBtn:active { transform: scale(0.9); border-color: #e74c3c; color: #e74c3c; }
 
-        #debugWinBtn {
-            position: fixed;
-            bottom: max(20px, var(--sab));
-            right: max(80px, calc(var(--sar) + 60px));
-            width: 50px; 
-            height: 50px; 
-            background: rgba(0, 0, 0, 0.6); 
-            border: 2px solid rgba(255, 255, 255, 0.3); 
-            border-radius: 50%;
-            color: #2ecc71; 
-            font-size: 24px; 
-            cursor: pointer; 
-            display: none;
-            justify-content: center; 
-            align-items: center;
-            z-index: 9999; 
-            backdrop-filter: blur(5px);
-            transition: 0.2s;
-        }
-        #debugWinBtn:active { transform: scale(0.9); border-color: #2ecc71; }
 
         /* ИНДИКАТОР ЗАГРУЗКИ БОССА В ДЕБАГ МЕНЮ */
         #debugBossLoad {
@@ -472,13 +431,6 @@
         /* Ролик книги растягивается 1:1 как фон книги (background-size:100% 100%), чтобы разворот
            совпал по кадру; финальный стык всё равно сглаживается кроссфейдом finishBookVideo(). */
         #bookVideo { object-fit: fill; }
-        #skipVideoBtn {
-            position: absolute; top: 20px; right: 20px; z-index: 6010;
-            background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); color: #fff;
-            padding: 8px 18px; border-radius: 8px; font-family: 'Forum', serif; 
-            font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
-        }
-        #skipVideoBtn:active { transform: scale(0.9); }
 
 
         /* --- ДИАЛОГИ --- */
@@ -487,7 +439,7 @@
         }
         .dialogue-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('assets/images/dialogs/DIALOG_RED_ROSE.png') center/100% 100% no-repeat;
+            background: url('assets/images/dialogs/DIALOG_RED_ROSE.png?v=2') center/100% 100% no-repeat;
             pointer-events: auto; cursor: pointer; z-index: 1;
             transition: background-image 0.3s ease;
         }
@@ -624,12 +576,6 @@
             }
             .dnd-btn { transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s; }
         }
-        .dnd-skip {
-            position: absolute; top: 15px; right: 15px; background: rgba(60,40,20,0.6); border: 1px solid rgba(200,160,90,0.5);
-            color: #f0e2c0; padding: 6px 12px; border-radius: 5px; cursor: pointer;
-            font-family: 'Forum', serif; transition: 0.2s; z-index: 4505; font-size: 11px; backdrop-filter: blur(4px);
-        }
-        .dnd-skip:active { transform: scale(0.9); }
         /* Кнопка возврата меню «искать / к боссу» — верх-право с отступом, под диалогами (z<4000). */
         #reopenMenuBtn {
             position: absolute; top: 12px; right: 12px; z-index: 3900; display: none;
@@ -857,9 +803,7 @@
     <!-- КНОПКА ПОЛНОГО ЭКРАНА (ПОВЕРХ ВСЕГО) -->
     <button id="fullscreenToggleBtn">На весь экран</button>
 
-    <!-- ОТЛАДОЧНЫЕ КНОПКИ И ЗАГРУЗКА БОССА -->
-    <button id="debugRestartBtn" onclick="resetGame()" title="Вернуться в начало">↻</button>
-    <button id="debugWinBtn" onclick="debugSkipLevel()" title="Мгновенно пройти уровень">✔️</button>
+    <!-- ИНДИКАТОР ЗАГРУЗКИ БОССА (скрыт) -->
     
     <div id="debugBossLoad">
         <div id="debugBossLoadingCircle"></div>
@@ -882,10 +826,10 @@
 
     <!-- АУДИО -->
     <audio id="bgMusic" loop>
-        <source src="assets/audio/Geometry_of_the_Hidden_Temple.mp3?v=3" type="audio/mpeg">
+        <source src="assets/audio/Geometry_of_the_Hidden_Temple.mp3?v=4" type="audio/mpeg">
     </audio>
     <audio id="bossMusic" loop>
-        <source src="assets/audio/Crown_of_Stone_and_Sea.mp3?v=3" type="audio/mpeg">
+        <source src="assets/audio/Crown_of_Stone_and_Sea.mp3?v=4" type="audio/mpeg">
     </audio>
     <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
     <audio id="typeSound">
@@ -898,7 +842,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.84</div>
+            <div id="gameVersion">v1.85</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -937,7 +881,7 @@
 
             <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
             <div id="victoryOverlay" class="screen-overlay">
-                <video id="endingVideo" src="assets/video/Ending.mp4" loop playsinline webkit-playsinline disablePictureInPicture></video>
+                <video id="endingVideo" src="assets/video/Ending.mp4?v=2" loop playsinline webkit-playsinline disablePictureInPicture></video>
                 <div id="victoryPanel" onclick="copyVictoryCode()">
                     <div class="victory-title">ПОБЕДА!</div>
                     <div id="victoryCode">Нажми на текст, чтобы скопировать: 14022026</div>
@@ -947,7 +891,7 @@
 
             <!-- ТИТУЛЬНЫЙ ЭКРАН -->
             <div id="titleScreen" class="screen-overlay">
-                <video id="menuVideo" src="assets/video/Menu.mp4?v=4" poster="assets/images/menu_poster.jpg?v=4" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
+                <video id="menuVideo" src="assets/video/Menu.mp4?v=5" poster="assets/images/menu_poster.jpg?v=4" preload="auto" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;"></video>
                 <div class="main-title">КАЛЛИОПА<br>#1</div>
                 
                 <!-- ОБНОВЛЕННАЯ ПОЛОСА ЗАГРУЗКИ В СТИЛЕ WOW -->
@@ -966,10 +910,10 @@
             <div id="startScreen" class="screen-overlay">
                 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 80px; box-sizing: border-box;">
                     <div class="start-items-row">
-                        <div class="img-block"><img src="assets/images/items/Crown.png" alt="Корона"></div>
-                        <div class="img-block"><img src="assets/images/items/Shoulders.png" alt="Наплечники"></div>
-                        <div class="img-block"><img src="assets/images/items/SHIELD_HD.png" alt="Щит"></div>
-                        <div class="img-block"><img src="assets/images/items/HAMMER_HD.png" alt="Молот"></div>
+                        <div class="img-block"><img src="assets/images/items/Crown.png?v=2" alt="Корона"></div>
+                        <div class="img-block"><img src="assets/images/items/Shoulders.png?v=2" alt="Наплечники"></div>
+                        <div class="img-block"><img src="assets/images/items/SHIELD_HD.png?v=2" alt="Щит"></div>
+                        <div class="img-block"><img src="assets/images/items/HAMMER_HD.png?v=2" alt="Молот"></div>
                         <div class="img-block secret-item">
                             <span style="font-size: 40px; color: #f1c40f; font-weight: 900; text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);">?</span>
                         </div>
@@ -1026,7 +970,6 @@
             <!-- ДНД МИНИ-ИГРА И ТЕСТ ПЛЕЧЕЙ -->
             <div id="dndGameOverlay" class="screen-overlay">
                 <div class="dnd-book-bg" id="dndBookBg">
-                    <button class="dnd-skip" onclick="event.stopPropagation(); skipDndGame()">Пропустить</button>
                     <div class="dnd-content-box" id="dndContentBox">
                         <div class="dnd-text" id="dndText"></div>
                         <div class="dnd-choices" id="dndChoices"></div>
@@ -1036,10 +979,9 @@
 
             <!-- МИНИ-ИГРА АРИНЫ: РАСТОПИТЬ ЛЁД (RAW) -->
             <div id="shouldersGameOverlay" class="screen-overlay">
-                <button class="dnd-skip" onclick="event.stopPropagation(); skipShouldersGame()">Пропустить</button>
                 <div id="iceMeltTitle">Растопи лёд — жми по глыбе!</div>
                 <div id="iceBlock" onpointerdown="meltIceTap()">
-                    <img id="frozenShoulders" src="assets/images/items/Shoulders.png" alt="Наплечники">
+                    <img id="frozenShoulders" src="assets/images/items/Shoulders.png?v=2" alt="Наплечники">
                     <div id="iceOverlay"></div>
                 </div>
                 <div id="meltBarBg"><div id="meltBarFill"></div></div>
@@ -1050,7 +992,6 @@
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
-                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Forum', serif; transition: 0.2s; z-index: 5000;">Пройти игру (Debug)</button>
             </div>
 
             <!-- ТАРО МИНИ-ИГРА -->
@@ -1058,15 +999,15 @@
                 <div style="flex: 1;"></div>
                 <div class="tarot-container">
                     <div class="tarot-slot">
-                        <img src="assets/images/tarot/TAROT_COVER.png" class="tarot-card" id="tarotCard0" alt="Таро 1" onclick="flipTarot(0)">
+                        <img src="assets/images/tarot/TAROT_COVER.png?v=2" class="tarot-card" id="tarotCard0" alt="Таро 1" onclick="flipTarot(0)">
                         <div class="tarot-caption" id="tarotCap0">Сила</div>
                     </div>
                     <div class="tarot-slot">
-                        <img src="assets/images/tarot/TAROT_COVER.png" class="tarot-card" id="tarotCard1" alt="Таро 2" onclick="flipTarot(1)">
+                        <img src="assets/images/tarot/TAROT_COVER.png?v=2" class="tarot-card" id="tarotCard1" alt="Таро 2" onclick="flipTarot(1)">
                         <div class="tarot-caption" id="tarotCap1">Доброта</div>
                     </div>
                     <div class="tarot-slot">
-                        <img src="assets/images/tarot/TAROT_COVER.png" class="tarot-card" id="tarotCard2" alt="Таро 3" onclick="flipTarot(2)">
+                        <img src="assets/images/tarot/TAROT_COVER.png?v=2" class="tarot-card" id="tarotCard2" alt="Таро 3" onclick="flipTarot(2)">
                         <div class="tarot-caption" id="tarotCap2">Дух</div>
                     </div>
                 </div>
@@ -1109,10 +1050,10 @@
                     <div id="shieldBarBg"><div id="shieldBar"></div></div>
                 </div>
 
-                <img id="arenaPlayer" src="assets/images/player/JULIA_STAND.png" alt="Player">
+                <img id="arenaPlayer" src="assets/images/player/JULIA_STAND.png?v=2" alt="Player">
                 
                 <div id="bossContainer">
-                    <img id="arenaBoss" src="assets/images/boss/boss.png?v=3" alt="Boss">
+                    <img id="arenaBoss" src="assets/images/boss/boss.png?v=4" alt="Boss">
                 </div>
                 
                 <p id="bossHintText" style="display:none;"></p>
@@ -1127,8 +1068,7 @@
 
             <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО -->
             <div id="videoOverlay" class="screen-overlay">
-                <button id="skipVideoBtn">Пропустить</button>
-                <video id="ultimateVideo" class="cutscene-video" src="assets/video/ultimate.mp4" playsinline webkit-playsinline></video>
+                <video id="ultimateVideo" class="cutscene-video" src="assets/video/ultimate.mp4?v=2" playsinline webkit-playsinline></video>
                 <video id="bookVideo" class="cutscene-video" src="assets/video/GAME_BOOK_INTRO.mp4?v=2" playsinline webkit-playsinline></video>
             </div>
 
@@ -1178,57 +1118,57 @@
         const initialAssets = {
             'itemsBg': 'assets/images/backgrounds/items_bg.jpg?v=2',
             'shouldersBg': 'assets/images/backgrounds/shoulders_bg.jpg?v=2', // фон мини-игры плечей — предзагрузка (был только в CSS → грузился лениво)
-            'crown': 'assets/images/items/Crown.png',
-            'shoulders': 'assets/images/items/Shoulders.png',
-            'shield': 'assets/images/items/SHIELD_HD.png',
-            'hammer': 'assets/images/items/HAMMER_HD.png',
-            'block': 'assets/images/blocks/block.png',
-            'block_1': 'assets/images/blocks/block_1.png',
-            'block_2': 'assets/images/blocks/block_2.png',
-            'block_3': 'assets/images/blocks/block_3.png',
-            'block_4': 'assets/images/blocks/block_4.png',
-            'block_5': 'assets/images/blocks/block_5.png', // СТЕНА (непроходимый блок)
-            'block_6': 'assets/images/blocks/block_6.png', // НОВЫЙ БЛОК-ВУЛКАН
-            'player': 'assets/images/player/JULIA_STAND.png',
-            'playerHappy': 'assets/images/player/JULIA_WIN.png',
-            'juliaStand': 'assets/images/player/JULIA_STAND.png',
-            'juliaWalk': 'assets/images/player/JULIA_WALK.png',
+            'crown': 'assets/images/items/Crown.png?v=2',
+            'shoulders': 'assets/images/items/Shoulders.png?v=2',
+            'shield': 'assets/images/items/SHIELD_HD.png?v=2',
+            'hammer': 'assets/images/items/HAMMER_HD.png?v=2',
+            'block': 'assets/images/blocks/block.png?v=2',
+            'block_1': 'assets/images/blocks/block_1.png?v=2',
+            'block_2': 'assets/images/blocks/block_2.png?v=2',
+            'block_3': 'assets/images/blocks/block_3.png?v=2',
+            'block_4': 'assets/images/blocks/block_4.png?v=2',
+            'block_5': 'assets/images/blocks/block_5.png?v=2', // СТЕНА (непроходимый блок)
+            'block_6': 'assets/images/blocks/block_6.png?v=2', // НОВЫЙ БЛОК-ВУЛКАН
+            'player': 'assets/images/player/JULIA_STAND.png?v=2',
+            'playerHappy': 'assets/images/player/JULIA_WIN.png?v=2',
+            'juliaStand': 'assets/images/player/JULIA_STAND.png?v=2',
+            'juliaWalk': 'assets/images/player/JULIA_WALK.png?v=2',
             'heartItem': 'assets/images/items/HEART.png',
-            'tarotCover': 'assets/images/tarot/TAROT_COVER.png',
-            'tarot1': 'assets/images/tarot/TAROT_1.png',
+            'tarotCover': 'assets/images/tarot/TAROT_COVER.png?v=2',
+            'tarot1': 'assets/images/tarot/TAROT_1.png?v=2',
             'tarot2': 'assets/images/tarot/TAROT_2.png',
-            'tarot3': 'assets/images/tarot/TAROT_3.png',
-            'rune1': 'assets/images/runes/Rune_1.png',
-            'rune2': 'assets/images/runes/Rune_2.png',
-            'rune3': 'assets/images/runes/Rune_3.png',
-            'rune4': 'assets/images/runes/Rune_4.png',
-            'rune5': 'assets/images/runes/Rune_5.png',
-            'dialogTest': 'assets/images/dialogs/DIALOG_RED_ROSE.png',
-            'dialogAlina': 'assets/images/dialogs/DIALOG_LITTLE_JULIA_MOON_PRIEST.png',
-            'dialogLera': 'assets/images/dialogs/DIALOG_LERA.png',
-            'dialogFather': 'assets/images/dialogs/DIALOG_ARINA.png',
-            'dialogJulia': 'assets/images/dialogs/DIALOG_JULIA.png',
-            'dialogAika': 'assets/images/dialogs/DIALOG_AIKA.png',
+            'tarot3': 'assets/images/tarot/TAROT_3.png?v=2',
+            'rune1': 'assets/images/runes/Rune_1.png?v=2',
+            'rune2': 'assets/images/runes/Rune_2.png?v=2',
+            'rune3': 'assets/images/runes/Rune_3.png?v=2',
+            'rune4': 'assets/images/runes/Rune_4.png?v=2',
+            'rune5': 'assets/images/runes/Rune_5.png?v=2',
+            'dialogTest': 'assets/images/dialogs/DIALOG_RED_ROSE.png?v=2',
+            'dialogAlina': 'assets/images/dialogs/DIALOG_LITTLE_JULIA_MOON_PRIEST.png?v=2',
+            'dialogLera': 'assets/images/dialogs/DIALOG_LERA.png?v=2',
+            'dialogFather': 'assets/images/dialogs/DIALOG_ARINA.png?v=2',
+            'dialogJulia': 'assets/images/dialogs/DIALOG_JULIA.png?v=2',
+            'dialogAika': 'assets/images/dialogs/DIALOG_AIKA.png?v=2',
             'arrow': 'assets/images/ui/Arrow.jpg',
             'fieldBg': 'assets/images/backgrounds/field_bg.jpg?v=2',
             'dnd_1': 'assets/images/dnd/dnd_1.jpg?v=2',
             'dnd_2': 'assets/images/dnd/dnd_2.jpg?v=2',
             'dnd_3': 'assets/images/dnd/dnd_3.jpg?v=2',
             'dnd_death': 'assets/images/dnd/dnd_death.jpg?v=2',
-            'portal': 'assets/images/blocks/PORTAL.png',
+            'portal': 'assets/images/blocks/PORTAL.png?v=2',
             'chest': 'assets/images/ui/CHEST_HD.png',
             'pauseIcon': 'assets/images/ui/BUTTON_PAUSE_HD.jpg'
         };
 
         // ЭТАП 2: ФОНОВАЯ ЗАГРУЗКА БОССА
         const bossAssets = {
-            'boss': 'assets/images/boss/boss.png?v=3',
+            'boss': 'assets/images/boss/boss.png?v=4',
             'bossBg': 'assets/images/backgrounds/boss_bg.jpg',
-            'juliaShield': 'assets/images/player/JULIA_BLOCK.png',
-            'juliaHit': 'assets/images/player/JULIA_ATTAK.png',
+            'juliaShield': 'assets/images/player/JULIA_BLOCK.png?v=2',
+            'juliaHit': 'assets/images/player/JULIA_ATTAK.png?v=2',
             'alch': 'assets/images/items/HAMMER_HD_ATTAK.png',
             'divineShield': 'assets/images/ui/BUTTON_BLOCK_HD.jpg',
-            'damageImg': 'assets/images/ui/DAMAGE.png',
+            'damageImg': 'assets/images/ui/DAMAGE.png?v=2',
             'blockImg': 'assets/images/ui/BLOCK.png',
             'dodgeImg': 'assets/images/ui/DODGE.png'
         };
@@ -1473,12 +1413,6 @@
             }
         }
 
-        document.getElementById('skipVideoBtn').addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            // Ролик книги завершаем кроссфейдом (плавный переход в книгу), остальные — обычным cut.
-            if (activeVideo && activeVideo.id === 'bookVideo') finishBookVideo();
-            else endCutscene();
-        });
 
         document.getElementById('ultimateVideo').addEventListener('ended', endCutscene);
 
@@ -1528,8 +1462,6 @@
             document.getElementById('gameUI').style.display = 'none';
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('dndGameOverlay').style.display = 'none';
-            document.getElementById('debugRestartBtn').style.display = 'none'; 
-            document.getElementById('debugWinBtn').style.display = 'none';
             document.getElementById('debugBossLoad').style.display = 'none';
             document.getElementById('easterEggPromptOverlay').style.display = 'none';
             document.getElementById('confirmBossOverlay').style.display = 'none';
@@ -1599,17 +1531,6 @@
             ctx.clearRect(0, 0, 852, 393);
         }
 
-        function debugSkipLevel() {
-            if (isBossFight) { skipBossFight(); return; } // на арене босса галочка мгновенно завершает бой
-            score = 4;
-            scoreElement.innerText = "4 / 4";
-            scoreElement.style.color = '#f1c40f'; 
-            crownCollected = true;
-            shieldCollected = true;
-            shouldersCollected = true;
-            hammerCollected = true;
-            checkWin();
-        }
 
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -1642,14 +1563,14 @@
             // Разблокировка голосовой озвучки (Red Rose) для iOS
             const voiceAudio = document.getElementById('voiceAudio');
             voiceAudio.muted = true;
-            voiceAudio.src = 'assets/images/voice/RED_ROSE_1.mp3';
+            voiceAudio.src = 'assets/images/voice/RED_ROSE_1.mp3?v=2';
             let unlockVoice = voiceAudio.play();
             if (unlockVoice !== undefined) {
                 unlockVoice.then(() => { voiceAudio.pause(); voiceAudio.currentTime = 0; voiceAudio.muted = false; }).catch(()=>{});
             }
 
             // Предзагрузка обоих фонов интро (чтобы кадры не мигали)
-            ['assets/images/RED_ROSE_BACKGROUND_1.png', 'assets/images/RED_ROSE_BACKGROUND_2.png'].forEach(s => { const im = new Image(); im.src = s; });
+            ['assets/images/RED_ROSE_BACKGROUND_1.png?v=2', 'assets/images/RED_ROSE_BACKGROUND_2.png?v=2'].forEach(s => { const im = new Image(); im.src = s; });
 
             let endingVid = document.getElementById('endingVideo');
             if (endingVid) {
@@ -1685,8 +1606,8 @@
             const va = document.getElementById('voiceAudio');
 
             const lines = [
-                { text: "Кто тут у нас? Говорят, ты обыграла Джейн в прошлом году? Позволь представиться. Я — мисс Редроуз.", voice: 'assets/images/voice/RED_ROSE_1.mp3' },
-                { text: "В этот раз тебя ждет дракон. Но ладно ладно я не оставлю тебя без шансов на победу, в начале собери артефакты у своих друзей. Удачи ", voice: 'assets/images/voice/RED_ROSE_2.mp3' }
+                { text: "Кто тут у нас? Говорят, ты обыграла Джейн в прошлом году? Позволь представиться. Я — мисс Редроуз.", voice: 'assets/images/voice/RED_ROSE_1.mp3?v=2' },
+                { text: "В этот раз тебя ждет дракон. Но ладно ладно я не оставлю тебя без шансов на победу, в начале собери артефакты у своих друзей. Удачи ", voice: 'assets/images/voice/RED_ROSE_2.mp3?v=2' }
             ];
 
             // окно интро (не закрывается между репликами)
@@ -1703,8 +1624,8 @@
             dText.style.textShadow = '0 2px 4px #000';
 
             // два слоя фона: _2 снизу (уже готов), _1 сверху
-            back.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_2.png')";
-            front.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_1.png')";
+            back.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_2.png?v=2')";
+            front.style.backgroundImage = "url('assets/images/RED_ROSE_BACKGROUND_1.png?v=2')";
             back.style.display = 'block'; back.style.opacity = '1';
             front.style.display = 'block'; front.style.opacity = '1';
 
@@ -1797,8 +1718,6 @@
             document.getElementById('gameUI').style.display = 'block';
             document.getElementById('tracker').style.display = 'flex';
             
-            document.getElementById('debugRestartBtn').style.display = 'flex'; 
-            document.getElementById('debugWinBtn').style.display = 'flex'; 
             
             if (!isBossAssetsFullyLoaded) {
                 const debugLoad = document.getElementById('debugBossLoad');
@@ -1897,12 +1816,6 @@
             }, 450);
         }
 
-        function skipShouldersGame() {
-            meltActive = false;
-            if (meltDecayInterval) clearInterval(meltDecayInterval);
-            document.getElementById('shouldersGameOverlay').style.display = 'none';
-            winShoulders();
-        }
 
         function winShoulders() {
             showDialogue("Говорят, даже Атланты оценили качество этих плеч. А эта ящерица мисс Редроуз их даже не поцарапает!", () => {
@@ -1910,7 +1823,7 @@
                 addScore();
                 playCrownCollect(); spawnParticles(shoulders.x, shoulders.y, '#3498db'); flashTracker(); 
                 isPaused = false; checkWin();
-            }, { bgImage: imgSrc('dialogFather'), voice: 'assets/images/voice/ARINA.mp3' });
+            }, { bgImage: imgSrc('dialogFather'), voice: 'assets/images/voice/ARINA.mp3?v=2' });
         }
 
         function renderDndFrame(frame) {
@@ -1992,34 +1905,12 @@
             }, { bgImage: imgSrc('dialogAika') });
         }
 
-        function skipDndGame() {
-            document.getElementById('dndGameOverlay').style.display = 'none';
-            if (currentDndType === 'hammer') {
-                winDndGame();
-            } else if (currentDndType === 'shoulders') {
-                winShoulders();
-            }
-        }
 
         let currentRuneRound = 1;
         let expectedSequence = [];
         let playerSequence = [];
         let isRuneAnimating = false;
 
-        function debugPassRuneGame() {
-            if (!shieldCollected) {
-                document.getElementById('runeGameOverlay').style.display = 'none';
-                isRuneAnimating = false; 
-                showDialogue("Твоя память безупречна! Но главное помнить, что не нужно хранить в ней беды и печали... Их нужно отпустить и освободить место для новых радостных моментов!", () => {
-                    shieldCollected = true; 
-                    addScore();
-                    playCrownCollect();
-                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
-                    
-                    isPaused = false; checkWin();
-                }, { bgImage: imgSrc('dialogAlina'), voice: 'assets/images/voice/LITTLE_JILIA.mp3' });
-            }
-        }
 
         async function startRuneGame() {
             document.getElementById('runeGameOverlay').style.display = 'flex';
@@ -2096,7 +1987,7 @@
                             spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); flashTracker();
                             
                             isPaused = false; checkWin();
-                        }, { bgImage: imgSrc('dialogAlina'), voice: 'assets/images/voice/LITTLE_JILIA.mp3' });
+                        }, { bgImage: imgSrc('dialogAlina'), voice: 'assets/images/voice/LITTLE_JILIA.mp3?v=2' });
                     }
                 }
             } else {
@@ -2261,7 +2152,7 @@
                         playCrownCollect();
                         spawnParticles(crown.x, crown.y, '#f1c40f'); flashTracker();
                         isPaused = false; checkWin();
-                    }, { bgImage: imgSrc('dialogLera'), voice: 'assets/images/voice/LERA_TAROT.mp3' });
+                    }, { bgImage: imgSrc('dialogLera'), voice: 'assets/images/voice/LERA_TAROT.mp3?v=2' });
                 };
             }
         }
@@ -2592,7 +2483,7 @@
                 isPaused = true; targetMovePos = null;
                 showDialogue("Забавно, да? Как люди ищут ответы в безделушках и обманщиках с картами таро. А к кому относишься ты?", () => {
                     isPaused = false;
-                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_4_TAROT.mp3' });
+                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_4_TAROT.mp3?v=2' });
             }
 
             // 3-я невидимая плитка на пути к пасхалке (тайл 2,2) — Редроуз, 1 раз
@@ -2601,7 +2492,7 @@
                 isPaused = true; targetMovePos = null;
                 showDialogue("А ты удивляешь. Нашла невидимый путь. Хотя, знаешь, он в тебе не сомневался. Забавно, как вы, смертные, верите друг в друга.", () => {
                     isPaused = false;
-                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_5.mp3' });
+                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_5.mp3?v=2' });
             }
 
             if (player.x === 12 && player.y === 4) {
@@ -2646,7 +2537,7 @@
                 document.getElementById('reopenMenuBtn').style.display = 'none';
                 showDialogue("Если ты готова, то давай посмотрим на твои навыки!", () => {
                     goToBoss();
-                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
+                }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3?v=2' });
             };
         }
 
@@ -2659,7 +2550,7 @@
                     } else {
                         showDialogue("Если ты готова, то давай посмотрим на твои навыки!", () => {
                             goToBoss();
-                        }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3' });
+                        }, { bgImage: imgSrc('dialogTest'), voice: 'assets/images/voice/RED_ROSE_3.mp3?v=2' });
                     }
                 }
             }
@@ -3119,14 +3010,6 @@
             }, 3000);
         }
 
-        function skipBossFight() {
-            if (isPaused || bossHp <= 0) return;
-            bossHp = 0;
-            updateBossSkulls();
-            clearInterval(bossInterval); 
-            clearInterval(bossMovementInterval); 
-            document.getElementById('finishHimOverlay').style.display = 'flex';
-        }
 
         // Боевая splash-иконка (DAMAGE/BLOCK/DODGE) в точке (x,y) базовых координат.
         // size — ширина в px (по умолч. 190; для игрока меньше). Клампится внутрь сцены 852×393.
@@ -3304,7 +3187,7 @@
                         endingVid.currentTime = 0;
                         endingVid.play().catch(()=>{});
                     }
-                }, { sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png', fullscreenText: true });
+                }, { sceneBg: 'assets/images/RED_ROSE_BACKGROUND_1.png?v=2', fullscreenText: true });
             });
         });
     </script>
